@@ -1,0 +1,4 @@
+QED
+===
+
+quod erat demonstrandum
