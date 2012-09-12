@@ -1,7 +1,7 @@
 {
-  "name": "re_backbone",
+  "name": "qed",
   "version": "0.0.0",
-  "description": "Regulome Explorer on Backbone",
+  "description": "quod erat demonstrandum",
   "main": "index.js",
   "directories": {
     "test": "test"
