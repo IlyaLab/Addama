@@ -1,6 +1,6 @@
-var Model = require('./node')
+var Node = require('./node')
 
-module.exports = Model.extend({
+module.exports = Node.extend({
 
   defaults:{
   	type:'',
@@ -11,6 +11,13 @@ module.exports = Model.extend({
   
 	initialize: function() {
 
+	},
+	parse: function(response){
+		var feature_array = response.split(':');
+		return {
+			type:feature_array[0],
+				source:feature_array[1]
+			};
 	}
 
 

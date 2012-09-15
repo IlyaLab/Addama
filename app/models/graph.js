@@ -4,17 +4,16 @@ var EdgeList = require('./edgeList')
 
 module.exports = Model.extend({
 
-  defaults:{
-  	node_list : FeatureList,
-  	edge_list : EdgeList
-  },
 
   initialize: function(){
   	this.nodes = new FeatureList
   	this.edges = new EdgeList
 
+  },
+
+  sync : function(method, model) {
+  	this.nodes.reset(graph.nByi);
+  	this.edges.reset(graph.adj); 
   }
 
-
-  
 });

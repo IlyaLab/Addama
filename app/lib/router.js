@@ -8,6 +8,7 @@ module.exports = Backbone.Router.extend({
 
   graph: function() {
   	$('body').html(application.graphView.render().el);
+    application.graphView.renderGraph();
   },
 
   home: function() {
