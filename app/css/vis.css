@@ -1,0 +1,35 @@
+.node circle {
+	fill:none;
+	stroke : #27d;
+	stroke-width:1.5;
+	pointer-events: all;
+}
+
+.node text {
+	font-size:12px;
+	color:#000;
+}
+
+.link {
+	fill:none;
+	stroke-width:1;
+	stroke:#666;
+	stroke-opacity:0.5;
+}
+
+
+.highlighted_link {
+	fill:none;
+	stroke-width:1;
+	stroke:#888;
+	opacity:0.6;
+}
+
+.svg {
+	font: 12px sans-serif;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
