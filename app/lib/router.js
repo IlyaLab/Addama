@@ -1,4 +1,4 @@
-var application = require('application');
+var app = require('application');
 
 module.exports = Backbone.Router.extend({
   routes: {
@@ -7,11 +7,10 @@ module.exports = Backbone.Router.extend({
   },
 
   graph: function() {
-  	$('body').html(application.graphView.render().el);
-    application.graphView.renderGraph();
+      app.Controller.graph.view();
   },
 
   home: function() {
-    $('body').html(application.homeView.render().el);
+      app.Controller.home.view();
   }
 });
