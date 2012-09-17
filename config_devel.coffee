@@ -7,13 +7,13 @@ exports.config =
       defaultExtension: 'js'
       joinTo:
         'js/app.js': /^app/
-        'js/vendor.js': /^vendor(\/|\\)(?!(jquery|bootstrap|underscore|backbone|d3)|viva)/
         'js/jquery.js': /^vendor\/js\/jquery/
         'js/bootstrap.js': /^vendor\/js\/bootstrap\.js/
         'js/underscore.js': /^vendor\/js\/underscore/
         'js/backbone.js': /^vendor\/js\/backbone/
         'js/d3.js': /^vendor\/js\/d3/
         'js/vivagraph.js': /^vendor\/js\/viva/
+        'js/vendor.js': /^vendor(\/|\\)(?!js)/
 
     stylesheets:
       defaultExtension: 'less'
