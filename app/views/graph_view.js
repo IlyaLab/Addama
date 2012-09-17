@@ -27,11 +27,10 @@ module.exports = View.extend({
         _.each(graphData.nByi, function(node,i) {
               graph.addNode( i, { 
                 alias: node.split(':')[2], 
-                position: { 
+                anchor: { 
                   x : xScale(graphData.f1[i]), 
                   y : yScale(graphData.d[i])
-                },
-                isPinned : true 
+                }
               });
          });
 
@@ -59,11 +58,13 @@ module.exports = View.extend({
                             ')');
                     });
 
+            var layout = Viva.Graph.Layout.forceDirected(graph);
+
         // Step 3. Render the graph.
         var renderer = Viva.Graph.View.renderer(graph,
         	   {
         	   	graphics : graphics,
-              layout : null,
+              layout : layout,
         	   	container  : this.el
         	   });
         renderer.run();
