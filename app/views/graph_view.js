@@ -13,26 +13,60 @@ module.exports = View.extend({
 
   renderGraph: function() {
 
-         var graph = Viva.Graph.graph();
+        var xScale = d3.scale.linear()
+                              .domain([d3.min(graphData.f1),d3.max(graphData.f1)])
+                              .range(0,400);
 
-            // Step 2. We add nodes and edges to the graph:
-            graph.addLink(1, 2);
 
-            /* Note: graph.addLink() creates new nodes if they are not yet 
-               present in the graph. Thus calling this method is equivalent to:
+        var yScale = d3.scale.linear()
+                              .domain([d3.max(graphData.d),d3.min(graphData.d)])
+                              .range(0,400);
 
-               graph.addNode(1);
-               graph.addNode(2);
-               graph.addLink(1, 2);
-            */
+       var graph = Viva.Graph.graph();
 
-            // Step 3. Render the graph.
-            var renderer = Viva.Graph.View.renderer(graph,
-            	   {
-            	   	graphics : Viva.Graph.View.svgGraphics(),
-            	   	container  : this.el,
-            	   });
-            renderer.run();
+        _.each(graphData.nByi, function(node,i) {
+              graph.addNode( i, { 
+                alias: node.split(':')[2], 
+                position: { 
+                  x : xScale(graphData.f1[i]), 
+                  y : yScale(graphData.d[i])
+                },
+                isPinned : true 
+              });
+         });
+
+        _.each(graphData.adj, function(link) {
+             graph.addLink(link[0], link[1]);
+        });
+
+
+        // Set custom nodes appearance
+        var graphics = Viva.Graph.View.svgGraphics();
+        nodeSize=16;
+        graphics.node(function(node) {
+               // The function is called every time renderer needs a ui to display node
+               var ui = Viva.Graph.svg('g'),
+               svgText = Viva.Graph.svg('text')
+                                    .attr('y', '-4px')
+                                    .text(node.data.alias);
+
+               ui.append(svgText);
+               return ui;
+            }).placeNode(function(nodeUI, pos){
+                        nodeUI.attr('transform', 
+                            'translate(' + 
+                                  (pos.x - nodeSize/2) + ',' + (pos.y - nodeSize/2) + 
+                            ')');
+                    });
+
+        // Step 3. Render the graph.
+        var renderer = Viva.Graph.View.renderer(graph,
+        	   {
+        	   	graphics : graphics,
+              layout : null,
+        	   	container  : this.el
+        	   });
+        renderer.run();
   }
 
 });
