@@ -1,16 +1,21 @@
-var app = require('application');
+var Controller = require('./controller');
 
 module.exports = Backbone.Router.extend({
   routes: {
     '': 'home',
-    'graph': 'graph'
+    'graph': 'graph',
+    'twoD/:f1/:f2' : 'twod'
   },
 
   graph: function() {
-      app.Controller.graph.view();
+      Controller.graph.view();
+  },
+
+  twod: function() {
+      Controller.twod.view();
   },
 
   home: function() {
-      app.Controller.home.view();
+      Controller.home.view();
   }
 });

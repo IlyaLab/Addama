@@ -32,13 +32,13 @@ var TreeChart = function(config) {
 	      };
 	  };
 
-    var source = parseAdj(0),
-        target = parseAdj(1);
+    var source = parseAdj(1),
+        target = parseAdj(0);
 
 	var diagonal = d3.svg.diagonal()
 	      .source(source)
 		  .target(target)
-	      .projection(function(d) { return [d.x, d.y]; });
+	      .projection(function(d) { return [d.y, d.x]; });
 
 	 function treeChart(selection) {
 	 	selection = selection || document.body;	
@@ -53,8 +53,8 @@ var TreeChart = function(config) {
 	 	zipped_data = labels.map(function(d,i) { 
 		return {
 			label:d, 
-			x:xScale(data.x[i]), 
-			y:yScale(data.y[i])};
+			x:xScale(x_pos[i]), 
+			y:yScale(y_pos[i])};
 		});	
 		
 	 	selection.each(function render(){
@@ -94,12 +94,10 @@ var TreeChart = function(config) {
 					       .attr("d", diagonal);
 		 
 		    var dragGroup = d3.behavior.drag()
-					  .on('dragstart', function() {
-					    console.log('Start Dragging Group');})
 				 .on('drag', function(d, i) {
-								    d.x += d3.event.dx;
-								    d.y += d3.event.dy;
-								    d3.select(this).attr("transform", "translate("+d.x+","+d.y+")");
+								    d.y += d3.event.dx;
+								    d.x += d3.event.dy;
+								    d3.select(this).attr("transform", "translate("+d.y+","+d.x+")");
 
 								    vis.selectAll("path.link")
 								     .attr("d", diagonal);
@@ -109,7 +107,7 @@ var TreeChart = function(config) {
 					       .data(zipped_data)
 					     .enter().append("g")
 					       .attr("class", "node")
-					       .attr('transform',function(d) { return 'translate(' + d.x+","+d.y+")";})
+					       .attr('transform',function(d) { return 'translate(' + d.y+","+d.x+")";})
 					       .call(dragGroup);
 
 					   node_svg.append("circle")
@@ -131,49 +129,42 @@ var TreeChart = function(config) {
 
 
 	function gatherConnectedPaths(node_index) {
-		d3.selectAll('.connected').classed('connected',false);
-		return _.union(gatherLowerPaths(node_index),gatherUpperPaths(node_index));
+		d3.selectAll('.connected_lower').classed('connected_lower',false);
+		d3.selectAll('.connected_lower').classed('connected_upper',false);
+		gatherLowerPaths(node_index);
+		gatherUpperPaths(node_index);
 	}
 
 	function gatherLowerPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-					.filter(':not(.connected)')
+					.filter(':not(.connected_lower)')
 					.filter(function(d,i) { return d[0] === node_index; })
-					.classed('connected',true);
-		if (edges[0].length < 1) { return [];}
-		var relations = edges.data().map(function(d) { return d[1];});
-		return _.flatten(edges[0],_.flatten(relations.map(gatherLowerPaths)));
+					.classed('connected_lower',true);
+		
+		// var relations = edges.data().map(function(d) { return d[1];});
+		// relations.forEach(gatherLowerPaths);
 	}
 
 	function gatherUpperPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-							.filter(':not(.connected)')
+							.filter(':not(.connected_upper)')
 							.filter(function(d,i) { return d[1] === node_index; })
-							.classed('connected',true);
-		if (edges[0].length < 1) { return [];}
-		var relations = edges.data().map(function(d) { return d[0];});
-		return _.flatten(edges[0],_.flatten(relations.map(gatherUpperPaths)));
+							.classed('connected_upper',true);
+
+		// var relations = edges.data().map(function(d) { return d[0];});
+		// 		relations.forEach(gatherUpperPaths);
 	}
 
 	function highlightSubTree(node_data, node_index) {
-
-			var selection = d3.selectAll(gatherConnectedPaths(node_index));
-			link.stroke = selection.style('stroke');
-			link.stroke_opacity = selection.style('stroke-opacity');
-				selection
-					.transition()
-						.duration(200)
-						.style('stroke','#d44')
-						.style('stroke-opacity',0.8);
+			gatherConnectedPaths(node_index)
 	}
 
 	function removeHighlights() {
-			var selection = d3.selectAll('.connected')
-					.classed('connected',false)		
-					.transition()
-						.duration(200)
-						.style('stroke',link.stroke)
-						.style('stroke-opacity',link.stroke_opacity);
+			var selection = d3.selectAll('.connected_lower')
+					.classed('connected_lower',false)		
+	var selection = d3.selectAll('.connected_upper')
+					.classed('connected_upper',false)		
+											
 	}
 
 	treeChart.width = function(value) {

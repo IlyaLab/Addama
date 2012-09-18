@@ -1,5 +1,6 @@
 .node circle {
-	fill:none;
+	fill:#29f;
+	fill-opacity:0.3;
 	stroke : #27d;
 	stroke-width:1.5;
 	pointer-events: all;
@@ -17,6 +18,17 @@
 	stroke-opacity:0.5;
 }
 
+.link.connected_lower {
+	stroke:#d33;
+	stroke-opacity:0.7;
+	stroke-width:2;
+}
+
+.link.connected_upper {
+	stroke:#33d;
+	stroke-opacity:0.7;
+	stroke-width:2;
+}
 
 .highlighted_link {
 	fill:none;
