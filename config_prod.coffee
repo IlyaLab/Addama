@@ -10,7 +10,7 @@ exports.config =
         'js/vendor.js': /^vendor/
       order:
         before: [
-	        'vendor/js/console-helper.js',
+          'vendor/js/console-helper.js',
           'vendor/js/jquery-1.8.0.js',
           'vendor/scripts/bootstrap.js',
           'vendor/js/underscore-1.3.3.js',
