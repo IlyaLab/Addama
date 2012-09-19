@@ -1,3 +1,40 @@
+
+diagonal_directed = function() {
+ 
+
+  function diagonal(d, i) {
+    var p0 = source.call(this, d, i),
+        p3 = target.call(this, d, i),
+        m = Math.max(16,Math.abs((p0.y - p3.y) / 2)),
+        p = [p0, {x: p0.x, y: p0.y+m}, {x: p3.x, y: p3.y-m}, p3];
+    p = p.map(projection);
+    return "M" + p[0] + "C" + p[1] + " " + p[2] + " " + p[3];
+  }
+
+  diagonal.source = function(x) {
+    if (!arguments.length) return source;
+    source = x;
+    return diagonal;
+  };
+
+  diagonal.target = function(x) {
+    if (!arguments.length) return target;
+    target = x;
+    return diagonal;
+  };
+
+  diagonal.projection = function(x) {
+    if (!arguments.length) return projection;
+    projection = x;
+    return diagonal;
+  };
+
+  return diagonal;
+};
+
+
+
+
 var TreeChart = function(config) {
 	var width = config.width || 400,
 		height = config.height || 300,
@@ -33,7 +70,7 @@ var TreeChart = function(config) {
     var source = parseAdj(1),
         target = parseAdj(0);
 
-	var diagonal = d3.svg.diagonal()
+	var diagonal = diagonal_directed()
 	      .source(source)
 		  .target(target)
 	      .projection(function(d) { return [d.y, d.x]; });
