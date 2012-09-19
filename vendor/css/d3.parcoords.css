@@ -8,7 +8,9 @@
 .parcoords rect.background {
   fill: transparent;
 }
-.parcoords rect.background:hover {
+.parcoords rect.background:hover, 
+.parcoords .parcoords-dimension.selected rect.background
+{
   fill: rgba(120,120,120,0.2);
 }
 .parcoords .resize rect {
@@ -22,4 +24,15 @@
   fill: none;
   stroke: #222;
   shape-rendering: crispEdges;
+}
+.parcoords-dimension {
+  font-size:12px;
+  font-weight:normal;
+  background-color:rgba(80,80,80,0.2);
+}
+
+.parcoords-dimension.selected {
+  font-size:14px;
+  font-weight:bold;
+  background-color:rgba(80,80,80,0.5);
 }

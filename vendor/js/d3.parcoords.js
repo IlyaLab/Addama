@@ -164,10 +164,10 @@ d3.parcoords = function(config) {
     if (g) pc.removeAxes(); 
 
     // Add a group element for each dimension.
-    g = pc.svg.selectAll(".dimension")
+    g = pc.svg.selectAll(".parcoords-dimension")
         .data(__.dimensions, function(d) { return d; })
       .enter().append("svg:g")
-        .attr("class", "dimension")
+        .attr("class", "parcoords-dimension")
         .attr("transform", function(d) { return "translate(" + xscale(d) + ")"; })
 
     // Add an axis and title.
@@ -181,7 +181,7 @@ d3.parcoords = function(config) {
           "y": 0,
           "transform": "translate(0,-12)",
           "x": 0,
-          "class": "label"
+          "class": "parcoords-label"
         })
         .text(String)
 
@@ -195,7 +195,7 @@ d3.parcoords = function(config) {
   };
 
   pc.updateAxes = function() {
-    var g_data = pc.svg.selectAll(".dimension")
+    var g_data = pc.svg.selectAll(".parcoords-dimension")
         .data(__.dimensions, function(d) { return d; })
 
     g_data.enter().append("svg:g")
@@ -212,13 +212,13 @@ d3.parcoords = function(config) {
           "y": 0,
           "transform": "translate(0,-12)",
           "x": 0,
-          "class": "label"
+          "class": "parcoords-label"
         })
         .text(String);
 
     g_data.exit().remove();
 
-    g = pc.svg.selectAll(".dimension");
+    g = pc.svg.selectAll(".parcoords-dimension");
 
     g.transition().duration(1100)
       .attr("transform", function(p) { return "translate(" + position(p) + ")"; })
@@ -232,7 +232,7 @@ d3.parcoords = function(config) {
 
     // Add and store a brush for each axis.
     g.append("svg:g")
-        .attr("class", "brush")
+        .attr("class", "parcoords-brush")
         .each(function(d) {
           d3.select(this).call(
             yscale[d].brush = d3.svg.brush()
