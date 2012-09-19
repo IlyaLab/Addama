@@ -13,7 +13,7 @@ Controller = {
 		view : function() {
 			var GraphView = require('../views/graph_view');
 			var graphView = new GraphView();
-			 	$('.container').append(graphView.render().el);
+			 	$('.container').html(graphView.render().el);
     			graphView.renderGraph();
 		}
 	},
@@ -22,7 +22,7 @@ Controller = {
 		view : function() {
 			var TwoD = require('../views/2D_Distribution_view');
 			var twoDView = new TwoD();
-			$('.container').append(twoDView.render().el);
+			$('.container').html(twoDView.render().el);
 		}
 	},
 
@@ -30,7 +30,7 @@ Controller = {
 		view : function() {
 			var HomeView = require('../views/home_view');
 			var homeView = new HomeView();
-			$('.container').append(homeView.render().el);
+			$('.container').html(homeView.render().el);
 		}	
 	},
 
