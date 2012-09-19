@@ -5,6 +5,7 @@ module.exports = View.extend({
  getRenderData : function() {},
 
  render: function() {
+ 	_.bindAll(this,'render','showData');
  	this.$el.addClass('parcoords').attr('id','test');
  	return this;
  },
