@@ -7,7 +7,7 @@ module.exports = View.extend({
 	template: template,
 
 	initialize: function() {
-		this.render = _.bind(this.render, this);
+		this.render = _.bindAll(this, 'render', 'afterRender','createScatterplot','createKDEplot','createCubbhole');
 		var f1 = this.model.features[0],
 		    f2 = this.model.features[1];
 		    function typeCheck(type) {
@@ -16,16 +16,16 @@ module.exports = View.extend({
 
 		    switch(typeCheck(f1.type) + typeCheck(f2.type)) {
 		    					case 0: //scatterplot
-		    						this.plotFunction = createScatterplot;
+		    						this.plotFunction = this.createScatterplot;
 		    					break;    					    						
 		    					
 		    					case 1:  //kde plot
-		    					this.plotFunction = createKDEplot;
+		    					this.plotFunction = this.createKDEplot;
 		    					break;
 
 		    					case(2): //cubbyhole plot
 		    					default:
-		    						this.plotFunction = createCubbyhole;
+		    						this.plotFunction = this.createCubbyhole;
 		    					break;
 
 			}
