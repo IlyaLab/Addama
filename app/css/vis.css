@@ -45,3 +45,7 @@
   fill: none;
   pointer-events: all;
 }
+
+.filter-container .parcoords{ 
+	height:200px;
+}
