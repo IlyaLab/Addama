@@ -127,84 +127,50 @@ var TreeChart = function(config) {
 
 
 	function gatherConnectedPaths(node_index) {
-		d3.selectAll('.connected_lower').classed('connected_lower',false);
-		d3.selectAll('.connected_upper').classed('connected_upper',false);
 		gatherLowerPaths(node_index);
 		gatherUpperPaths(node_index);
 	}
 
 	function gatherLowerPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-					.filter(':not(.connected_lower)')
 					.filter(function(d,i) { return d[0] === node_index; })
 					.classed('connected_lower',true);
-		
-		// var relations = edges.data().map(function(d) { return d[1];});
-		// relations.forEach(gatherLowerPaths);
 	}
 
 	function gatherUpperPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-							.filter(':not(.connected_upper)')
 							.filter(function(d,i) { return d[1] === node_index; })
 							.classed('connected_upper',true);
-
-		// var relations = edges.data().map(function(d) { return d[0];});
-		// 		relations.forEach(gatherUpperPaths);
 	}
 
-	function highlightSubTree(graph, node_data, node_index) {
+	function highlightSubTree(node_data, node_index) {
 			gatherConnectedPaths(node_index);
 	}
 
 	function removeHighlights() {
 			var selection = d3.selectAll('.connected_lower')
-					.classed('connected_lower',false)		
-	var selection = d3.selectAll('.connected_upper')
-					.classed('connected_upper',false)		
-											
+					.classed('connected_lower',false);
+			var selection = d3.selectAll('.connected_upper')
+							.classed('connected_upper',false);											
 	}
 
 	treeChart.width = function(value) {
 		if (!arguments.length) return width;
 	    width = value;
 	    return this;
-	}
+	};
 
 	treeChart.height = function(value) {
 		if (!arguments.length) return height;
 	    height = value;
 	    return this;
-	}
+	};
 
 	treeChart.data = function(value) {
 		if (!arguments.length) return data;
 	    data = value;
 	    return this;
-	}
-
-	treeChart.redraw = function(value) {
-			   var node_svg = vis.selectAll("g.node")
-					       .data(zipped_data,function(d) { return d['label'];})
-					     .enter().append("g")
-					       .attr("class", "node")
-					       .attr('transform',function(d) { return 'translate(' + d.y+","+d.x+")";})
-					       .call(dragGroup);
-					     
-					     node_svg.exit().remove();
-
-					   node_svg.append("circle")
-					       .attr("r", circle.radius)
-					       .attr('cursor','pointer')
-					       .on('mouseover',highlightSubTree)
-					       .on('mouseout',removeHighlights);
-					      					 
-					   node_svg.append("text")
-					       .attr("dx", function(d,i) { return dx; })
-					       .attr("dy", 3)
-					       .attr("text-anchor","start")
-					       .text(function(d) { return d.label;});
-	}
+	};
 
 	return treeChart;
 };
