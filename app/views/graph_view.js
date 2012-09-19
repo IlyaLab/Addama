@@ -12,27 +12,42 @@ module.exports = View.extend({
   getRenderData : function() {},
 
   afterRender: function() {
-    this.$el.addClass('row');
+    this.$el.addClass('row-fluid');
   },
 
   renderGraph: function() {
+    var parentDiv = this.$el.find('.graph-container'),
+    w= parentDiv.width(),
+    h= parentDiv.height();
 
+    graphData.labels = graphData.nByi.map(function(f) { return f.split(':')[2];});
+    var adj = graphData.adj;
+    delete graphData.adj;
   		var treeChart = TreeChart({
-  			width:800, 
-  			height:600, 
-  			padding : [10,10,10,10],
-  			data:{
-  					y: graphData.hodge.map(function(d) { return d;}),
-  					x: graphData.r1,
-  					labels : graphData.nByi.map(function(f) { return f.split(':')[2];}),
-  					edges : graphData.adj
-  				}
+  			width:w, 
+  			height:h,   			
+  			nodes:{
+            data : graphData,
+  					y: 'hodge',
+  					x: 'r1'				
+  				},
+          edges: {
+            data: adj
+          }
   		});
-  		treeChart(this.$el.find('.graph-container'));
+  		treeChart(parentDiv);
       var filter = this.$el.find('.filter-container');
       var pc_view = new PC();
       filter.html(pc_view.render().el);
       pc_view.showData();
+
+      Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
+
+      function dimension_selected(dimension) {
+        var scale = d3.scale.linear().domain([d3.extent(graphData[dimension])]).range([0.2,0.8]);
+        treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
+        treeChart.redraw();
+      }
      
   }
 

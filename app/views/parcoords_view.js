@@ -64,7 +64,7 @@ module.exports = View.extend({
 			} else {	//this was not previously selected
 				 unselect();
 				 select(dimension);
-				 Backbone.Events.trigger('');
+				 Backbone.Mediator.pub('dimension:select',dimension);
 			}   		 
 		}
 

@@ -1,31 +1,35 @@
 var TreeChart = function(config) {
 	var width = config.width || 400,
 		height = config.height || 300,
-		data = config.data,
-		padding = config.padding || [0,0,0,0],
 		scaleExtent = config.scaleExtent || [0.5,8],
-		padded_width = width + padding[3] + padding[1],
-	 	padded_height = height+ padding[2] + padding[0],
-		x_pos = data.x,
-	 	y_pos = data.y,
-	 	labels = data.labels,
-	 	links = data.edges,
+		padded_width = width,
+	 	padded_height = height,
+	 	node_data = config.nodes.data,
+	 	node_objs = new Array(),
+		x = config.nodes.x || 'x',
+		y = config.nodes.y || 'y',
+		label=config.nodes.label || 'label',
+	 	links = config.edges.data,
+	 	overlay_scale = 4,
 	 	dx = 8,
 	 	dy = 3,
 	 	circle = {radius : 4.5},
 	 	link = new Object(),
+	 	edgeOpacity = 1.0,
+	 	nodeOpacity = 1.0,
+	 	nodes,
+	 	edges,
 	 	xScale,
 	 	yScale,
 	 	vis;
 	
-	var zipped_data;
 
 	var	parseAdj = function(element) { 
 		return function(link) { 
 	      var index = link[element];
 	      return {
-	      		x:zipped_data[index].x,
-	      		y:zipped_data[index].y
+	      		x:node_objs[index]._pos.x,
+	      		y:	[index]._pos.y
 	      		};
 	      };
 	  };
@@ -42,19 +46,33 @@ var TreeChart = function(config) {
 	 	selection = selection || document.body;	
 
 	 	xScale = d3.scale.linear()
-	 						.domain(d3.extent(x_pos))
-	 						.range([0,width- padding[3] - padding[1]]);
+	 						.domain(d3.extent(node_data[x]))
+	 						.range([10,padded_height-10]);
 		yScale = d3.scale.linear()
-	 						.domain(d3.extent(y_pos))
-	 						.range([height - padding[2] - padding[0],0]);
+	 						.domain(d3.extent(node_data[y]))
+	 						.range([[padded_width-40],10]);
 
-	 	zipped_data = labels.map(function(d,i) { 
-		return {
-			label:d, 
-			x:xScale(x_pos[i]), 
-			y:yScale(y_pos[i])};
-		});	
-		
+		var data_keys = _.keys(node_data);
+		var node_list = new Array();	 	
+	 	node_list = data_keys.map(function(k) { return node_data[k];});
+	 	
+	 	var obj, i,
+	 	 key_len = data_keys.length;
+
+	 	 var x_key = _.indexOf(data_keys,x),
+	 	     y_key = _.indexOf(data_keys,y),
+
+	 	node_objs = _.zip(node_list[0]).map(function(row) { 
+	 		obj = {
+	 			_pos: {
+	 				x:xScale(row[x_key]),
+	 				y:yScale(row[y_key])
+	 			}
+	 		};
+	 		for (i=0; i < key_len; i++) obj[data_keys[i]] = row[i];
+	 		return obj;
+	 	});
+
 	 	selection.each(function render(){
 
 	 		var zoom = function() {
@@ -72,49 +90,58 @@ var TreeChart = function(config) {
 	 				.style('stroke-width',link.stroke_width/scale+'px');
 	 		};
 	 
-			vis = d3.select(this).append("svg")
+			var svg = d3.select(this).append("svg")
 						     .attr("width", padded_width)
-						     .attr("height", padded_height)
-							.append("g")
-						     .attr("transform", "translate(" + padding[3] + "," + padding[0] + ")")
+						     .attr("height", padded_height);
+
+					 	 	svg.append('defs')
+					 	 		.append('clipPath')
+					 	 		.attr('id','boundary')
+					    	 	.append('rect')
+					    	 	.attr("width",padded_width)
+					    	 	.attr("height",padded_height);
+
+						vis = svg.append("g")
+						     .attr('clip-path','url(#boundary)')
 						     .call(d3.behavior.zoom().scaleExtent(scaleExtent).on("zoom", zoom))
 							.append("g");
 
+						vis.append('rect')	
+							.attr('class','graph-border');
+
+							var overlay_width = padded_width*overlay_scale,
+							overlay_height = padded_height*overlay_scale;
+
 					  vis.append('rect')
 					  		 .attr('class','overlay')
-					    	 .attr("width", padded_width)
-					    	 .attr("height", padded_height);
+					    	 .attr("width", overlay_width)
+					    	 .attr("height", overlay_width)
+					    	 .attr("transform","translate("+ (-0.5*overlay_width) + "," + (-0.5*overlay_height)+")");
 
-		    var link_svg = vis.selectAll("path.link")
+
+		     edges = vis.selectAll("path.link")
 	    				   .data(links)
 					    .enter().append("path")
 					       .attr("class", "link")
-					       .attr("d", diagonal);
-		 
-		    var dragGroup = d3.behavior.drag()
-				 .on('drag', function(d, i) {
-								    d.y += d3.event.dx;
-								    d.x += d3.event.dy;
-								    d3.select(this).attr("transform", "translate("+d.y+","+d.x+")");
-
-								    vis.selectAll("path.link")
-								     .attr("d", diagonal);
-								  });
+					       .attr('stroke-opacity',edgeOpacity)
+					       .attr("d", diagonal);		    
 				 
-			   var node_svg = vis.selectAll("g.node")
-					       .data(zipped_data,function(d) { return d['label'];})
+			   nodes = vis.selectAll("g.node")
+					       .data(node_objs,function(d) { return d[label];})
 					     .enter().append("g")
 					       .attr("class", "node")
-					       .attr('transform',function(d) { return 'translate(' + d.y+","+d.x+")";})
+					       .attr('stroke-opacity',nodeOpacity)
+					       .attr('fill-opacity',nodeOpacity)
+					       .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
 					       .call(dragGroup);
 
-					   node_svg.append("circle")
+					   nodes.append("circle")
 					       .attr("r", circle.radius)
 					       .attr('cursor','pointer')
 					       .on('mouseover',highlightSubTree)
 					       .on('mouseout',removeHighlights);
 					      					 
-					   node_svg.append("text")
+					   nodes.append("text")
 					       .attr("dx", function(d,i) { return dx; })
 					       .attr("dy", 3)
 					       .attr("text-anchor","start")
@@ -125,6 +152,31 @@ var TreeChart = function(config) {
 	 	link.stroke_width = d3.selectAll('.link').style('stroke-width').slice(0,-2);
 	}
 
+			var dragGroup = d3.behavior.drag()
+				 .on('drag', function(d, i) {
+								    d._pos.y += d3.event.dx;
+								    d._pos.x += d3.event.dy;
+								    d3.select(this).attr("transform", "translate("+d._pos.y+","+d._pos.x+")");
+
+								    vis.selectAll("path.link")
+								     .attr("d", diagonal);
+								  });
+
+	treeChart.redraw = function() {
+		redrawNodes();
+		redrawEdges();
+	};
+
+	function redrawEdges() {
+
+	}
+
+	function redrawNodes() {
+	    nodes
+	       .transition()
+	       .attr('stroke-opacity',nodeOpacity)
+	       .attr('fill-opacity',nodeOpacity);
+	}
 
 	function gatherConnectedPaths(node_index) {
 		gatherLowerPaths(node_index);
@@ -171,6 +223,18 @@ var TreeChart = function(config) {
 	    data = value;
 	    return this;
 	};
+
+	treeChart.edgeOpacity = function(callback) {
+		if (!arguments.length) return callback;
+	    edgeOpacity = callback;
+	    return this;
+	}
+
+	treeChart.nodeOpacity = function(callback) {
+		if (!arguments.length) return callback;
+	    nodeOpacity = callback;
+	    return this;
+	}
 
 	return treeChart;
 };
