@@ -38,5 +38,35 @@ module.exports = View.extend({
 		   	console.log('brush!');
 		   });
 
+	    pc.svg.selectAll(".parcoords-dimension")
+    		.on("click", toggle_dimension);  
+
+		function select(dimension) {
+			 pc.svg.selectAll(".parcoords-dimension")
+			    .filter(function(d) { return d == dimension; })
+			    .classed('selected',true);
 		}
+
+		function unselect() {
+			 pc.svg.selectAll(".parcoords-dimension")
+			 	.classed('selected',false);
+		}
+		
+		function toggle_dimension(dimension) {
+
+		var dim = pc.svg.selectAll(".parcoords-dimension.selected")
+				.filter(function(d) { return d == dimension; });
+
+		if (dim[0].length > 0) {  //this was previously selected
+				unselect();
+				Backbone.Events.trigger('');
+				console.log('previous');
+			} else {	//this was not previously selected
+				 unselect();
+				 select(dimension);
+				 Backbone.Events.trigger('');
+			}   		 
+		}
+
+	}
 });
