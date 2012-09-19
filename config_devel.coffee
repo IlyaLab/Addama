@@ -7,22 +7,23 @@ exports.config =
       defaultExtension: 'js'
       joinTo:
         'js/app.js': /^app/
-        'js/jquery.js': /^vendor\/js\/jquery/
-        'js/bootstrap.js': /^vendor\/js\/bootstrap\.js/
-        'js/underscore.js': /^vendor\/js\/underscore/
-        'js/backbone.js': /^vendor\/js\/backbone/
-        'js/d3.js': /^vendor\/js\/d3/
-        'js/vivagraph.js': /^vendor\/js\/viva/
-        'js/vendor.js': /^vendor(\/|\\)(?!js)/
-
+        'js/vendor.js': /^vendor/
+      order:
+        before: [
+          'vendor/js/console-helper.js',
+          'vendor/js/jquery-1.8.0.js',
+          'vendor/scripts/bootstrap.js',
+          'vendor/js/underscore-1.3.3.js',
+          'vendor/js/backbone-0.9.2.js',
+          'vendor/scripts/backbone-mediator.js'
+        ]
+   
     stylesheets:
       defaultExtension: 'less'
       joinTo: 'css/app.css'
-      order:
-       before: ['vendor/css/bootstrap/bootstrap.less']
 
     templates:
       defaultExtension: 'hbs'
       joinTo: 'js/app.js'
 
-  # minify: true`
+  # minify: true

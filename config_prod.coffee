@@ -12,17 +12,19 @@ exports.config =
         before: [
           'vendor/js/console-helper.js',
           'vendor/js/jquery-1.8.0.js',
-          'vendor/scripts/bootstrap.js',
+          'vendor/js/bootstrap.js',
           'vendor/js/underscore-1.3.3.js',
           'vendor/js/backbone-0.9.2.js',
-          'vendor/scripts/backbone-mediator.js'
+          'vendor/js/backbone-mediator.js',
+          'vendor/js/d3.v2.js'
+        ]
+        after: [
+          'vendor/js/d3.parcoords.js'
         ]
    
     stylesheets:
       defaultExtension: 'less'
       joinTo: 'css/app.css'
-      order:
-       before: ['vendor/css/bootstrap/bootstrap.less']
 
     templates:
       defaultExtension: 'hbs'
