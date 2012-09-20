@@ -142,15 +142,15 @@ var TreeChart = function(config) {
 	    				   .data(links)
 					    .enter().append("path")
 					       .attr("class", "link")
-					       .attr('stroke-opacity',edgeOpacity)
+					       .style('stroke-opacity',edgeOpacity)
 					       .attr("d", diagonal);		    
 				 
 			   nodes = vis.selectAll("g.node")
 					       .data(node_list,function(d) { return d[label];})
 					     .enter().append("g")
 					       .attr("class", "node")
-					       .attr('stroke-opacity',nodeOpacity)
-					       .attr('fill-opacity',nodeOpacity)
+					       .style('stroke-opacity',nodeOpacity)
+					       .style('fill-opacity',nodeOpacity)
 					       .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
 					       .call(dragGroup);
 
@@ -169,6 +169,8 @@ var TreeChart = function(config) {
 
 		circle.stroke_width = d3.selectAll('.node circle').style('stroke-width').slice(0,-2);
 	 	link.stroke_width = d3.selectAll('.link').style('stroke-width').slice(0,-2);
+
+	 	return this;
 	}
 
 			var dragGroup = d3.behavior.drag()
@@ -187,14 +189,14 @@ var TreeChart = function(config) {
 	};
 
 	function redrawEdges() {
-
+		d3.selectAll('path.link')
+	       .style('stroke-opacity',edgeOpacity);	       
 	}
 
 	function redrawNodes() {
-	    nodes
-	       .transition()
-	       .attr('stroke-opacity',nodeOpacity)
-	       .attr('fill-opacity',nodeOpacity);
+	    d3.selectAll('g.node')
+	       .style('stroke-opacity',nodeOpacity)
+	       .style('fill-opacity',nodeOpacity);
 	}
 
 	function gatherConnectedPaths(node_index) {
