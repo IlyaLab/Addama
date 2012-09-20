@@ -1,0 +1,44 @@
+<div class="oncovis-container span9"></div>
+
+<a href="#" onclick="$('#modal_controls_vis').modal('show');  return false;">Advanced...</a>
+<div id="modal_controls_vis" class="modal" style="display:none;">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Visualization</h3>
+    </div>
+    <div id="sliders_vis" class="modal-body">
+        <strong>Bar Height</strong>
+
+        <div class="slider_barheight"></div>
+        <br/>
+
+        <strong>Row Spacing</strong>
+
+        <div class="slider_rowspacing"></div>
+        <br/>
+
+        <strong>Bar Width</strong>
+
+        <div class="slider_barwidth"></div>
+        <br/>
+
+        <strong>Bar Spacing</strong>
+
+        <div class="slider_barspacing"></div>
+        <br/>
+
+        <strong>Cluster Spacing</strong>
+
+        <div class="slider_clusterspacing"></div>
+        <br/>
+
+        <strong>Label Font Size</strong>
+
+        <div class="slider_fontsize"></div>
+        <br/>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" onclick="ResetLayoutSliders();">Reset</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>

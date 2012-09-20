@@ -5,7 +5,8 @@ module.exports = Backbone.Router.extend({
     '': 'home',
     'graph': 'graph',
     'pwpv': 'pwpv',
-    'twoD/:f1/:f2' : 'twod'
+    'twoD/:f1/:f2' : 'twod',
+    'oncovis' : 'oncovis'
   },
 
   graph: function() {
@@ -18,6 +19,10 @@ module.exports = Backbone.Router.extend({
 
   twod: function() {
       Controller.twod.view();
+  },
+
+  oncovis: function() {
+      Controller.oncovis.view();
   },
 
   home: function() {

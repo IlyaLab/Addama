@@ -40,6 +40,14 @@ Controller = {
 		}
 	},
 
+	oncovis : {
+		view : function() {
+			var Oncovis = require('../views/oncovis_view');
+			var oncovisView = new Oncovis();
+			$('#mainDiv').html(oncovisView.render().el);
+            oncovisView.renderGraph();
+		}
+	},
 
 	home : {
 		view : function() {
@@ -47,7 +55,7 @@ Controller = {
 			var homeView = new HomeView();
 			$('#mainDiv').html(homeView.render().el);
 		}	
-	},
+	}
 
 
 };
