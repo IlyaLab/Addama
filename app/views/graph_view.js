@@ -8,31 +8,55 @@ module.exports = View.extend({
 
 
   template:template,
+
+  initialize : function() {
+      _.bindAll(this,'cleanData','afterRender');
+  },
   
-  getRenderData : function() {},
+  cleanData : function() {
+  
+    this.edges = graphData.adj;
+    var node_data =  new Array();
+    Object.keys(graphData).forEach(function(a) { 
+        if (a === 'adj' || a ==='iByn')   return;
+        node_data[a] = _.clone(graphData[a]);
+      });
+    node_data.label = node_data.nByi.map(function(f) { return f.split(':')[2];});
+    var node_objs = new Array();
+    var data_keys = _.keys(node_data);  //keys of the data structure    
+    var obj, i,
+     key_len = data_keys.length;
+
+    node_objs = _.range(node_data[data_keys[0]].length)
+                    .map(function(row) {
+                      obj={};
+                        for (i=0; i < key_len; i++)  obj[data_keys[i]] = node_data[data_keys[i]][row];
+                          return obj;
+                      });  
+
+    this.graphData = node_objs;
+  },
 
   afterRender: function() {
     this.$el.addClass('row-fluid');
   },
 
   renderGraph: function() {
+    this.cleanData();
     var parentDiv = this.$el.find('.graph-container'),
     w= parentDiv.width(),
     h= parentDiv.height();
-
-    graphData.labels = graphData.nByi.map(function(f) { return f.split(':')[2];});
-    var adj = graphData.adj;
-    delete graphData.adj;
+  
   		var treeChart = TreeChart({
   			width:w, 
   			height:h,   			
   			nodes:{
-            data : graphData,
+            data : this.graphData,
   					y: 'hodge',
-  					x: 'r1'				
+  					x: 'r1'
   				},
           edges: {
-            data: adj
+            data: this.edges
           }
   		});
   		treeChart(parentDiv);

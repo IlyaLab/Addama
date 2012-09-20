@@ -33,16 +33,13 @@ diagonal_directed = function() {
 };
 
 
-
-
 var TreeChart = function(config) {
 	var width = config.width || 400,
 		height = config.height || 300,
 		scaleExtent = config.scaleExtent || [0.5,8],
 		padded_width = width,
 	 	padded_height = height,
-	 	node_data = config.nodes.data,
-	 	node_objs = new Array(),
+	 	node_list = config.nodes.data,
 		x = config.nodes.x || 'x',
 		y = config.nodes.y || 'y',
 		label=config.nodes.label || 'label',
@@ -60,13 +57,12 @@ var TreeChart = function(config) {
 	 	yScale,
 	 	vis;
 	
-
 	var	parseAdj = function(element) { 
 		return function(link) { 
 	      var index = link[element];
 	      return {
-	      		x:node_objs[index]._pos.x,
-	      		y:	[index]._pos.y
+	      		x:node_list[index]._pos.x,
+	      		y:node_list[index]._pos.y
 	      		};
 	      };
 	  };
@@ -83,31 +79,18 @@ var TreeChart = function(config) {
 	 	selection = selection || document.body;	
 
 	 	xScale = d3.scale.linear()
-	 						.domain(d3.extent(node_data[x]))
+	 						.domain(d3.extent(_.pluck(node_list,x)))
 	 						.range([10,padded_height-10]);
+
 		yScale = d3.scale.linear()
-	 						.domain(d3.extent(node_data[y]))
+	 						.domain(d3.extent(_.pluck(node_list,y)))
 	 						.range([[padded_width-40],10]);
 
-		var data_keys = _.keys(node_data);
-		var node_list = new Array();	 	
-	 	node_list = data_keys.map(function(k) { return node_data[k];});
-	 	
-	 	var obj, i,
-	 	 key_len = data_keys.length;
-
-	 	 var x_key = _.indexOf(data_keys,x),
-	 	     y_key = _.indexOf(data_keys,y),
-
-	 	node_objs = _.zip(node_list[0]).map(function(row) { 
-	 		obj = {
-	 			_pos: {
-	 				x:xScale(row[x_key]),
-	 				y:yScale(row[y_key])
-	 			}
+	 	_.each(node_list,function(node) {
+	 		node._pos = {
+	 				x:xScale(node[x]),
+	 				y:yScale(node[y])
 	 		};
-	 		for (i=0; i < key_len; i++) obj[data_keys[i]] = row[i];
-	 		return obj;
 	 	});
 
 	 	selection.each(function render(){
@@ -155,7 +138,6 @@ var TreeChart = function(config) {
 					    	 .attr("height", overlay_width)
 					    	 .attr("transform","translate("+ (-0.5*overlay_width) + "," + (-0.5*overlay_height)+")");
 
-
 		     edges = vis.selectAll("path.link")
 	    				   .data(links)
 					    .enter().append("path")
@@ -164,7 +146,7 @@ var TreeChart = function(config) {
 					       .attr("d", diagonal);		    
 				 
 			   nodes = vis.selectAll("g.node")
-					       .data(node_objs,function(d) { return d[label];})
+					       .data(node_list,function(d) { return d[label];})
 					     .enter().append("g")
 					       .attr("class", "node")
 					       .attr('stroke-opacity',nodeOpacity)
@@ -182,7 +164,7 @@ var TreeChart = function(config) {
 					       .attr("dx", function(d,i) { return dx; })
 					       .attr("dy", 3)
 					       .attr("text-anchor","start")
-					       .text(function(d) { return d.label;});
+					       .text(function(d) { return d[label];});
 		});
 
 		circle.stroke_width = d3.selectAll('.node circle').style('stroke-width').slice(0,-2);
