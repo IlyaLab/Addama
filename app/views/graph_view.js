@@ -67,7 +67,7 @@ module.exports = View.extend({
 
   		d3.select('.graph-container')
               .call(treeChart);
-              
+
       var filter = this.$el.find('.filter-container');
       var pc_view = new PC();
       filter.html(pc_view.render().el);
@@ -76,7 +76,7 @@ module.exports = View.extend({
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
 
       function dimension_selected(dimension) {
-        var scale = d3.scale.log().domain(d3.extent(graphData[dimension])).range([0.5,1.0]);
+        var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
         treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
         treeChart.redraw();
       }
