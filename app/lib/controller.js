@@ -45,6 +45,7 @@ Controller = {
 			var Oncovis = require('../views/oncovis_view');
 			var oncovisView = new Oncovis();
 			$('#mainDiv').html(oncovisView.render().el);
+            oncovisView.initControls();
             oncovisView.renderGraph();
 		}
 	},

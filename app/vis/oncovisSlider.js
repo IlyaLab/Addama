@@ -1,7 +1,6 @@
 !function ($) {
     var OncovisSlider = function (element, options) {
-        this.target_el = "#" + element.id;
-        this.storageId = element.id;
+        this.element = $(element);
         if (options) _.extend(this, options);
     };
 
@@ -16,7 +15,7 @@
             this.rawValue = (foundStart) ? parseInt(foundStart) : this.initialStep;
 
             var me = this;
-            $(this.target_el).slider({
+            this.element.slider({
                 value:this.rawValue,
                 min:this.min,
                 max:this.max,
@@ -34,7 +33,7 @@
             localStorage.removeItem(this.storageId);
             this.rawValue = this.initialStep;
             this._publishValues();
-            $(this.target_el).slider("value", this.rawValue);
+            this.element.slider("value", this.rawValue);
         },
 
         _publishValues: function() {
