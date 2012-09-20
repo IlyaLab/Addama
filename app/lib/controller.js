@@ -19,9 +19,14 @@ Controller = {
 	},
 
 	twod : {
-		view : function() {
+		view : function(label1,label2) {
 			var TwoD = require('../views/2D_Distribution_view');
-			var twoDView = new TwoD();
+			var FL = require('../models/featureList');
+
+			var fl = new FL({websvc: '/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons.fm&IDs=',
+						feature_list : [label1, label2]});
+			var twoDView = new TwoD({collection: fl});
+			fl.fetch();
 			$('#mainDiv').html(twoDView.render().el);
 		}
 	},
@@ -33,6 +38,7 @@ Controller = {
 			$('#mainDiv').html(homeView.render().el);
 		}	
 	},
+
 
 };
 
