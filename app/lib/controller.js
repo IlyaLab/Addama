@@ -18,6 +18,15 @@ Controller = {
 		}
 	},
 
+	pwpv :  {
+		view : function() {
+			var PwPvView = require('../views/pwpv_view');
+			var pwpvView = new PwPvView();
+			 	$('.container').html(pwpvView.render().el);
+    			pwpvView.renderGraph();
+		}
+	},
+
 	twod : {
 		view : function(label1,label2) {
 			var TwoD = require('../views/2D_Distribution_view');
@@ -30,6 +39,7 @@ Controller = {
 			$('#mainDiv').html(twoDView.render().el);
 		}
 	},
+
 
 	home : {
 		view : function() {
