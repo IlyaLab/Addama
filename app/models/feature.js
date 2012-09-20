@@ -13,7 +13,12 @@ module.exports = Node.extend({
 
 	},
 	parse: function(response){
-		var feature_array = response.split(':');
+		var label = response.label;
+		var data = labels.split(':');
+		this.type = data[0];
+		this.source = data[1];
+		this.text = data[2];
+		this.values = response.values;
 		return {
 			type:feature_array[0],
 				source:feature_array[1]
