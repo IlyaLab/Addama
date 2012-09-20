@@ -18,14 +18,16 @@ module.exports = View.extend({
   			'index':i,
   			'label':graphData.nByi[i],
   			'r1':graphData.r1[i],
+  			'r2':graphData.r2[i],
   			'hodge':graphData.hodge[i],
   			'd':graphData.d[i],
-  			'f1':graphData.f1[i]
+  			'f1':graphData.f1[i],
+  			'f2':graphData.f2[i],
   		});
   	}
 		var pc = d3.parcoords()('#test');
 
-		pc.dimensions(['r1','hodge','d','f1'])
+		pc.dimensions(['r1','r2','hodge','d','f1','f2'])
 		  .data(data)
 		  .render()
 		  .color("#000")

@@ -6,7 +6,6 @@ var PC = require('./parcoords_view');
 
 module.exports = View.extend({
 
-
   template:template,
 
   initialize : function() {
@@ -47,19 +46,28 @@ module.exports = View.extend({
     w= parentDiv.width(),
     h= parentDiv.height();
   
+      var edge_scale = d3.scale.log().domain(d3.extent(graphData.adj,function(a) { return a[2];})).range([0.2,1.0]);
+      var edgeO = function(edge) {
+          return edge_scale(edge[2]);
+      };
+
   		var treeChart = TreeChart({
-  			width:w, 
-  			height:h,   			
-  			nodes:{
-            data : this.graphData,
-  					y: 'hodge',
-  					x: 'r1'
-  				},
-          edges: {
-            data: this.edges
-          }
-  		});
-  		treeChart(parentDiv);
+                			width:w, 
+                			height:h,   			
+                			nodes:{
+                          data : this.graphData,
+                					y: 'hodge',
+                					x: 'r1'
+                				},
+                        edges: {
+                          data: this.edges
+                        }
+                		})
+                    .edgeOpacity(edgeO);
+
+  		d3.select('.graph-container')
+              .call(treeChart);
+              
       var filter = this.$el.find('.filter-container');
       var pc_view = new PC();
       filter.html(pc_view.render().el);
@@ -68,7 +76,7 @@ module.exports = View.extend({
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
 
       function dimension_selected(dimension) {
-        var scale = d3.scale.linear().domain([d3.extent(graphData[dimension])]).range([0.2,0.8]);
+        var scale = d3.scale.log().domain(d3.extent(graphData[dimension])).range([0.5,1.0]);
         treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
         treeChart.redraw();
       }
