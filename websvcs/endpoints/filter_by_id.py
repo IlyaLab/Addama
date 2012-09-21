@@ -3,7 +3,7 @@
 import cgi;
 import urllib;
 
-BASE_PATH = "/local/QED/data"
+
 
 print "Content-Type: text/plain\n"
 
@@ -14,7 +14,7 @@ formvalue = form.getvalue("IDs")
 ids = []
 if formvalue is not None: ids = formvalue.split(",")
 
-rfile = open(BASE_PATH + filepath)
+rfile = open(qedconf.BASE_PATH + filepath)
 for idx, line in enumerate(rfile):
     if idx == 0:
         print line.rstrip()

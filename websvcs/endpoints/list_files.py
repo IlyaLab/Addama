@@ -3,8 +3,8 @@
 import cgi;
 import os
 import urllib
+import qedconf
 
-BASE_PATH = "/local/QED/data"
 
 print "Content-Type: application/json\n"
 
@@ -13,12 +13,12 @@ filepath = urllib.unquote(form.getvalue("filepath") or '/')
 
 dirs=[]
 files=[]
-for f in os.listdir(BASE_PATH + filepath):
+for f in os.listdir(qedconf.BASE_PATH + filepath):
     if not f.startswith("."):
         label = os.path.basename(f)
         item = '{"label":"%s", "uri":"%s"}' % (label, os.path.join(filepath,f))
 
-        if os.path.isdir(BASE_PATH + filepath + f):
+        if os.path.isdir(qedconf.BASE_PATH + filepath + f):
             dirs.append(item)
         else:
             files.append(item)
