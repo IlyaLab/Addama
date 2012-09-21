@@ -76,10 +76,14 @@ module.exports = View.extend({
 
     autocomplete: function(query, resultBin) {
         var found = [];
-        _.each(oncovisData.data, function(val, key) {
-            if (key.indexOf(query) >= 0) {
-                found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + " (Oncovis)</a>");
-            }
+
+        var queryterms = query.toLowerCase().split(" ");
+        _.each(queryterms, function(queryterm) {
+            _.each(oncovisData.data, function(val, key) {
+                if (key.toLowerCase().indexOf(queryterm) >= 0) {
+                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + " (Oncovis)</a>");
+                }
+            });
         });
         resultBin(found);
     }

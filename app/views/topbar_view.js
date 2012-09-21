@@ -8,24 +8,28 @@ module.exports = View.extend({
 
     initSearchAutocomplete: function() {
         var queryEl = this.$el.find("#querySearchTerm");
-        var resultsModal = $this.el.find("#searchResults");
+        var resultsModal = this.$el.find("#searchResults");
+        resultsModal.modal({
+            backdrop: false, show: false
+        });
+
         var resultsEl = resultsModal.find("ul");
+        var me = this;
 
         queryEl.typeahead({
-            source:function (typeahead, query) {
-                _.each(this._autocompleteSources, function(src) {
+            source:function (query) {
+                resultsEl.empty();
+
+                _.each(me._autocompleteSources, function(src) {
                     if (src.autocomplete) {
                         var resultBin = function(results) {
-                            resultsModal.modal('show');
-                            _.each(results, function(result) {
-                                resultsEl.append("<li>" + result + "</li>");
-                            });
+                            if (results && results.length) {
+                                resultsModal.modal('show');
+                                _.each(_.uniq(results), function(result) {
+                                    resultsEl.append("<li>" + result + "</li>");
+                                });
+                            }
                         };
-
-                        resultsEl.find("a").click(function() {
-                            resultsModal.modal('hide');
-                            resultsEl.empty();
-                        });
 
                         src.autocomplete(query, resultBin);
                     }
