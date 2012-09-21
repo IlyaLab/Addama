@@ -1,76 +1,59 @@
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </a>
-            <a class="brand" href="#homePage" onclick="return false;" id="home">
-                <img src="img/isblogo.png" class="imgbrand" alt="QED"> <b>QED</b>
-            </a>
-            <div class="nav-collapse">
-                <ul class="nav nav-pills pull-center">
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                            View <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a href="#graph">graph</a>
-                            </li>
-                            <li>
-                                <a href="#pwpv">Pairwise</a>
-                            </li>
-                            <li>
-                                <a href="#circ">circ</a>
-                            </li>
-                            <li>
-                                <a href="#heat">heat</a>
-                            </li>
-                            <li>
-                                <a href="#oncovis">Oncovis</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#" >
-                            Analysis
-                            <b class="caret"></b>
-                        </a>
-                       <ul class="dropdown-menu">
-                            <li>
-                                <a href="#rf_ace">RF-ACE</a>
-                            </li>
-                            <li>
-                                <a href="#pwpv">PWPV</a>
-                            </li>
-                            <li>
-                                <a href="#info_gain">I()</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#" >
-                            About
-                            <b class="caret"></b>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a href="" onclick="return false;">User Guide</a>
-                            </li>
-                            <li>
-                                <a href="" onclick="return false;">Code Project</a>
-                            </li>
-                            <li>
-                                <a href="" onclick="return false;">Funding</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                <form action="" class="navbar-search pull-left inline-form">
-                    <input type="text" id="querySearchTerm" placeholder="Enter Search Term..." class="search-query span3">
-                    <button class="btn btn-primary" id="queryBtn"><i class="icon-search icon-white"></i></button>
-                </form>
-            </div>
-            <!--/.nav-collapse --> </div>
+<div class="navbar-inner">
+    <div class="container-fluid">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="#homePage" onclick="return false;" id="home">
+            <img src="img/isblogo.png" class="imgbrand" alt="QED"> <b>QED</b>
+        </a>
+
+        <div class="nav-collapse">
+            <ul class="nav nav-pills pull-center">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">View <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#graph">graph</a></li>
+                        <li><a href="#pwpv">Pairwise</a></li>
+                        <li><a href="#circ">circ</a></li>
+                        <li><a href="#heat">heat</a></li>
+                        <li><a href="#oncovis">Oncovis</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Analysis <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#rf_ace">RF-ACE</a></li>
+                        <li><a href="#pwpv">PWPV</a></li>
+                        <li><a href="#info_gain">I()</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="" onclick="return false;">User Guide</a></li>
+                        <li><a href="" onclick="return false;">Code Project</a></li>
+                        <li><a href="" onclick="return false;">Funding</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form action="" class="navbar-search pull-left inline-form">
+                <input type="text" id="querySearchTerm" placeholder="Enter Search Term..." class="search-query span3">
+                <button class="btn btn-primary" id="queryBtn"><i class="icon-search icon-white"></i></button>
+            </form>
+        </div>
     </div>
+</div>
+
+<div id="searchResults" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Search...</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>

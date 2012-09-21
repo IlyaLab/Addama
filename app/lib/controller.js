@@ -1,11 +1,15 @@
 var TopNavBar = require('../views/topbar_view');
+var Oncovis = require('../views/oncovis_view');
 
 Controller = {
+    topnavbar: new TopNavBar(),
+    oncovisView: new Oncovis(),
 
 	app : {
 		layout : function() {
-			var topnavbar = new TopNavBar();
-			$('#navigation-container').append(topnavbar.render().el);
+			$('#navigation-container').append(Controller.topnavbar.render().el);
+            Controller.topnavbar.initSearchAutocomplete();
+            Controller.topnavbar.addAutocompleteSource(Controller.oncovisView);
 		}
 	},
 
@@ -41,11 +45,9 @@ Controller = {
 
 	oncovis : {
 		view : function() {
-			var Oncovis = require('../views/oncovis_view');
-			var oncovisView = new Oncovis();
-			$('#mainDiv').html(oncovisView.render().el);
-            oncovisView.initControls();
-            oncovisView.renderGraph();
+			$('#mainDiv').html(Controller.oncovisView.render().el);
+            Controller.oncovisView.initControls();
+            Controller.oncovisView.renderGraph();
 		}
 	},
 

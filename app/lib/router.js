@@ -1,16 +1,17 @@
 var Controller = require('./controller');
 
 module.exports = Backbone.Router.extend({
-  routes: {
-    '': 'home',
-    'graph': 'graph',
-    'pwpv': 'pwpv',
-    'twoD/:f1/:f2' : 'twod',
-    'oncovis' : 'oncovis',
-    ':analysis_id/:model_id/*remainder' : 'route_analysis'  //    url -> rf_ace/dataset_1/  
-  },
+    routes:{
+        '':'home',
+        'graph':'graph',
+        'pwpv':'pwpv',
+        'twoD/:f1/:f2':'twod',
+        'oncovis':'oncovis',
+        'oncovis/p:p1':'oncovis',
+        ':analysis_id/:model_id/*remainder':'route_analysis'  //    url -> rf_ace/dataset_1/
+    },
 
-  graph: function() {
+    graph: function() {
       Controller.graph.view();
   },
 

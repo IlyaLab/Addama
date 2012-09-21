@@ -5,6 +5,7 @@ require("../vis/oncovisSlider");
 
 module.exports = View.extend({
     template:template,
+    label: "Oncovis",
 
     getRenderData:function () {
     },
@@ -72,6 +73,19 @@ module.exports = View.extend({
         });
 
         console.log("initControls:end");
-    }
+    },
 
+    autocomplete: function(query, resultBin) {
+        var found = [];
+
+        var queryterms = query.toLowerCase().split(" ");
+        _.each(queryterms, function(queryterm) {
+            _.each(oncovisData.data, function(val, key) {
+                if (key.toLowerCase().indexOf(queryterm) >= 0) {
+                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + "</a>");
+                }
+            });
+        });
+        resultBin(found);
+    }
 });
