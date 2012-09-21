@@ -14,7 +14,6 @@ Controller = {
 			var GraphView = require('../views/graph_view');
 			var graphView = new GraphView();
 			 	$('#mainDiv').html(graphView.render().el);
-    			graphView.renderGraph();
 		}
 	},
 
@@ -22,7 +21,7 @@ Controller = {
 		view : function() {
 			var PwPvView = require('../views/pwpv_view');
 			var pwpvView = new PwPvView();
-			 	$('.container').html(pwpvView.render().el);
+			 	$('#mainDiv').html(pwpvView.render().el);
     			pwpvView.renderGraph();
 		}
 	},
@@ -40,7 +39,6 @@ Controller = {
 		}
 	},
 
-
 	home : {
 		view : function() {
 			var HomeView = require('../views/home_view');
@@ -49,7 +47,56 @@ Controller = {
 		}	
 	},
 
+	route_analysis: function(analysis_type, dataset_id, remainder) {
 
+			var arg_array = remainder.split('/'),
+					  len = arg_array.length,
+			     features = arg_array.slice(0,len-1),
+			     Model,  model,
+			     vis_type = 'grid';  //dummy default
+			
+			//graph based analysis
+			if ( _(['rf_ace','mds','pwpv']).contains(analysis_type) ) { 
+				vis_type = len > 0 ? arg_array[len-1] : 'graph';
+
+				if ( len <= 1 ) {  // 1 or no parameters.  just draw vis of analysis
+					Model = require('../models/graph');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
+				}
+				else {
+					Model = require('../models/featureList');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+				}
+			}
+
+			else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
+				vis_type = len > 0 ? arg_array[len-1] : 'grid';  //or parcoords?
+
+				if ( len <= 1 ) {  // 1 or no parameters.  just draw vis of analysis
+					 Model = require('../models/table');
+					 model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
+				}
+				else {
+					Model = require('../models/featureList');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+				}
+			}
+
+			Controller.vis[vis_type](model);
+	},
+
+	vis : {
+			'graph' : function(model) {			
+						var GraphView = require('../views/graph_view');
+						var graphView = new GraphView({model:model});
+						 	$('#mainDiv').html(graphView.render().el);
+		  			},
+			'circ'	: function(model) {},
+			'twoD'	: function(model) {},
+			'kde'	: function(model) {},
+			'parcoords' :function(model) {},
+			'heat' : function(model) {}
+	}
 };
 
 module.exports = Controller;

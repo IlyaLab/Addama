@@ -5,7 +5,9 @@ module.exports = Backbone.Router.extend({
     '': 'home',
     'graph': 'graph',
     'pwpv': 'pwpv',
-    'twoD/:f1/:f2' : 'twod'
+    'twoD/:f1/:f2' : 'twod',
+    ':analysis_id/:model_id/*remainder' : 'route_analysis'  //    url -> rf_ace/dataset_1/
+    
   },
 
   graph: function() {
@@ -20,6 +22,9 @@ module.exports = Backbone.Router.extend({
       Controller.twod.view();
   },
 
+  route_analysis : function(analysis_id,model_id,remainder) {
+      Controller.route_analysis(analysis_id,model_id,remainder);
+  },
   home: function() {
       Controller.home.view();
   }
