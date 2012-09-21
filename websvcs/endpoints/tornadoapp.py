@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+"""
+Simple tornado app to list and read files.
+
+Start server:
+python tornado.py -port=8881
+
+(Default port is 8888)
+
+Using service
+
+/svc
+/svc/list/path/to/dir
+/svc/read/path/to/file
+/svc/filter/path/to/dir/id1,id2
+
+I'm not really sure what filter is supposed to do so i may have gotten the matching wrong.
+
+All services return -1 if there is any error.
+
+"""
 import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
