@@ -1,4 +1,4 @@
-var Model = require('./dataset');
+var Model = require('./model');
 var FeatureList = require('./featureList');
 var EdgeList = require('./edgeList');
 
