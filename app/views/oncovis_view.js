@@ -40,6 +40,11 @@ module.exports = View.extend({
         _.extend(optns, { "cluster_spacing": this.$el.find(".slider_clusterspacing").oncovis_range_value() });
         _.extend(optns, { "label_fontsize": this.$el.find(".slider_fontsize").oncovis_range_value() });
 
+        this.$el.on('click','.advanced', function() {
+            me.$el('#modal_controls_vis').modal('show');  
+            return false;
+        });
+
         this.$el.find(".oncovis-container").oncovis(oncovisData.data, optns);
 
         console.log("renderGraph:end");
