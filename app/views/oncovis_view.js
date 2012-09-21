@@ -5,6 +5,7 @@ require("../vis/oncovisSlider");
 
 module.exports = View.extend({
     template:template,
+    label: "Oncovis",
 
     getRenderData:function () {
     },
@@ -81,7 +82,7 @@ module.exports = View.extend({
         _.each(queryterms, function(queryterm) {
             _.each(oncovisData.data, function(val, key) {
                 if (key.toLowerCase().indexOf(queryterm) >= 0) {
-                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + " (Oncovis)</a>");
+                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + "</a>");
                 }
             });
         });

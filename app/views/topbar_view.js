@@ -9,26 +9,31 @@ module.exports = View.extend({
     initSearchAutocomplete: function() {
         var queryEl = this.$el.find("#querySearchTerm");
         var resultsModal = this.$el.find("#searchResults");
-        resultsModal.modal({
-            backdrop: false, show: false
-        });
+        resultsModal.modal({ backdrop: false, show: false });
 
-        var resultsEl = resultsModal.find("ul");
+        var modalBody = resultsModal.find(".modal-body");
         var me = this;
 
         queryEl.typeahead({
             source:function (query) {
-                resultsEl.empty();
+                modalBody.empty();
 
                 _.each(me._autocompleteSources, function(src) {
                     if (src.autocomplete) {
                         var resultBin = function(results) {
                             if (results && results.length) {
                                 resultsModal.modal('show');
+
+                                var html = [];
+                                html.push("<ul class='nav nav-list'>");
+                                if (src.label) html.push("<li class='nav-header'>" + src.label + "</li>");
                                 _.each(_.uniq(results), function(result) {
-                                    resultsEl.append("<li>" + result + "</li>");
+                                    html.push("<li>" + result + "</li>");
                                 });
-                                resultsEl.find("a").click(function() {
+                                html.push("</ul>");
+                                modalBody.append(html.join(""));
+
+                                modalBody.find("li").find("a").click(function() {
                                     resultsModal.modal("hide");
                                 });
                             }
