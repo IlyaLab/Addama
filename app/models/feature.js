@@ -11,7 +11,7 @@ module.exports = Node.extend({
 
 	parse: function(response) {
 
-		var data = response.feature_id.split(':');
+		var data = response.split(':');
 
 		response.label = response.label || data[2];
 		response.type = data[0];
