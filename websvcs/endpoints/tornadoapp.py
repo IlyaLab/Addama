@@ -3,9 +3,9 @@
 Simple tornado app to list and read files.
 
 Start server:
-python tornado.py -port=8881
+python tornado.py -port=8001
 
-(Default port is 8888)
+(Default port is 8000)
 
 Using service
 
@@ -26,7 +26,7 @@ import qedconf
 import os
 
 
-define("port", default=8888, help="run on the given port", type=int)
+define("port", default=8000, help="run on the given port", type=int)
 
 settings = {
     "debug": True,
@@ -34,6 +34,7 @@ settings = {
 
 server_settings = {
     "xheaders" : True,
+    "address" : "0.0.0.0"
 }
 
 class MainHandler(tornado.web.RequestHandler):
@@ -94,10 +95,10 @@ def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
-        (r"/", MainHandler),
-        (r"/list/(.*)", ListHandler),
-        (r"/filter/(.*)", FilterHandler),
-        (r"/read/(.*)", ReadHandler),
+         (r"/", MainHandler),
+        (r"/list?(.*)", ListHandler),
+        (r"/filter?(.*)", FilterHandler),
+        (r"/read?(.*)", ReadHandler),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
