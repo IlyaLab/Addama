@@ -17,18 +17,36 @@ module.exports = View.extend({
     renderGraph:function () {
         console.log("renderGraph:start");
 
-        var color_fn = function(val) {
-            return "blank";
-        };
+        var categories = _.uniq(_.compact(_.flatten(_.map(oncovisData.data, function(obj) {
+            return _.map(obj, function(sub) {
+                return sub["value"];
+            });
+        }))));
+
+        var color_categories = {};
+        _.each(colorbrewer.Set1[categories.length], function(color, idx) {
+            color_categories[categories[idx]] = color;
+        });
+
+        var columns_by_cluster = {};
+        _.each(oncovisData.columns_by_cluster, function(columns, cluster) {
+            columns_by_cluster[cluster] = _.sortBy(columns, function(sample) {
+                return _.map(oncovisData.row_labels, function(row_label) {
+                    return oncovisData.data[sample][row_label]["value"];
+                });
+            });
+        });
 
         var optns = {
             bar_width:4,
             column_spacing:1,
             plot_width:3000,
             label_width:70,
-            highlight_cls:"mutation",
-            color_fn:color_fn,
-            columns_by_cluster:oncovisData.columns_by_cluster,
+            highlight_fill: colorbrewer.RdYlGn[3][2],
+            color_fn:function(d) {
+                return (color_categories[d.value]) ? color_categories[d.value] : "lightgray";
+            },
+            columns_by_cluster:columns_by_cluster,
             cluster_labels:oncovisData.cluster_labels,
             row_labels:oncovisData.row_labels
         };
