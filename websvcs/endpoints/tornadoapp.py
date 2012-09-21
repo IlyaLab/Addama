@@ -52,16 +52,16 @@ class FilterHandler(tornado.web.RequestHandler):
 
            
             if len(ids) > 0: 
-                ids = ids.split(",")
+                ids = ids[0].split(",")
 
                 rfile = open(qedconf.BASE_PATH + filepath)
                 for idx, line in enumerate(rfile):
                     if idx == 0:
-                        self.write(line.rstrip())
+                        self.write(line)
                     else:
                         for id in ids:
                             if id in line:
-                                self.write(line.rstrip())
+                                self.write(line)
                                 break
             elif os.path.isdir(qedconf.BASE_PATH + filepath):
                 dirs=[]
