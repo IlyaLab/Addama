@@ -6,7 +6,8 @@ module.exports = Backbone.Router.extend({
     'graph': 'graph',
     'pwpv': 'pwpv',
     'twoD/:f1/:f2' : 'twod',
-    'oncovis' : 'oncovis'
+    'oncovis' : 'oncovis',
+    'oncovis/p:p1' : 'oncovis'
   },
 
   graph: function() {
