@@ -12,7 +12,7 @@ Using service
 /svc
 /svc/list/path/to/dir
 /svc/read/path/to/file
-/svc/filter/path/to/dir/id1,id2
+/svc/filter/path/to/file?ids=1,2
 
 I'm not really sure what filter is supposed to do so i may have gotten the matching wrong.
 
@@ -50,19 +50,21 @@ class ReadHandler(tornado.web.RequestHandler):
             self.write("-1")
 
 class FilterHandler(tornado.web.RequestHandler):
-    def get(self,filepath,ids):
+    def get(self,filepath):
         try:
+            ids=self.get_argument("ids")
+           
             if not ids is None: 
                 ids = ids.split(",")
 
             rfile = open(qedconf.BASE_PATH + filepath)
             for idx, line in enumerate(rfile):
                 if idx == 0:
-                    print line.rstrip()
+                    self.write(line.rstrip())
                 else:
                     for id in ids:
                         if id in line:
-                            print line.rstrip()
+                            self.write(line.rstrip())
                             break
         except:
             self.write("-1")
@@ -92,10 +94,10 @@ def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
-        (r"/svc", MainHandler),
-        (r"/svc/list/(.*)", ListHandler),
-        (r"/svc/filter/(.*)/(.*)", FilterHandler),
-        (r"/svc/read/(.*)", ReadHandler),
+        (r"/", MainHandler),
+        (r"/list/(.*)", ListHandler),
+        (r"/filter/(.*)", FilterHandler),
+        (r"/read/(.*)", ReadHandler),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
