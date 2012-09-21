@@ -9,7 +9,7 @@ BASE_PATH = "/local/QED/data"
 print "Content-Type: application/json\n"
 
 form = cgi.FieldStorage()
-filepath = urllib.unquote(form.getvalue("filepath"))
+filepath = urllib.unquote(form.getvalue("filepath") or '/')
 
 dirs=[]
 files=[]
