@@ -72,6 +72,15 @@ module.exports = View.extend({
         });
 
         console.log("initControls:end");
-    }
+    },
 
+    autocomplete: function(query, resultBin) {
+        var found = [];
+        _.each(oncovisData.data, function(val, key) {
+            if (key.indexOf(query) >= 0) {
+                found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + " (Oncovis)</a>");
+            }
+        });
+        resultBin(found);
+    }
 });

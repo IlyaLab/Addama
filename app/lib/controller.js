@@ -1,11 +1,12 @@
 var TopNavBar = require('../views/topbar_view');
 
 Controller = {
+    topnavbar: new TopNavBar(),
 
 	app : {
 		layout : function() {
-			var topnavbar = new TopNavBar();
 			$('#navigation-container').append(topnavbar.render().el);
+            this.topnavbar.initSearchAutocomplete();
 		}
 	},
 
@@ -47,6 +48,8 @@ Controller = {
 			$('#mainDiv').html(oncovisView.render().el);
             oncovisView.initControls();
             oncovisView.renderGraph();
+
+            this.topnavbar.addAutocompleteSource(oncovisView);
 		}
 	},
 
