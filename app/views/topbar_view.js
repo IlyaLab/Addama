@@ -28,6 +28,9 @@ module.exports = View.extend({
                                 _.each(_.uniq(results), function(result) {
                                     resultsEl.append("<li>" + result + "</li>");
                                 });
+                                resultsEl.find("a").click(function() {
+                                    resultsModal.modal("hide");
+                                });
                             }
                         };
 
