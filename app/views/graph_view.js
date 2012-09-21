@@ -6,70 +6,55 @@ var PC = require('./parcoords_view');
 
 module.exports = View.extend({
 
+  model : Graph,
   template:template,
 
   initialize : function() {
-      _.bindAll(this,'cleanData','afterRender');
+      _.bindAll(this,'afterRender','renderGraph');
   },
   
-  cleanData : function() {
-  
-    this.edges = graphData.adj;
-    var node_data =  new Array();
-    Object.keys(graphData).forEach(function(a) { 
-        if (a === 'adj' || a ==='iByn')   return;
-        node_data[a] = _.clone(graphData[a]);
-      });
-    node_data.label = node_data.nByi.map(function(f) { return f.split(':')[2];});
-    var node_objs = new Array();
-    var data_keys = _.keys(node_data);  //keys of the data structure    
-    var obj, i,
-     key_len = data_keys.length;
-
-    node_objs = _.range(node_data[data_keys[0]].length)
-                    .map(function(row) {
-                      obj={};
-                        for (i=0; i < key_len; i++)  obj[data_keys[i]] = node_data[data_keys[i]][row];
-                          return obj;
-                      });  
-
-    this.graphData = node_objs;
-  },
-
   afterRender: function() {
+    var _this = this;
     this.$el.addClass('row-fluid');
+    this.model.fetch().done(_this.renderGraph);
   },
 
-  renderGraph: function() {
-    this.cleanData();
-    var parentDiv = this.$el.find('.graph-container'),
-    w= parentDiv.width(),
-    h= parentDiv.height();
-  
+  renderGraph: function(options) {
+      
+      var parentDiv = this.$el.find('.graph-container'),
+      w= parentDiv.width(),
+      h= parentDiv.height();
+      var vis_options = this.model.defaultParameters();
+      
+      var x = vis_options.x || 'r1',
+       y = vis_options.y || 'hodge',
+       edgeRouting = vis_options.edgeRouting || 'straight';
+
       var edge_scale = d3.scale.log().domain(d3.extent(graphData.adj,function(a) { return a[2];})).range([0.2,1.0]);
       var edgeO = function(edge) {
           return edge_scale(edge[2]);
       };
 
   		var treeChart = TreeChart({
-                			width:w, 
-                			height:h,   			
-                			nodes:{
-                          data : this.graphData,
-                					y: 'hodge',
-                					x: 'r1'
-                				},
-                        edges: {
-                          data: this.edges
-                        }
-                		})
-                    .edgeOpacity(edgeO);
+                          			width:w, 
+                          			height:h,   			
+                          			nodes:{
+                                    data : this.model.getNodesArray(),
+                          					y: y,
+                          					x: x
+                          			},
+                                edges: {
+                                    data: this.model.getEdgesArray()
+                                }
+                		  })
+                    .edgeOpacity(edgeO)
+                    .edgeRoute(edgeRouting);
 
   		d3.select('.graph-container')
               .call(treeChart);
 
       var filter = this.$el.find('.filter-container');
-      var pc_view = new PC();
+      var pc_view = new PC({model:this.model});
       filter.html(pc_view.render().el);
       pc_view.showData();
 

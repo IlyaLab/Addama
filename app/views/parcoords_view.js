@@ -1,6 +1,9 @@
 var View = require('./view');
+var Graph = require('../models/graph');
 
 module.exports = View.extend({
+
+	model:Graph,
 
  getRenderData : function() {},
 
@@ -13,48 +16,41 @@ module.exports = View.extend({
   showData: function() {
 
   	var data = new Array();
-  	for (var i = 0, len = graphData.r1.length; i<len; i++) {
-  		data.push({
-  			'index':i,
-  			'label':graphData.nByi[i],
-  			'r1':graphData.r1[i],
-  			'r2':graphData.r2[i],
-  			'hodge':graphData.hodge[i],
-  			'd':graphData.d[i],
-  			'f1':graphData.f1[i],
-  			'f2':graphData.f2[i],
-  		});
-  	}
-		var pc = d3.parcoords()('#test');
+    var ignore_keys = ['label','type','source','feature_id','nByi'];
+  	
+  	var nodes = this.model.getNodesArray();
+  	var keys = _.difference(Object.keys(nodes[0]),ignore_keys);
 
-		pc.dimensions(['r1','r2','hodge','d','f1','f2'])
-		  .data(data)
-		  .render()
-		  .color("#000")
-		  .alpha(0.2)
-		  .margin({ top: 24, left: 0, bottom: 12, right: 0 })
-		  .render()
-		  .reorderable()
-		   .brushable()
-		   .on('brush', function(data){
-		   	console.log('brush!');
-		   });
+	var pc = d3.parcoords()('#test');
 
-	    pc.svg.selectAll(".parcoords-dimension")
-    		.on("click", toggle_dimension);  
+	pc.dimensions(keys)
+	  .data(nodes)
+	  .render()
+	  .color("#000")
+	  .alpha(0.2)
+	  .margin({ top: 24, left: 0, bottom: 12, right: 0 })
+	  .render()
+	  .reorderable()
+	  .brushable()
+	  .on('brush', function(data){
+	   	console.log('brush!');
+	  });
 
-		function select(dimension) {
-			 pc.svg.selectAll(".parcoords-dimension")
-			    .filter(function(d) { return d == dimension; })
-			    .classed('selected',true);
-		}
+    pc.svg.selectAll(".parcoords-dimension")
+		.on("click", toggle_dimension);  
 
-		function unselect() {
-			 pc.svg.selectAll(".parcoords-dimension")
-			 	.classed('selected',false);
-		}
-		
-		function toggle_dimension(dimension) {
+	function select(dimension) {
+		 pc.svg.selectAll(".parcoords-dimension")
+		    .filter(function(d) { return d == dimension; })
+		    .classed('selected',true);
+	}
+
+	function unselect() {
+		 pc.svg.selectAll(".parcoords-dimension")
+		 	.classed('selected',false);
+	}
+	
+	function toggle_dimension(dimension) {
 
 		var dim = pc.svg.selectAll(".parcoords-dimension.selected")
 				.filter(function(d) { return d == dimension; });
@@ -68,7 +64,7 @@ module.exports = View.extend({
 				 select(dimension);
 				 Backbone.Mediator.pub('dimension:select',dimension);
 			}   		 
-		}
+	}	
 
-	}
+  }
 });

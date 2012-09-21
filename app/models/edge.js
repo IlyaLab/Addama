@@ -1,27 +1,20 @@
-var Model = require('./model')
+var Model = require('./model');
 
 module.exports = Model.extend({
 
-  defaults:{
-  	node1: '',
-  	node2: '',
-  	weight:-1,
-  	directed: false
-  },
-
-  initialize: function(){
-
-
+  defaults: {
+    source: '',
+    target: '',
+    weight: NaN,
+    directed: false
   },
 
   parse: function(response) {
-  	return {
-  			node1:response[0],
-  			node2:response[1],
-  			weight:response[2]
-  			};
+    return {
+      source: response[0],
+      target: response[1],
+      weight: response[2]
+    };
   }
 
-
-  
 });

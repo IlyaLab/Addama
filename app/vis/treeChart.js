@@ -1,38 +1,3 @@
-
-diagonal_directed = function() {
- 
-
-  function diagonal(d, i) {
-    var p0 = source.call(this, d, i),
-        p3 = target.call(this, d, i),
-        m = Math.max(16,Math.abs((p0.y - p3.y) / 2)),
-        p = [p0, {x: p0.x, y: p0.y+m}, {x: p3.x, y: p3.y-m}, p3];
-    p = p.map(projection);
-    return "M" + p[0] + "C" + p[1] + " " + p[2] + " " + p[3];
-  }
-
-  diagonal.source = function(x) {
-    if (!arguments.length) return source;
-    source = x;
-    return diagonal;
-  };
-
-  diagonal.target = function(x) {
-    if (!arguments.length) return target;
-    target = x;
-    return diagonal;
-  };
-
-  diagonal.projection = function(x) {
-    if (!arguments.length) return projection;
-    projection = x;
-    return diagonal;
-  };
-
-  return diagonal;
-};
-
-
 var TreeChart = function(config) {
 	var width = config.width || 400,
 		height = config.height || 300,
@@ -51,6 +16,8 @@ var TreeChart = function(config) {
 	 	link = new Object(),
 	 	edgeOpacity = 1.0,
 	 	nodeOpacity = 1.0,
+	 	edgeRouting = 'straight',
+	 	edgeRoute,
 	 	nodes,
 	 	edges,
 	 	xScale,
@@ -67,13 +34,8 @@ var TreeChart = function(config) {
 	      };
 	  };
 
-    var source = parseAdj(1),
-        target = parseAdj(0);
-
-	var diagonal = diagonal_directed()
-	      .source(source)
-		  .target(target)
-	      .projection(function(d) { return [d.y, d.x]; });
+    var source = parseAdj('source'),
+        target = parseAdj('target');
 
 	 function treeChart(selection) {
 	 	selection = selection || document.body;	
@@ -93,6 +55,8 @@ var TreeChart = function(config) {
 	 		};
 	 	});
 
+	 	edgeRoute = setEdgeRoute();
+	 	
 	 	selection.each(function render(){
 
 	 		var zoom = function() {
@@ -143,7 +107,7 @@ var TreeChart = function(config) {
 					    .enter().append("path")
 					       .attr("class", "link")
 					       .style('stroke-opacity',edgeOpacity)
-					       .attr("d", diagonal);		    
+					       .attr("d", edgeRoute);		    
 				 
 			   nodes = vis.selectAll("g.node")
 					       .data(node_list,function(d) { return d[label];})
@@ -206,13 +170,13 @@ var TreeChart = function(config) {
 
 	function gatherLowerPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-					.filter(function(d,i) { return d[0] === node_index; })
+					.filter(function(d,i) { return d.target === node_index; })
 					.classed('connected_lower',true);
 	}
 
 	function gatherUpperPaths(node_index) {
 		var edges = d3.selectAll('path.link')
-							.filter(function(d,i) { return d[1] === node_index; })
+							.filter(function(d,i) { return d.source === node_index; })
 							.classed('connected_upper',true);
 	}
 
@@ -225,6 +189,14 @@ var TreeChart = function(config) {
 					.classed('connected_lower',false);
 			var selection = d3.selectAll('.connected_upper')
 							.classed('connected_upper',false);											
+	}
+
+	function setEdgeRoute() {
+		var routes = {'straight': edge_straight, 'diagonal':d3.svg.diagonal, 'diagonal_directed':diagonal_directed};
+			return routes[edgeRouting]()
+			.source(source)
+		    .target(target)
+	        .projection(function(d) { return [d.y, d.x]; });
 	}
 
 	treeChart.width = function(value) {
@@ -249,15 +221,85 @@ var TreeChart = function(config) {
 		if (!arguments.length) return callback;
 	    edgeOpacity = callback;
 	    return this;
-	}
+	};
 
 	treeChart.nodeOpacity = function(callback) {
 		if (!arguments.length) return callback;
 	    nodeOpacity = callback;
 	    return this;
+	};
+
+	treeChart.edgeRoute = function(callback) {
+		if (!arguments.length) return callback;
+	    edgeRouting = callback;
+	    edgeRoute = setEdgeRoute();
+	    return this;	
 	}
 
 	return treeChart;
+};
+
+var edge_straight = function() {
+
+	function diagonal(d,i) {
+	 var p0 = source.call(this, d, i),
+        p3 = target.call(this, d, i),
+        p = [p0, p3];
+    p = p.map(projection);
+    return "M" + p[0] + "L" + p[1];
+	}
+
+	diagonal.source = function(x) {
+    if (!arguments.length) return source;
+    source = x;
+    return diagonal;
+  };
+
+  diagonal.target = function(x) {
+    if (!arguments.length) return target;
+    target = x;
+    return diagonal;
+  };
+
+  diagonal.projection = function(x) {
+    if (!arguments.length) return projection;
+    projection = x;
+    return diagonal;
+  };
+
+  return diagonal;
+};
+
+var diagonal_directed = function() {
+
+  function diagonal(d, i) {
+    var p0 = source.call(this, d, i),
+        p3 = target.call(this, d, i),
+        m = Math.max(16,Math.abs((p0.y - p3.y) / 2)),
+        p = [p0, {x: p0.x, y: p0.y+m}, {x: p3.x, y: p3.y-m}, p3];
+    p = p.map(projection);
+    return "M" + p[0] + "C" + p[1] + " " + p[2] + " " + p[3];
+  }
+
+  diagonal.source = function(x) {
+    if (!arguments.length) return source;
+    source = x;
+    return diagonal;
+  };
+
+  diagonal.target = function(x) {
+    if (!arguments.length) return target;
+    target = x;
+    return diagonal;
+  };
+
+  diagonal.projection = function(x) {
+    if (!arguments.length) return projection;
+    projection = x;
+    return diagonal;
+  };
+
+  return diagonal;
 };
 
 module.exports = TreeChart;
