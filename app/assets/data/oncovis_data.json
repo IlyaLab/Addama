@@ -1,460 +1,460 @@
 var oncovisData = {
-    data: {
+    "data":{
         "SAMPLE-0001-01C-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT3\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT3\nABC"
             },
             "IDH1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nIDH1\nDEF"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nPIK3CA\nDEF"
             },
             "EGFR":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nEGFR\nABC"
             },
             "PTEN":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nPTEN\nABC"
             },
             "AKT1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT1\nDEF"
             },
             "TP53":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nTP53\nDEF"
             },
             "NF1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0001-01C-01D-0182-01\nNF1\nABC"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT2\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0001-01C-01D-0182-01\nAKT2\nDEF"
             }
         },
         "SAMPLE-0003-01A-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT3\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT3\nDEF"
             },
             "IDH1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nIDH1\nABC"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":true,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nPIK3CA\n0.000\nMutation"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nPIK3CA\nABC"
             },
             "EGFR":{
-                "value":5.145,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nEGFR\n5.145"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nEGFR\nHIJ"
             },
             "PTEN":{
-                "value":0.06,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nPTEN\n0.060"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nPTEN\nHIJ"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":true,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nTP53\n0.000\nMutation"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nTP53\nDEF"
             },
             "NF1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":true,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nNF1\n0.000\nMutation"
+                "label":"SAMPLE-0003-01A-01D-0182-01\nNF1\nDEF"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT2\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0003-01A-01D-0182-01\nAKT2\nABC"
             }
         },
         "SAMPLE-0006-01B-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT3\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT3\nABC"
             },
             "IDH1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nIDH1\nABC"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nPIK3CA\nDEF"
             },
             "EGFR":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nEGFR\nDEF"
             },
             "PTEN":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nPTEN\nABC"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nTP53\nABC"
             },
             "NF1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0006-01B-01D-0182-01\nNF1\nDEF"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT2\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0006-01B-01D-0182-01\nAKT2\nDEF"
             }
         },
         "SAMPLE-0007-01A-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT3\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT3\nDEF"
             },
             "IDH1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nIDH1\nDEF"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nPIK3CA\nABC"
             },
             "EGFR":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nEGFR\nABC"
             },
             "PTEN":{
-                "value":0.065,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nPTEN\n0.065"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nPTEN\nHIJ"
             },
             "AKT1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT1\nDEF"
             },
             "TP53":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nTP53\nDEF"
             },
             "NF1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0007-01A-01D-0182-01\nNF1\nABC"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT2\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0007-01A-01D-0182-01\nAKT2\nDEF"
             }
         },
         "SAMPLE-0009-01A-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT3\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT3\nABC"
             },
             "IDH1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nIDH1\nABC"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nPIK3CA\nDEF"
             },
             "EGFR":{
-                "value":5.173,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nEGFR\n5.173"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nEGFR\nHIJ"
             },
             "PTEN":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nPTEN\nABC"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nTP53\nDEF"
             },
             "NF1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0009-01A-01D-0182-01\nNF1\nDEF"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT2\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0009-01A-01D-0182-01\nAKT2\nABC"
             }
         },
         "SAMPLE-0010-01A-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT3\n0.000"
+                "value":"DEF",
+                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT3\nDEF"
             },
             "IDH1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nIDH1\nDEF"
             },
             "PIK3CA":{
-                "value":-0.797,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nPIK3CA\n-0.797"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nPIK3CA\nHIJ"
             },
             "EGFR":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nEGFR\nGHI"
             },
             "PTEN":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nPTEN\nGHI"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nTP53\nABC"
             },
             "NF1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0010-01A-01D-0182-01\nNF1\nABC"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT2\n0.000"
+                "value":"GHI",
+                "label":"SAMPLE-0010-01A-01D-0182-01\nAKT2\nGHI"
             }
         },
         "SAMPLE-0011-01B-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT3\n0.000"
+                "value":"GHI",
+                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT3\nGHI"
             },
             "IDH1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nIDH1\nABC"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nPIK3CA\nABC"
             },
             "EGFR":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nEGFR\nGHI"
             },
             "PTEN":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nPTEN\nGHI"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nTP53\nABC"
             },
             "NF1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0011-01B-01D-0182-01\nNF1\nABC"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT2\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0011-01B-01D-0182-01\nAKT2\nABC"
             }
         },
         "SAMPLE-0014-01A-01D-0182-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT3\n0.000"
+                "value":"GHI",
+                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT3\nGHI"
             },
             "IDH1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nIDH1\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nIDH1\nGHI"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nPIK3CA\nGHI"
             },
             "EGFR":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nEGFR\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nEGFR\nABC"
             },
             "PTEN":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nPTEN\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nPTEN\nABC"
             },
             "AKT1":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT1\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT1\nABC"
             },
             "TP53":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nTP53\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nTP53\nGHI"
             },
             "NF1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nNF1\n0.000"
+                "label":"SAMPLE-0014-01A-01D-0182-01\nNF1\nGHI"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT2\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0014-01A-01D-0182-01\nAKT2\nABC"
             }
         },
         "SAMPLE-0015-01A-01G-0293-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT3\n0.000"
+                "value":"GHI",
+                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT3\nGHI"
             },
             "IDH1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nIDH1\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nIDH1\nGHI"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nPIK3CA\nABC"
             },
             "EGFR":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nEGFR\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nEGFR\nGHI"
             },
             "PTEN":{
-                "value":-0.765,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nPTEN\n-0.765"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nPTEN\nHIJ"
             },
             "AKT1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT1\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT1\nGHI"
             },
             "TP53":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nTP53\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nTP53\nABC"
             },
             "NF1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nNF1\n0.000"
+                "label":"SAMPLE-0015-01A-01G-0293-01\nNF1\nGHI"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT2\n0.000"
+                "value":"GHI",
+                "label":"SAMPLE-0015-01A-01G-0293-01\nAKT2\nGHI"
             }
         },
         "SAMPLE-0016-01A-01G-0293-01":{
             "AKT3":{
-                "value":0,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT3\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT3\nABC"
             },
             "IDH1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nIDH1\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nIDH1\nGHI"
             },
             "PIK3CA":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nPIK3CA\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nPIK3CA\nGHI"
             },
             "EGFR":{
-                "value":5.228,
+                "value":"HIJ",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nEGFR\n5.228"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nEGFR\nHIJ"
             },
             "PTEN":{
-                "value":0,
+                "value":"ABC",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nPTEN\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nPTEN\nABC"
             },
             "AKT1":{
-                "value":0,
+                "value":"GHI",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT1\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT1\nGHI"
             },
             "TP53":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nTP53\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nTP53\nDEF"
             },
             "NF1":{
-                "value":0,
+                "value":"DEF",
                 "isMutated":false,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nNF1\n0.000"
+                "label":"SAMPLE-0016-01A-01G-0293-01\nNF1\nDEF"
             },
             "AKT2":{
-                "value":0,
-                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT2\n0.000"
+                "value":"ABC",
+                "label":"SAMPLE-0016-01A-01G-0293-01\nAKT2\nABC"
             }
         }
     },
     "columns_by_cluster":{
-        "PRE_TERM":["SAMPLE-0001-01C-01D-0182-01","SAMPLE-0003-01A-01D-0182-01","SAMPLE-0006-01B-01D-0182-01","SAMPLE-0007-01A-01D-0182-01","SAMPLE-0009-01A-01D-0182-01","SAMPLE-0016-01A-01G-0293-01"],
-        "ON_TERM":["SAMPLE-0010-01A-01D-0182-01","SAMPLE-0011-01B-01D-0182-01","SAMPLE-0011-01B-01D-0182-01","SAMPLE-0014-01A-01D-0182-01","SAMPLE-0014-01A-01D-0182-01","SAMPLE-0015-01A-01G-0293-01"]
+        "PRE_TERM":["SAMPLE-0001-01C-01D-0182-01", "SAMPLE-0003-01A-01D-0182-01", "SAMPLE-0006-01B-01D-0182-01", "SAMPLE-0007-01A-01D-0182-01", "SAMPLE-0009-01A-01D-0182-01", "SAMPLE-0016-01A-01G-0293-01"],
+        "ON_TERM":["SAMPLE-0010-01A-01D-0182-01", "SAMPLE-0011-01B-01D-0182-01", "SAMPLE-0011-01B-01D-0182-01", "SAMPLE-0014-01A-01D-0182-01", "SAMPLE-0014-01A-01D-0182-01", "SAMPLE-0015-01A-01G-0293-01"]
     },
-    "cluster_labels":["PRE_TERM","ON_TERM"],
-    "row_labels":["EGFR","PTEN","PIK3CA","AKT1","AKT2","AKT3","NF1","IDH1","TP53"]
+    "cluster_labels":["PRE_TERM", "ON_TERM"],
+    "row_labels":["EGFR", "PTEN", "PIK3CA", "AKT1", "AKT2", "AKT3", "NF1", "IDH1", "TP53"]
 };

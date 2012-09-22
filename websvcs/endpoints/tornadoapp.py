@@ -9,12 +9,13 @@ python tornado.py -port=8001
 
 Using service
 
-/svc
-/svc/list/path/to/dir
-/svc/read/path/to/file
-/svc/filter/path/to/file?ids=1,2
-
-I'm not really sure what filter is supposed to do so i may have gotten the matching wrong.
+/
+List:
+/data/path/to/dir
+Read:
+/data/path/to/file
+Filter:
+/data/path/to/file?rows=id1,id2&cols=colid1,colid2
 
 All services return -1 if there is any error.
 
@@ -37,57 +38,79 @@ server_settings = {
     "address" : "0.0.0.0"
 }
 
+def _writeFilteredRow(self,line,cols):
+    if len(cols)==1:
+        self.write(line)
+    else:
+        vs=line.rstrip("\n\r").split("\t")
+
+        self.write("\t".join([vs[i] for i in cols]))
+        self.write("\n")
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Service Root")
 
-class ReadHandler(tornado.web.RequestHandler):
-    def get(self,filepath):
-        try:
-            rfile = open(qedconf.BASE_PATH + filepath)
-            self.write(rfile.read())
-            rfile.close()
-        except:
-            self.write("-1")
 
 class FilterHandler(tornado.web.RequestHandler):
+   
+
     def get(self,filepath):
+        self.content_type = "text/plain"
         try:
-            ids=self.get_argument("ids")
-           
-            if not ids is None: 
-                ids = ids.split(",")
+            rows=self.get_arguments("rows")
+            if len(rows) > 0: 
+                rows = rows[0].split(",")
+            cols=self.get_arguments("cols")
+            if len(cols) > 0: 
+                cols = frozenset(cols[0].split(","))
+            
+            goodcols=[0]
+            
+            if len(rows) > 0 or len(cols)>0: 
+                
 
-            rfile = open(qedconf.BASE_PATH + filepath)
-            for idx, line in enumerate(rfile):
-                if idx == 0:
-                    self.write(line.rstrip())
-                else:
-                    for id in ids:
-                        if id in line:
-                            self.write(line.rstrip())
-                            break
-        except:
-            self.write("-1")
+                rfile = open(qedconf.BASE_PATH + filepath)
+                for idx, line in enumerate(rfile):
+                    if idx == 0:
+                        colhead = line.rstrip("\n\r").split()
+                        if len(cols) > 0:
+                            for i,h in enumerate(colhead):
+                                if h in cols:
+                                    goodcols.append(i)
+                        goodcols=frozenset(goodcols)
+                        _writeFilteredRow(self,line,goodcols)
 
-class ListHandler(tornado.web.RequestHandler):
-    def get(self,filepath):
-        try:
-            dirs=[]
-            files=[]
-            for f in os.listdir(qedconf.BASE_PATH + filepath):
-                if not f.startswith("."):
-                    label = os.path.basename(f)
-                    item = '{"label":"%s", "uri":"%s"}' % (label, os.path.join(filepath,f))
-
-                    if os.path.isdir(qedconf.BASE_PATH + filepath + f):
-                        dirs.append(item)
+                        
+                    elif len(rows)==0:
+                        _writeFilteredRow(self,line,goodcols)
                     else:
-                        files.append(item)
+                        for id in rows:
+                            if id in line[:line.rfind("\t")]:
+                                _writeFilteredRow(self,line,goodcols)
+                                break
+            elif os.path.isdir(qedconf.BASE_PATH + filepath):
+                dirs=[]
+                files=[]
+                for f in os.listdir(qedconf.BASE_PATH + filepath):
+                    if not f.startswith("."):
+                        label = os.path.basename(f)
+                        item = '{"label":"%s", "uri":"%s"}' % (label, os.path.join(filepath,f))
 
-            self.write('{ "directories": [' + ",".join(dirs) + '], "files": [' + ",".join(files) + '] }')
+                        if os.path.isdir(qedconf.BASE_PATH + filepath + f):
+                            dirs.append(item)
+                        else:
+                            files.append(item)
+
+                self.write('{ "directories": [' + ",".join(dirs) + '], "files": [' + ",".join(files) + '] }')
+            else:
+                rfile = open(qedconf.BASE_PATH + filepath)
+                self.write(rfile.read())
+                rfile.close()
+
         except:
             self.write("-1")
+
 
 
 
@@ -95,10 +118,8 @@ def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
-         (r"/", MainHandler),
-        (r"/list?(.*)", ListHandler),
-        (r"/filter?(.*)", FilterHandler),
-        (r"/read?(.*)", ReadHandler),
+        (r"/", MainHandler),
+        (r"/data?(.*)", FilterHandler),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()

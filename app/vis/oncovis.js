@@ -19,7 +19,6 @@
         cluster_legend_height:20,
         cluster_spacing:10,
         highlight_bar_height:7,
-        highlight_cls:"highlight",
         plot_height:512,
         plot_width:1540,
         row_labels:[],
@@ -112,15 +111,10 @@
                     return d.values;
                 });
 
-            var color_fn = this.color_fn;
             this.sample_bars.enter()
                 .append("rect")
-                .attr("class", function (d) {
-                    if (d !== undefined && d.value !== undefined) {
-                        return "sample " + color_fn(d.value);
-                    }
-                    return "sample blank";
-                })
+                .attr("class", "sample")
+                .attr("fill", this.color_fn)
                 .attr("x", 0)
                 .attr("width", this.bar_width)
                 .attr("height", this.bar_height)
@@ -131,7 +125,7 @@
                     return "Not defined";
                 });
 
-            this.highlight_markers = this.cluster_columns.selectAll("rect." + this.highlight_cls)
+            this.highlight_markers = this.cluster_columns.selectAll("rect.highlight")
                 .data(function (d) {
                     var mutated = [];
                     _.each(d.values, function (cellvalue, index) {
@@ -143,7 +137,8 @@
                 })
                 .enter()
                 .append("rect")
-                .attr("class", this.highlight_cls)
+                .attr("class", "highlight")
+                .attr("fill", this.highlight_fill)
                 .attr("width", this.bar_width)
                 .attr("x", 0)
                 .attr("height", this.highlight_bar_height)
@@ -287,7 +282,7 @@
 
             var bar_offset = (this.bar_height / 2.0) - (this.highlight_bar_height / 2.0);
             var row_index_scale_fn = this.row_index_scale;
-            this.cluster_columns.selectAll("rect." + this.highlight_cls)
+            this.cluster_columns.selectAll("rect.highlight")
                 .attr("y", function (d) {
                     return row_index_scale_fn(d) + bar_offset;
                 })
@@ -325,13 +320,7 @@
         },
 
         _updateColorFn:function () {
-            var color_fn = this.color_fn;
-            this.sample_bars.attr("class", function (d) {
-                if (d !== undefined && d.value !== undefined) {
-                    return "sample " + color_fn(d.value);
-                }
-                return "sample blank";
-            });
+            this.sample_bars.attr("fill", this.color_fn);
         }
 
     };
