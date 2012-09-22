@@ -15,8 +15,23 @@ module.exports = View.extend({
   renderGrid : function(){
 	// /svc/data/analysis/feature_matrices/2012_09_18_0835__cons
 	d3.tsv("/svc/data/analysis/feature_matrices/2012_09_18_0835__cons", function(data) {
-		console.log(data[0]);
-		console.log(data[1]);
+		var grid;
+		var columns = [];
+
+		for(var i in data[0]) if (data[0].hasOwnProperty(i))
+		{
+			columns.push({id: i, name: i, field: i, sortable: true});
+		}
+		console.log(data);
+		console.log(columns);
+
+
+		var options = {
+			enableCellNavigation: false,
+			enableColumnReorder: false,
+		};
+		grid = new Slick.Grid("#grid-container", data, columns, options);
+		
 	});
   }
 
