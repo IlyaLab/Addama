@@ -15,9 +15,7 @@ List:
 Read:
 /data/path/to/file
 Filter:
-/data/path/to/file?ids=1,2
-
-I'm not really sure what filter is supposed to do so i may have gotten the matching wrong.
+/data/path/to/file?rows=id1,id2&cols=colid1,colid2
 
 All services return -1 if there is any error.
 
@@ -40,28 +38,56 @@ server_settings = {
     "address" : "0.0.0.0"
 }
 
+def _writeFilteredRow(self,line,cols):
+    if len(cols)==1:
+        self.write(line)
+    else:
+        vs=line.rstrip("\n\r").split("\t")
+
+        self.write("\t".join([vs[i] for i in cols]))
+        self.write("\n")
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Service Root")
 
 
 class FilterHandler(tornado.web.RequestHandler):
-    def get(self,filepath):
-        try:
-            ids=self.get_arguments("ids")
+   
 
-           
-            if len(ids) > 0: 
-                ids = ids.split(",")
+    def get(self,filepath):
+        self.content_type = "text/plain"
+        try:
+            rows=self.get_arguments("rows")
+            if len(rows) > 0: 
+                rows = rows[0].split(",")
+            cols=self.get_arguments("cols")
+            if len(cols) > 0: 
+                cols = frozenset(cols[0].split(","))
+            
+            goodcols=[0]
+            
+            if len(rows) > 0 or len(cols)>0: 
+                
 
                 rfile = open(qedconf.BASE_PATH + filepath)
                 for idx, line in enumerate(rfile):
                     if idx == 0:
-                        self.write(line.rstrip())
+                        colhead = line.rstrip("\n\r").split()
+                        if len(cols) > 0:
+                            for i,h in enumerate(colhead):
+                                if h in cols:
+                                    goodcols.append(i)
+                        goodcols=frozenset(goodcols)
+                        _writeFilteredRow(self,line,goodcols)
+
+                        
+                    elif len(rows)==0:
+                        _writeFilteredRow(self,line,goodcols)
                     else:
-                        for id in ids:
-                            if id in line:
-                                self.write(line.rstrip())
+                        for id in rows:
+                            if id in line[:line.rfind("\t")]:
+                                _writeFilteredRow(self,line,goodcols)
                                 break
             elif os.path.isdir(qedconf.BASE_PATH + filepath):
                 dirs=[]
