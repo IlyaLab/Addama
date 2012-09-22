@@ -4,9 +4,13 @@ var EdgeList = require('./edgeList');
 
 module.exports = Model.extend({
 
-	serviceRoot : '/endpoints',
-	serviceRead : '/read_file?',
-	analysisParam :'filepath=',
+	serviceRoot : '/svc',
+	serviceRead : '/read',
+	serviceDir :'/analysis/layouts',
+
+	url : function() {
+		return this.serviceRoot + this.serviceRead + this.get('analysis_id') + '/' + this.get('dataset_id') + '.json';
+	},
 
 	defaults: {
 		edges : new EdgeList(),
@@ -29,20 +33,16 @@ module.exports = Model.extend({
 			var options = new Object();
 
 			switch ( this.get('analysis_id') ) {
-				case('pwpv') :
+				case('pairwise') :
 					_.extend(options, {x:'r1',y:'r2',edgeRouting:'straight'});
 				break;
-				case('rf_ace') :
+				case('rf-ace') :
 				default:
 					_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal'});
 				break;
 			}
 
 			return options;
-	},
-
-	url : function() {
-		return this.serviceRoot + this.serviceRead+ this.analysisParam + encodeURIComponent('/'+ this.get('analysis_id') + '/' + this.get('dataset_id'));
 	},
 
 	parse: function(graphData){
