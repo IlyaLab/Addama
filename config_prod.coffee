@@ -34,4 +34,9 @@ exports.config =
       defaultExtension: 'hbs'
       joinTo: 'js/app.js'
 
+  server:
+    path: 'server.js'
+    port: 3333
+    run: yes
+
   # minify: true
