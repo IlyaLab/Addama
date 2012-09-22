@@ -14,6 +14,7 @@ module.exports = View.extend({
 
   renderGrid : function(){
 	// /svc/data/analysis/feature_matrices/2012_09_18_0835__cons
+	var container = this.$el.find(".grid-container");
 	d3.tsv("/svc/data/analysis/feature_matrices/2012_09_18_0835__cons", function(data) {
 		var grid;
 		var columns = [];
@@ -28,9 +29,9 @@ module.exports = View.extend({
 
 		var options = {
 			enableCellNavigation: false,
-			enableColumnReorder: false,
+			enableColumnReorder: false
 		};
-		grid = new Slick.Grid("#grid-container", data, columns, options);
+		grid = new Slick.Grid(container, data, columns, options);
 		
 	});
   }
