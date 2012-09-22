@@ -85,9 +85,10 @@ class FilterHandler(tornado.web.RequestHandler):
                     elif len(rows)==0:
                         _writeFilteredRow(self,line,goodcols)
                     else:
+                        rheaader = line[:line.rfind("\t")]
                         for id in rows:
-                            if id in line[:line.rfind("\t")]:
-                                _writeFilteredRow(self,line,goodcols)
+                            if id in rheaader:
+                                _writeFilteredRow(self, line, goodcols)
                                 break
             elif os.path.isdir(qedconf.BASE_PATH + filepath):
                 dirs=[]
