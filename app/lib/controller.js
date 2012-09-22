@@ -68,7 +68,7 @@ Controller = {
 			     vis_type = 'grid';  //dummy default
 			
 			//graph based analysis
-			if ( _(['rf_ace','mds','pwpv']).contains(analysis_type) ) { 
+			if ( _(['rf-ace','mds','pairwise']).contains(analysis_type) ) { 
 				vis_type = len > 0 ? arg_array[len-1] : 'graph';
 
 				if ( len <= 1 ) {  // 1 or no parameters.  just draw vis of analysis
