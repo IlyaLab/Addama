@@ -5,6 +5,14 @@ Controller = {
     topnavbar: new TopNavBar(),
     oncovisView: new Oncovis(),
 
+	testwindow : {
+		view : function() {
+			var WinView = require('../views/window_view');
+			var winView = new WinView();
+			 $('#mainDiv').html(winView.render().el);
+		}
+	},
+
 	app : {
 		layout : function() {
 			$('#navigation-container').append(Controller.topnavbar.render().el);

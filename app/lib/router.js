@@ -5,6 +5,7 @@ module.exports = Backbone.Router.extend({
         '':'home',
         'graph':'graph',
         'pwpv':'pwpv',
+        'testwindow':'testwindow',
         'twoD/:f1/:f2':'twod',
         'oncovis':'oncovis',
         'oncovis/p:p1':'oncovis',
@@ -13,6 +14,10 @@ module.exports = Backbone.Router.extend({
 
     graph: function() {
       Controller.graph.view();
+  },
+
+  testwindow: function() {
+      Controller.testwindow.view();
   },
 
   pwpv: function() {
