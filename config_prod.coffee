@@ -19,7 +19,10 @@ exports.config =
           'vendor/js/d3.v2.js'
         ]
         after: [
-          'vendor/js/d3.parcoords.js'
+          'vendor/js/d3.parcoords.js',
+          'vendor/js/slick.core.js',
+          'vendor/js/slick.grid.js',
+          'vendor/js/slick.rowselectionmodel.js'
         ]
    
     stylesheets:
