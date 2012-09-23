@@ -3,50 +3,39 @@ var express = require('express'),
 
 exports.startServer = function(port, path) {
 
-console.log(port + ':' + path);
+  var app = express();
 
-var app = express();
+  // Configuration
 
-// Configuration
+  app.configure(function(){
+    app.use(express.static(__dirname + '/_public'));
+  });
 
-app.configure(function(){
-  app.use(express.static(__dirname + '/_public'));
-});
+  app.configure('development', function(){
+    app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  });
 
-app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
+  app.configure('production', function(){
+    app.use(express.errorHandler());
+  });
 
-app.configure('production', function(){
-  app.use(express.errorHandler());
-});
+  var proxiedPort = port+1;
 
-var proxiedPort = port+1;
+  app.listen(proxiedPort);
 
-app.listen(proxiedPort);
+  var proxy_config = require('./proxy').proxy;
 
-url= {
-  '/svc': {
-    host: 'glados1',
-    port: 8000
-  },
-  'default': {
-    host: 'localhost',
-    port: proxiedPort
-  }
-};
+  var default_proxy =  { host: 'localhost', port: proxiedPort };
 
-httpProxy.createServer(function (req, res, proxy) {
-  var target = {host:'localhost', port:proxiedPort};
+  httpProxy.createServer(function (req, res, proxy) {
+      var target = {host:'localhost', port:proxiedPort};
 
-if (req.url.match(/^\/svc/)) {
-	target = { host:'glados1', port:8000};
-	req.url = req.url.slice('/svc'.length);
-}  
+    if (req.url.match(new RegExp('^'+proxy_config.url,'i'))) {
+      target = { host:proxy_config.host, port:proxy_config.port};
+      req.url = req.url.slice('/svc'.length);
+    }  
 
-	console.log(target);
-
-  proxy.proxyRequest(req, res, target);
-}).listen(port);
+      proxy.proxyRequest(req, res, target);
+  }).listen(port);
 
 };

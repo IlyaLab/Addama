@@ -1,0 +1,7 @@
+{
+	"proxy": {
+		"url": "/svc",
+	        "host": "hostname",
+	        "port": 1111
+	}
+}
