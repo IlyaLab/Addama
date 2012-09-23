@@ -9,9 +9,20 @@ Controller = {
 		view : function() {
 			var WinView = require('../views/window_view');
 			var winView = new WinView();
-			 $('#mainDiv').html(winView.render().el);
+			$('#mainDiv').html(winView.render().el);
+			
 		}
 	},
+
+	grid : {
+		view : function() {
+			var GridView = require('../views/grid_view');
+			var gridView = new GridView();
+			$('#mainDiv').html(gridView.render().el);
+			gridView.renderGrid();
+		}
+	},
+
 
 	app : {
 		layout : function() {

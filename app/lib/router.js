@@ -3,6 +3,7 @@ var Controller = require('./controller');
 module.exports = Backbone.Router.extend({
     routes:{
         '':'home',
+        'grid':'grid',
         'graph':'graph',
         'pwpv':'pwpv',
         'testwindow':'testwindow',
@@ -12,12 +13,16 @@ module.exports = Backbone.Router.extend({
         ':analysis_id/:model_id/*remainder':'route_analysis'  //    url -> rf_ace/dataset_1/
     },
 
-    graph: function() {
+  graph: function() {
       Controller.graph.view();
   },
 
   testwindow: function() {
       Controller.testwindow.view();
+  },
+
+  grid: function() {
+      Controller.grid.view();
   },
 
   pwpv: function() {
