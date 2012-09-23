@@ -20,7 +20,7 @@ module.exports = View.extend({
   },
 
   renderGraph: function(options) {
-      
+      var _this = this;
       var parentDiv = this.$el.find('.graph-container'),
       w= parentDiv.width(),
       h= parentDiv.height();
@@ -30,9 +30,9 @@ module.exports = View.extend({
        y = vis_options.y || 'hodge',
        edgeRouting = vis_options.edgeRouting || 'straight';
 
-      var edge_scale = d3.scale.log().domain(d3.extent(graphData.adj,function(a) { return a[2];})).range([0.2,1.0]);
+      var edge_scale = d3.scale.log().domain(d3.extent(_this.model.getEdgesArray(),function(a) { return a[2];})).range([0.2,1.0]);
       var edgeO = function(edge) {
-          return edge_scale(edge[2]);
+          return edge_scale(edge.weight);
       };
 
   		var treeChart = TreeChart({

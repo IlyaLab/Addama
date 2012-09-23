@@ -5,11 +5,12 @@ var EdgeList = require('./edgeList');
 module.exports = Model.extend({
 
 	serviceRoot : '/svc',
-	serviceRead : '/read',
+	serviceRead : '/data',
 	serviceDir :'/analysis/layouts',
 
 	url : function() {
-		return this.serviceRoot + this.serviceRead + this.get('analysis_id') + '/' + this.get('dataset_id') + '.json';
+		return this.serviceRoot + this.serviceRead + this.serviceDir  + '/'
+				+ this.get('analysis_id') + '/' + this.get('dataset_id');
 	},
 
 	defaults: {
