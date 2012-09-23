@@ -24,10 +24,8 @@
     "testacular": "~0.0.17"
   },
   "scripts": {
-    "devel-start": "brunch watch -c config_devel.coffee -s",
-    "prod-start": "brunch watch -c config_prod.coffee -s",
     "test": "testacular test/testacular.config.js",
-    "start": "brunch watch -c config_prod.coffee -s"
+    "start": "brunch watch -c config.coffee -s"
   },
   "repository": "",
   "author": "",

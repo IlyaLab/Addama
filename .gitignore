@@ -13,7 +13,6 @@ logs
 results
 
 .idea
-proxy.json
 node_modules
 npm-debug.log
 _public

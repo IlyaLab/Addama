@@ -1,7 +1,7 @@
 {
 	"proxy": {
 		"url": "/svc",
-	        "host": "hostname",
-	        "port": 1111
+	        "host": "glados1",
+	        "port": 8000
 	}
 }
