@@ -128,7 +128,11 @@ Controller = {
 						var gridView = new GridView({model:model});
 						 	$('#mainDiv').html(gridView.render().el);
 		  			},
-			'circ'	: function(model) {},
+			'circ'	: function(model) {
+				var CircView = require('../views/circ_view');
+						var circView = new CircView({model:model});
+						 	$('#mainDiv').html(circView.render().el);
+			},
 			'twoD'	: function(model) {},
 			'kde'	: function(model) {},
 			'parcoords' :function(model) {},
