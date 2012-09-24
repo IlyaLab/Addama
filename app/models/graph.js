@@ -38,8 +38,9 @@ module.exports = Model.extend({
 					_.extend(options, {x:'r1',y:'r2',edgeRouting:'straight'});
 				break;
 				case('rf-ace') :
+				_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal'});
 				default:
-					_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal'});
+					_.extend(options, {x:'x',y:'y',edgeRouting:'diagonal'});
 				break;
 			}
 
