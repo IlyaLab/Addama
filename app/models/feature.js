@@ -10,10 +10,11 @@ module.exports = Node.extend({
 	},
 
 	parse: function(response) {
+		var lookup = qed.labels;
 
 		var data = response.split(':');
 
-		response.label = response.label || data[2];
+		response.label = response.label || lookup[data[2]];
 		response.type = data[0];
 		response.source = data[1];
 

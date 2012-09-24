@@ -1,40 +1,47 @@
 var Controller = require('lib/controller');
 var Router = require('lib/router');
-var Router = require('lib/router');   
 
 // Application bootstrapper.
 Application = {
   initialize: function() {
-	    
-    // Ideally, initialized classes should be kept in controllers & mediator.
-    // If you're making big webapp, here's more sophisticated skeleton
-    // https://github.com/paulmillr/brunch-with-chaplin
-    this.initLayout();
+     _.bindAll(this,'initLayout','initControllers','initRouters','initMediators');
 
-    this.initControllers();
-    this.initRouters();
-
-    this.initMediators();
+    var me = this;
     
-    if (typeof Object.freeze === 'function') Object.freeze(this);
+    // Ideally, initialized classes should be kept in controllers & mediator.
+      
+      me.initLayout();
+      me.initMediators();
+      me.initControllers();
+      me.initRouters();
+
+      if (typeof Object.freeze === 'function') Object.freeze(this);
+   
   },
 
-  initLayout : function() {
-  	
+  initLayout : function() { 	
   	Controller.app.layout();
   },
 
-  initControllers : function () {
-	this.Controller = Controller;
+  initControllers : function() {
+	  this.Controller = Controller;
   },
 
-  initRouters : function () {  
-  	
+  initRouters : function() {  
   	 this.router = new Router();
   },
 
   initMediators : function() {
   	this.mediator = Backbone.Mediator;
+  },
+  
+  initListeners : function() {
+    this.mediator.subscribe('edge:select', function generateTwoD(edge,analysis,dataset){
+      var Feature = require('./models/Feature');
+      var feature1 = new Feature(edge.node1);
+      var feature2 = new Feature(edge.node2);
+      Controller.vis[twoD](new FeatureList([feature1,feature2]));
+    });
   }
 
 }

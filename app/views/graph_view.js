@@ -6,8 +6,8 @@ var PC = require('./parcoords_view');
 
 module.exports = View.extend({
 
-    model:Graph,
-    template:template,
+  model : Graph,
+  template:template,
 
     events: {
         "click .graph-controls-reset": "resetControls",
@@ -26,75 +26,79 @@ module.exports = View.extend({
         "click #colorby-edges a": "colorByEdges"
     },
 
-    initialize:function () {
-        _.bindAll(this, 'afterRender', 'renderGraph', 'resetControls',
-                    'showLabels', 'hideLabels', 'showLines', 'hideLines',
-                    'toggleActive', 'toggleDynLayout',
-                    'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
-                    'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
-    },
+  initialize : function() {
+      _.bindAll(this, 'afterRender', 'renderGraph', 'resetControls',
+                  'showLabels', 'hideLabels', 'showLines', 'hideLines',
+                  'toggleActive', 'toggleDynLayout',
+                  'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
+                  'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
 
-    afterRender:function () {
-        var _this = this;
-        this.$el.addClass('row-fluid');
-        this.model.fetch().done(_this.renderGraph);
-    },
+  },
+  
+  afterRender: function() {
+    var _this = this;
+    this.$el.addClass('row-fluid');
+    this.model.fetch().done(_this.renderGraph);
+  },
 
-    renderGraph:function (options) {
-        console.log("renderGraph");
+  renderGraph: function(options) {
+      var _this = this;
+      var parentDiv = this.$el.find('.graph-container'),
+      w= parentDiv.width(),
+      h= parentDiv.height();
+      var vis_options = this.model.defaultParameters();
+      
+      var x = vis_options.x || 'r1',
+       y = vis_options.y || 'hodge',
+       edgeRouting = vis_options.edgeRouting || 'straight';
 
-        var _this = this;
-        var parentDiv = this.$el.find('.graph-container'),
-            w = parentDiv.width(),
-            h = parentDiv.height();
-        var vis_options = this.model.defaultParameters();
+      var edge_scale = d3.scale.log().domain(d3.extent(_this.model.getEdgesArray(),function(a) { return a[2];})).range([0.2,1.0]);
+      var edgeO = function(edge) {
+          return edge_scale(edge.weight);
+      };
 
-        var x = vis_options.x || 'r1',
-            y = vis_options.y || 'hodge',
-            edgeRouting = vis_options.edgeRouting || 'straight';
+  		var treeChart = TreeChart({
+                          			width:w, 
+                          			height:h,   			
+                          			nodes:{
+                                    data : this.model.getNodesArray(),
+                          					y: y,
+                          					x: x
+                          			},
+                                edges: {
+                                    data: this.model.getEdgesArray()
+                                }
+                		  })
+                    .edgeOpacity(edgeO)
+                    .edgeRoute(edgeRouting)
+                    .on('node',nodeClicked)
+                    .on('edge',edgeClicked);
 
-        var edge_scale = d3.scale.log().domain(d3.extent(_this.model.getEdgesArray(), function (a) {
-            return a[2];
-        })).range([0.2, 1.0]);
-        var edgeO = function (edge) {
-            return edge_scale(edge.weight);
-        };
+  		d3.select('.graph-container')
+              .call(treeChart);
 
-        var treeChart = TreeChart({
-            width:w,
-            height:h,
-            nodes:{
-                data:this.model.getNodesArray(),
-                y:y,
-                x:x
-            },
-            edges:{
-                data:this.model.getEdgesArray()
-            }
-        })
-            .edgeOpacity(edgeO)
-            .edgeRoute(edgeRouting);
+      var filter = this.$el.find('.filter-container');
+      var pc_view = new PC({model:this.model});
+      filter.html(pc_view.render().el);
+      pc_view.showData();
 
-        d3.select('.graph-container')
-            .call(treeChart);
+      Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
+   
+      function dimension_selected(dimension) {
+        var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
+        treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
+        treeChart.redraw();
+      }
 
-        var filter = this.$el.find('.filter-container');
-        var pc_view = new PC({model:this.model});
-        filter.html(pc_view.render().el);
-        pc_view.showData();
+      function nodeClicked(node) {
+        Backbone.Mediator.publish('feature:select', new Feature(node));
+      }
 
-        Backbone.Mediator.subscribe('dimension:select', dimension_selected, this, false);
-
-        function dimension_selected(dimension) {
-            var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1, 1.0]);
-            treeChart.nodeOpacity(function (node) {
-                return scale(node[dimension]);
-            });
-            treeChart.redraw();
-        }
-
-    },
-
+      function edgeClicked(edge) {
+        Backbone.Mediator.publish('edge:select', new Edge(edge));
+      }
+  },
+    
     showLabels: function(ev) {
         console.log("showLabels");
     },

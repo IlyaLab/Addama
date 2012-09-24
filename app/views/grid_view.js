@@ -4,7 +4,7 @@ var FeatureMatrix = require('../models/featureMatrix');
 
 module.exports = View.extend({
 
-  model:FeatureMatrix,
+  collection:FeatureMatrix,
   template:template,
 
   initialize : function() {
@@ -16,17 +16,24 @@ module.exports = View.extend({
   afterRender: function() {
   	var _this = this;
     this.$el.addClass('row-fluid');
-    this.model.fetch().done(_this.renderGrid);
+    this.collection.fetch().done(_this.renderGrid);
   },
 
   renderGrid : function(){
-	var container = this.$el.find(".grid-container");
+	  var container = this.$el.find(".grid-container");
 		var grid,
 		    columns = [],
-		    rows = this.model.toJSON();
+		    rows = this.collection.toJSON();
 
-		_.each(this.model.getHeaders(), function(i) {
-			columns.push({id: i, name: i, field: i, sortable: true, selectable: true});
+    var ignore_columns = ['feature_id'];
+
+    var temp_cols = _.difference(this.collection.getHeaders(),(ignore_columns));
+
+    temp_cols.splice(0, 0, temp_cols.splice(temp_cols.indexOf('label'), 1)[0]);  //move 'label' field to the front         
+
+    var width = function(idx) { return idx === 0 ? 320 : 60; }
+    _.each(temp_cols, function(i,idx) {
+			columns.push({id: i, name: i, field: i, width: width(idx), sortable: true, selectable: true});
 		});
 
 	    var checkboxSelector = new Slick.CheckboxSelectColumn({
@@ -36,12 +43,12 @@ module.exports = View.extend({
 	    columns.unshift(checkboxSelector.getColumnDefinition());
 
 		var options = {
-			enableCellNavigation: false,
+			enableCellNavigation: true,
 			enableColumnReorder: false
 		};
 
 		grid = new Slick.Grid(container, rows, columns, options);
-		grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
+		grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: true}));
 		grid.registerPlugin(checkboxSelector);
 		grid.onSort.subscribe(function(e, args){ // args: sort information. 
 
@@ -67,6 +74,8 @@ module.exports = View.extend({
 			        }
             return args.sortAsc ? result : -result;
         });
+
+        grid.onSelectedRangesChanged(function(rows){});
         
         args.grid.invalidateAllRows();
    		args.grid.render();

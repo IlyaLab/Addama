@@ -1,6 +1,7 @@
 var application = require('application');
 
 $(function() {
-	application.initialize();
- 	Backbone.history.start();
+	qed = _.extend(qed,{app: application});
+   	application.initialize();
+	Backbone.history.start();    
 });

@@ -17,10 +17,11 @@ module.exports = Model.extend({
   },
 
 	parse: function(response) {
+		var lookup = qed.labels;
 
 		var feature = response.feature_id.split(':');		
 		
-		response.label = feature[2];
+		response.label = lookup[feature];
 		response.type = feature[0];
 		response.source = feature[1];
 
