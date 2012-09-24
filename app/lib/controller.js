@@ -94,11 +94,15 @@ Controller = {
 					Model = require('../models/featureList');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
 				}
-			
+
 			} else if ( analysis_type === 'mutations' ) {
 				Model = require('../models/mutations');
-					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
-			
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });			
+					
+			} else if ( analysis_type === 'information_gain' ) {
+				Model = require('../models/genomic_featureList');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });			
+
 			} else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
 				vis_type = vis_type || 'grid';  //or parcoords?
 				if ( len <= 1 ) {  // 1 or no parameters.  just draw vis of analysis

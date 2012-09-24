@@ -1,11 +1,11 @@
 var View = require('./view');
 var template = require('./templates/circ');
-var Graph = require('../models/graph');
+var GFList = require('../models/genomic_featureList');
 var PC = require('./parcoords_view');
 
 module.exports = View.extend({
 
-  model : Graph,
+  model : GFList,
   template:template,
 
   initialize : function() {
@@ -23,12 +23,31 @@ module.exports = View.extend({
       var parentDiv = this.$el.find('.circ-container'),
       div = parentDiv.get(0);
 
+      $('.circ-container',this.$el).attr('id',this.model.dataset_id);
+
+      var features = this.model.toJSON();
+      var extent = d3.extent(features,function(f) { return f['ig'];});
+
       var width = parentDiv.height(),
          height = parentDiv.height(),
-         ring_radius = width / 20;
+         ring_radius = width / 10;
 
-      var vis_options = this.model.defaultParameters(),
-           chrom_info = qed.vis.genome;
+      //var vis_options = this.model.defaultParameters(),
+        var   chrom_info = qed.vis.genome;
+        var hovercard_config = {
+          Feature: 'label',
+          Location: function(feature) { 
+            return 'Chr ' + feature.chr + ' ' + feature.start + (feature.end ? '-' + feature.end : '');
+          },
+        };
+
+        _.each(this.model.getAnnotationHeaders(), function(header) {
+          hovercard_config[header] = header;
+        });
+
+        var color_scale = d3.scale.linear().domain(extent).range(['green','red']);
+
+        var fill_style = function(feature) { return color_scale(feature.ig);};
 
       var circle_vis = new vq.CircVis();
    
@@ -39,9 +58,9 @@ module.exports = View.extend({
                     key_length : chrom_info.chr_lengths
                 },
                 OPTIONS: {
-                    radial_grid_line_width: 1,
                     label_layout_style : 'clock',
-                    label_font_style : '18pt helvetica'
+                    label_font_style : '18pt helvetica',
+                     gap_degrees : 2
                 }
             },
             TICKS : {
@@ -49,12 +68,11 @@ module.exports = View.extend({
                     data_array : []
                 },
                 OPTIONS :{
-                    display_legend : false,
-                    // listener : wedge_listener,
-                    // stroke_style :stroke_style,
-                    // fill_style : function(tick) {return re.plot.colors.node_colors(tick.source); },
-                    // tooltip_links :re.display_options.circvis.tooltips.feature_links,
-                    // tooltip_items :  re.display_options.circvis.tooltips.feature     //optional
+                    wedge_height: 8,
+                    wedge_width:0.7,
+                    overlap_distance:10000000, //tile ticks at specified base pair distance
+                    height : 80,
+                    tooltip_items : hovercard_config
                 }
             },
             PLOT: {
@@ -77,70 +95,69 @@ module.exports = View.extend({
                         type :   'scatterplot'
                     },
                     DATA:{
-                        data_array : []
+                        data_array : features,
+                        value_key : 'ig'
                     },
                     OPTIONS: {
                         legend_label : 'Information Gain' ,
                         legend_description : '',
                         outer_padding : 6,
-                        base_value : 0,
-                        min_value : -1,
-                        max_value : 1,
+                        base_value : Math.min(0,(extent[1]-extent[0])/2),
+                        min_value : extent[0]*0.8 ,
+                        max_value : extent[1]*1.2,
                         radius : 4,
-                        draw_axes : false,
+                        draw_axes : true,
                         shape:'dot',
-                    //     fill_style  : function(feature) {
-                    //         return re.plot.colors.link_sources_colors([feature.sourceNode.source,feature.targetNode.source]);
-                    //     },
-                    // //     stroke_style : stroke_style,
-                    //     background_style: re.display_options.circvis.rings.color_background,
+                         fill_style  : fill_style,
+                        stroke_style : 'none',
+                        tooltip_items : hovercard_config
                     //     tooltip_items : unlocated_tooltip_items,
                     //     listener : initiateDetailsPopup
                     }
                 }
-            ],
-            NETWORK:{
-                DATA:{
-                    data_array : []
-                },
-                OPTIONS: {
-                    outer_padding : 6,
-                    node_highlight_mode : 'isolate',
-                    node_fill_style : 'ticks',
-                    // node_stroke_style : stroke_style,
-                    link_line_width : 2,
-                    node_key : function(node) { 
-                            return node['id'];
-                    },
-    //                node_listener : wedge_listener,
-    //                link_listener: initiateDetailsPopup,
-                    // link_stroke_style : function(link) {
-                    //     return re.plot.colors.link_sources_colors([link.sourceNode.source,link.targetNode.source]);},
-                    constant_link_alpha : 0.7,
-                    // node_tooltip_items :   re.display_options.circvis.tooltips.feature,
-                    // node_tooltip_links : re.display_options.circvis.tooltips.feature_links,
-                    tile_nodes: true,
-                    node_overlap_distance : 10000,
-                    // link_tooltip_items :  link_tooltip_items
-                }
-            }
+            ]
+    //         NETWORK:{
+    //             DATA:{
+    //                 data_array : []
+    //             },
+    //             OPTIONS: {
+    //                 outer_padding : 6,
+    //                 node_highlight_mode : 'isolate',
+    //                 node_fill_style : 'ticks',
+    //                 // node_stroke_style : stroke_style,
+    //                 link_line_width : 2,
+    //                 node_key : function(node) { 
+    //                         return node['id'];
+    //                 },
+    // //                node_listener : wedge_listener,
+    // //                link_listener: initiateDetailsPopup,
+    //                 // link_stroke_style : function(link) {
+    //                 //     return re.plot.colors.link_sources_colors([link.sourceNode.source,link.targetNode.source]);},
+    //                 constant_link_alpha : 0.7,
+    //                 // node_tooltip_items :   re.display_options.circvis.tooltips.feature,
+    //                 // node_tooltip_links : re.display_options.circvis.tooltips.feature_links,
+    //                 tile_nodes: true,
+    //                 node_overlap_distance : 10000,
+    //                 // link_tooltip_items :  link_tooltip_items
+    //             }
+            // }
         };
       
       var dataObject = {DATATYPE : "vq.models.CircVisData", CONTENTS : data};
       circle_vis.draw(dataObject);
 
-      var filter = this.$el.find('.filter-container');
-      var pc_view = new PC({model:this.model});
-      filter.html(pc_view.render().el);
-      pc_view.showData();
+      // var filter = this.$el.find('.filter-container');
+      // var pc_view = new PC({model:this.model});
+      // filter.html(pc_view.render().el);
+      // pc_view.showData();
 
-      Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
+      // Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
 
-      function dimension_selected(dimension) {
-        var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
-      //   treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
-      //   treeChart.redraw();
-      }
+      // function dimension_selected(dimension) {
+      //   var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
+      // //   treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
+      // //   treeChart.redraw();
+      // }
      
   }
 
