@@ -1,21 +1,34 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
-require("../vis/oncovis");
-require("../vis/oncovisSlider");
+var Mutations = require('../models/mutations');
 
 module.exports = View.extend({
+    model: Mutations,
     template:template,
     label: "Oncovis",
+
+    events : {
+            "click .advanced" : "showModal"
+    },
+
+    initialize: function() {
+        _.bindAll(this,'renderGraph','initControls','autocomplete','render');
+    },
 
     getRenderData:function () {
     },
 
     afterRender:function () {
+        var _this = this;
         this.$el.addClass('row');
+        this.initControls();
+        this.model.fetch().done(_this.renderGraph);
     },
 
     renderGraph:function () {
         console.log("renderGraph:start");
+
+        var oncovisData = this.model.toJSON();
 
         var categories = _.uniq(_.compact(_.flatten(_.map(oncovisData.data, function(obj) {
             return _.map(obj, function(sub) {
@@ -57,12 +70,7 @@ module.exports = View.extend({
         _.extend(optns, { "column_spacing": this.$el.find(".slider_barspacing").oncovis_range_value() });
         _.extend(optns, { "cluster_spacing": this.$el.find(".slider_clusterspacing").oncovis_range_value() });
         _.extend(optns, { "label_fontsize": this.$el.find(".slider_fontsize").oncovis_range_value() });
-
-        this.$el.on('click','.advanced', function() {
-            me.$el('#modal_controls_vis').modal('show');  
-            return false;
-        });
-
+        
         this.$el.find(".oncovis-container").oncovis(oncovisData.data, optns);
 
         console.log("renderGraph:end");
@@ -97,6 +105,11 @@ module.exports = View.extend({
 
         console.log("initControls:end");
     },
+
+    showModal: function() {
+            this.$el.find('.modal_controls_vis').modal('show');  
+            return false;
+        },
 
     autocomplete: function(query, resultBin) {
         var found = [];

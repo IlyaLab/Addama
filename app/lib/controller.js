@@ -1,10 +1,4 @@
-var TopNavBar = require('../views/topbar_view');
-var Oncovis = require('../views/oncovis_view');
-
 Controller = {
-    topnavbar: new TopNavBar(),
-    oncovisView: new Oncovis(),
-
 	testwindow : {
 		view : function() {
 			var WinView = require('../views/window_view');
@@ -24,9 +18,9 @@ Controller = {
 
 	app : {
 		layout : function() {
-			$('#navigation-container').append(Controller.topnavbar.render().el);
-            Controller.topnavbar.initSearchAutocomplete();
-            Controller.topnavbar.addAutocompleteSource(Controller.oncovisView);
+			var TopNavBar = require('../views/topbar_view');
+			var topnavbar = new TopNavBar();
+			$('#navigation-container').append(topnavbar.render().el);
 		}
 	},
 
@@ -63,9 +57,9 @@ Controller = {
 
 	oncovis : {
 		view : function() {
-			$('#mainDiv').html(Controller.oncovisView.render().el);
-            Controller.oncovisView.initControls();
-            Controller.oncovisView.renderGraph();
+			var Oncovis = require('../views/oncovis_view');
+    		var oncovisView =  new Oncovis();
+			$('#mainDiv').html(oncovisView.render().el);
 		}
 	},
 
@@ -100,9 +94,12 @@ Controller = {
 					Model = require('../models/featureList');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
 				}
-			}
-
-			else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
+			
+			} else if ( analysis_type === 'mutations' ) {
+				Model = require('../models/mutations');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
+			
+			} else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
 				vis_type = vis_type || 'grid';  //or parcoords?
 				if ( len <= 1 ) {  // 1 or no parameters.  just draw vis of analysis
 					 Model = require('../models/featureMatrix');
@@ -129,14 +126,18 @@ Controller = {
 						 	$('#mainDiv').html(gridView.render().el);
 		  			},
 			'circ'	: function(model) {
-				var CircView = require('../views/circ_view');
+						var CircView = require('../views/circ_view');
 						var circView = new CircView({model:model});
-						 	$('#mainDiv').html(circView.render().el);
+						$('#mainDiv').html(circView.render().el);
 			},
 			'twoD'	: function(model) {},
 			'kde'	: function(model) {},
 			'parcoords' :function(model) {},
-			'heat' : function(model) {}
+			'heat' : function(model) {
+						var Oncovis = require('../views/oncovis_view');
+	    				var oncovisView =  new Oncovis({model:model});
+						$('#mainDiv').html(oncovisView.render().el);
+			}
 	}
 };
 

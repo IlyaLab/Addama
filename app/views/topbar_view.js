@@ -6,6 +6,15 @@ module.exports = View.extend({
     template: template,
     _autocompleteSources: [],
 
+    initialize: function() {  
+        _.bindAll(this,'initSearchAutocomplete','addAutocompleteSource');
+    },
+
+    afterRender: function() {
+        this.initSearchAutocomplete();
+        this.addAutocompleteSource();
+    },
+
     initSearchAutocomplete: function() {
         var queryEl = this.$el.find("#querySearchTerm");
         var resultsModal = this.$el.find("#searchResults");
