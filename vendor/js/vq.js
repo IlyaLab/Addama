@@ -1317,7 +1317,7 @@ vq.Hovercard.prototype.renderFooter = function() {
         return false;
     }
     $(close).on('click',hideHovercard);
-    $('<i></i>').addClass('icon-remove').html('CLOSE').appendTo(close);
+    $('<i></i>').addClass('icon-remove').appendTo(close);
     $(footer).append(close);
     return footer;
 };

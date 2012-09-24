@@ -126,7 +126,7 @@ Controller = {
 		  			},
 		  	'grid' : function(model) {			
 						var GridView = require('../views/grid_view');
-						var gridView = new GridView({model:model});
+						var gridView = new GridView({collection:model});
 						 	$('#mainDiv').html(gridView.render().el);
 		  			},
 			'circ'	: function(model) {

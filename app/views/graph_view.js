@@ -48,7 +48,9 @@ module.exports = View.extend({
                                 }
                 		  })
                     .edgeOpacity(edgeO)
-                    .edgeRoute(edgeRouting);
+                    .edgeRoute(edgeRouting)
+                    .on('node',nodeClicked)
+                    .on('edge',edgeClicked);
 
   		d3.select('.graph-container')
               .call(treeChart);
@@ -65,7 +67,14 @@ module.exports = View.extend({
         treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
         treeChart.redraw();
       }
-     
+
+      function nodeClicked(node) {
+        Backbone.Mediator.publish('feature:select', new Feature(node));
+      }
+
+      function edgeClicked(edge) {
+        Backbone.Mediator.publish('edge:select', new Edge(edge));
+      }
   }
 
 });

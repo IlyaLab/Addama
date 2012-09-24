@@ -50,11 +50,10 @@ module.exports = Model.extend({
 	},
 
 	parse: function(graphData){
-		if (!!~this.url().indexOf('tsv')) {
+		if (!!~this.get('dataset_id').indexOf('.tsv')) {
 			return this.parseTSV(graphData);
 		}
 		return this.parseJSON(graphData);
-
 	},
 
 	parseTSV: function(graphData) {
@@ -65,12 +64,13 @@ module.exports = Model.extend({
 		var idx;
 		var edge={};
 		var node_map = {};
+		var lookup = qed.labels;
 		_.each(rows, function(row) {
 			var feature1 = row[0],
 			    feature2 = row[1];
-			
-			var node1 = {feature_id: feature1, label: feature1.split(':')[2] }, 
-			    node2 = {feature_id: feature2, label: feature2.split(':')[2] }, 
+			    var lookup = qed.app.labels;			
+			var node1 = {feature_id: feature1, label: lookup[feature1] }, 
+			    node2 = {feature_id: feature2, label: lookup[feature2] }, 
 			     edge = {};
 
 			if (idx = node_map[feature1]) {
@@ -96,13 +96,14 @@ module.exports = Model.extend({
 			data_keys = new Array(),
 	              obj = new Object(),
 	                i = 0;
+           var lookup = qed.labels;
  		    
 	    Object.keys(graphData).forEach(function(a) {  // strip out edges
 	        if (a === 'adj' || a ==='iByn')   return;
 	        node_data[a] = _.clone(graphData[a]);
 	      });
 
-	    node_data.label = node_data.nByi.map(function(f) { return f.split(':')[2];});
+	    node_data.label = node_data.nByi.map(function(f) { return lookup[f];});
 
 	    data_keys = _.keys(node_data);
 	    key_len = data_keys.length;

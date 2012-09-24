@@ -23,6 +23,9 @@ var TreeChart = function(config) {
 	 	xScale,
 	 	yScale,
 	 	vis;
+
+	 var nodeClickListener = new Function(),
+	 	edgeClickListener = new Function();
 	
 	var	parseAdj = function(element) { 
 		return function(link) { 
@@ -56,7 +59,7 @@ var TreeChart = function(config) {
 	 	});
 
 	 	edgeRoute = setEdgeRoute();
-	 	
+
 	 	selection.each(function render(){
 
 	 		var zoom = function() {
@@ -107,7 +110,8 @@ var TreeChart = function(config) {
 					    .enter().append("path")
 					       .attr("class", "link")
 					       .style('stroke-opacity',edgeOpacity)
-					       .attr("d", edgeRoute);		    
+					       .attr("d", edgeRoute)
+					       .on('click',edgeClickListener);
 				 
 			   nodes = vis.selectAll("g.node")
 					       .data(node_list,function(d) { return d[label];})
@@ -122,7 +126,8 @@ var TreeChart = function(config) {
 					       .attr("r", circle.radius)
 					       .attr('cursor','pointer')
 					       .on('mouseover',highlightSubTree)
-					       .on('mouseout',removeHighlights);
+					       .on('mouseout',removeHighlights)
+					       .on('click',nodeClickListener);
 					      					 
 					   nodes.append("text")
 					       .attr("dx", function(d,i) { return dx; })
@@ -144,7 +149,7 @@ var TreeChart = function(config) {
 								    d3.select(this).attr("transform", "translate("+d._pos.y+","+d._pos.x+")");
 
 								    vis.selectAll("path.link")
-								     .attr("d", diagonal);
+								     .attr("d", edgeRoute);
 								  });
 
 	treeChart.redraw = function() {
@@ -234,7 +239,20 @@ var TreeChart = function(config) {
 	    edgeRouting = callback;
 	    edgeRoute = setEdgeRoute();
 	    return this;	
-	}
+	};
+
+	treeChart.on = function(event,callback) {
+		if (!arguments.length) return;
+		switch(event) {
+				case('node'):
+					nodeClickListener = callback;
+				break;
+				case('edge'):
+					edgeClickListener = callback;
+				break;
+		}
+		return this;
+	};
 
 	return treeChart;
 };
