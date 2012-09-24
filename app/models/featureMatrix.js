@@ -4,7 +4,7 @@ var FeatureData = require('./featureData');
 module.exports = Collection.extend({
 	model: FeatureData,
 
-	serviceRoot : '/svc',
+	serviceRoot : 'svc',
 	serviceRead : '/data',
 	serviceDir :'/analysis/feature_matrices',
 

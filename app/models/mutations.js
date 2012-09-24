@@ -2,7 +2,7 @@ var Model = require('./model');
 
 module.exports = Model.extend({
 
-	serviceRoot : '/svc',
+	serviceRoot : 'svc',
 	serviceRead : '/data',
 	serviceDir :'/analysis/mutations',
 

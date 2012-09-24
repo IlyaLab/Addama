@@ -4,7 +4,7 @@ var EdgeList = require('./edgeList');
 
 module.exports = Model.extend({
 
-	serviceRoot : '/svc',
+	serviceRoot : 'svc',
 	serviceRead : '/data',
 	serviceDir :'/analysis/layouts',
 

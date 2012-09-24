@@ -4,7 +4,7 @@ var GenomicFeature = require('./genomic_feature');
 module.exports = Collection.extend({
 	model:GenomicFeature,
 
-	serviceRoot : '/svc',
+	serviceRoot : 'svc',
 	serviceRead : '/data',
 	serviceDir :'/analysis',
 
