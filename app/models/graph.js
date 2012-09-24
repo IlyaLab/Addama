@@ -19,7 +19,8 @@ module.exports = Model.extend({
 	},
 
 	initialize: function() {
-		_.bindAll(this,'getEdgesArray','getNodesArray','url','parse','defaultParameters');
+		_.bindAll(this,'getEdgesArray','getNodesArray','url','parse','defaultParameters'
+			,'parseTSV','parseJSON','fetch');
 	},
 
 	getEdgesArray : function() {
@@ -39,6 +40,7 @@ module.exports = Model.extend({
 				break;
 				case('rf-ace') :
 				_.extend(options, {x:'r1',y:'hodge',edgeRouting:'diagonal'});
+				break;
 				default:
 					_.extend(options, {x:'x',y:'y',edgeRouting:'diagonal'});
 				break;
@@ -48,7 +50,46 @@ module.exports = Model.extend({
 	},
 
 	parse: function(graphData){
+		if (!!~this.url().indexOf('tsv')) {
+			return this.parseTSV(graphData);
+		}
+		return this.parseJSON(graphData);
 
+	},
+
+	parseTSV: function(graphData) {
+		var rows = d3.tsv.parseRows(graphData);
+		var nodes = [];
+		var edges = [];
+		var node1, node2, values;
+		var idx;
+		var edge={};
+		var node_map = {};
+		_.each(rows, function(row) {
+			var feature1 = row[0],
+			    feature2 = row[1];
+			
+			var node1 = {feature_id: feature1, label: feature1.split(':')[2] }, 
+			    node2 = {feature_id: feature2, label: feature2.split(':')[2] }, 
+			     edge = {};
+
+			if (idx = node_map[feature1]) {
+				edge['source']=idx;
+			} else {
+				edge['source'] = node_map[feature1] = (nodes.push(node1) - 1);
+			}
+			if (idx = node_map[feature2]) {
+				edge['target']=idx;
+			} else {
+				edge['target'] = node_map[feature2] = (nodes.push(node2) - 1);
+			}
+			edge['weight'] = row[2];
+			edges.push(edge);
+		});
+
+		return {nodes: new FeatureList(nodes), edges: new Edgelist(edges)};
+	},
+	parseJSON: function(graphData) {
 		var node_data = new Object(),
 				nodes = new Array(),
 			    edges = graphData.adj,
@@ -81,6 +122,13 @@ module.exports = Model.extend({
 			//the returned object is mapped to the model properties ie. this.nodes, this.edges
 		return { nodes: new FeatureList(nodes), edges : new EdgeList(edges) };  
 
+	},
+	fetch: function(options) {
+		if (!!~this.url().indexOf('tsv')) {
+			return Backbone.Model.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
+		}
+		else {
+			return Backbone.Model.prototype.fetch.call(this, options);
+		}
 	}
-
 });

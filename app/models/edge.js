@@ -13,7 +13,7 @@ module.exports = Model.extend({
     return {
       source: response[0],
       target: response[1],
-      weight: response[2]
+      weight: NaN || response[2]
     };
   }
 
