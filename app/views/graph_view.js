@@ -19,13 +19,19 @@ module.exports = View.extend({
         "click #dl-straight, #dl-diagonal, #dl-diagonal-directed": "toggleDynLayout",
         "click #dl-straight": "layoutStraight",
         "click #dl-diagonal": "layoutDiagonal",
-        "click #dl-diagonal-directed": "layoutDiagonalDirected"
+        "click #dl-diagonal-directed": "layoutDiagonalDirected",
+        "click #dimensions-x a": "changeXAxis",
+        "click #dimensions-y a": "changeYAxis",
+        "click #colorby-nodes a": "colorByNodes",
+        "click #colorby-edges a": "colorByEdges"
     },
 
     initialize:function () {
-        _.bindAll(this, 'afterRender', 'renderGraph', 'wireControls', 'resetControls',
-                    'showLabels', 'hideLabels', 'showLines', 'hideLines', 'toggleActive',
-                    'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected');
+        _.bindAll(this, 'afterRender', 'renderGraph', 'resetControls',
+                    'showLabels', 'hideLabels', 'showLines', 'hideLines',
+                    'toggleActive', 'toggleDynLayout',
+                    'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
+                    'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
     },
 
     afterRender:function () {
@@ -89,10 +95,6 @@ module.exports = View.extend({
 
     },
 
-    wireControls:function () {
-        console.log("wireControls");
-    },
-
     showLabels: function(ev) {
         console.log("showLabels");
     },
@@ -135,6 +137,26 @@ module.exports = View.extend({
 
     layoutDiagonalDirected: function(ev) {
         console.log("layoutDiagonalDirected");
+    },
+
+    changeXAxis: function(ev) {
+        ev.preventDefault();
+        console.log("changeXAxis:" + $(ev.target).html());
+    },
+
+    changeYAxis: function(ev) {
+        ev.preventDefault();
+        console.log("changeYAxis:" + $(ev.target).html());
+    },
+
+    colorByNodes: function(ev) {
+        ev.preventDefault();
+        console.log("colorByNodes:" + $(ev.target).html());
+    },
+
+    colorByEdges: function(ev) {
+        ev.preventDefault();
+        console.log("colorByEdges:" + $(ev.target).html());
     }
 
 });
