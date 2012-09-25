@@ -10,13 +10,25 @@ module.exports = View.extend({
   template:template,
 
   initialize : function() {
-      _.bindAll(this,'afterRender','renderGraph');
+      _.bindAll(this,'afterRender','renderGraph','redrawTree');
+      this.redrawTree = _.throttle(this.redrawTree,300);
   },
   
   afterRender: function() {
-    var _this = this;
-    this.$el.addClass('row-fluid');
-    this.model.fetch().done(_this.renderGraph);
+      var _this = this;
+      this.$el.addClass('row-fluid');
+      this.model.fetch({silent:true}).done(_this.renderGraph);
+
+      this.model.bind('change', _this.redrawTree);
+      this.model.bind('reset', _this.redrawTree);
+  },
+
+  redrawTree: function(){
+      this.treeChart.nodes(this.model.getNodesArray())
+                    .edges(this.model.getEdgesArray());
+                    
+      d3.select('.graph-container')
+        .call(this.treeChart.redraw);
   },
 
   renderGraph: function(options) {
@@ -35,7 +47,7 @@ module.exports = View.extend({
           return edge_scale(edge.weight);
       };
 
-  		var treeChart = TreeChart({
+  		this.treeChart = new TreeChart({
                           			width:w, 
                           			height:h,   			
                           			nodes:{
@@ -53,7 +65,7 @@ module.exports = View.extend({
                     .on('edge',edgeClicked);
 
   		d3.select('.graph-container')
-              .call(treeChart);
+              .call(this.treeChart);
 
       var filter = this.$el.find('.filter-container');
       var pc_view = new PC({model:this.model});
@@ -63,9 +75,11 @@ module.exports = View.extend({
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
 
       function dimension_selected(dimension) {
-        var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
-        treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
-        treeChart.redraw();
+        var nodes = _this.model.getNodesArray();
+        var scale = d3.scale.linear().domain(d3.extent(_.pluck(nodes,dimension))).range([0.1,1.0]);
+        _this.treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
+         d3.select('.graph-container')
+            .call(_this.treeChart.redraw);
       }
 
       function nodeClicked(node) {

@@ -22,6 +22,7 @@ var TreeChart = function(config) {
 	 	edges,
 	 	xScale,
 	 	yScale,
+	 	selection_list,
 	 	vis;
 
 	 var nodeClickListener = new Function(),
@@ -43,20 +44,7 @@ var TreeChart = function(config) {
 	 function treeChart(selection) {
 	 	selection = selection || document.body;	
 
-	 	xScale = d3.scale.linear()
-	 						.domain(d3.extent(_.pluck(node_list,x)))
-	 						.range([10,padded_height-10]);
-
-		yScale = d3.scale.linear()
-	 						.domain(d3.extent(_.pluck(node_list,y)))
-	 						.range([[padded_width-40],10]);
-
-	 	_.each(node_list,function(node) {
-	 		node._pos = {
-	 				x:xScale(node[x]),
-	 				y:yScale(node[y])
-	 		};
-	 	});
+	 	setupData();
 
 	 	edgeRoute = setEdgeRoute();
 
@@ -106,7 +94,7 @@ var TreeChart = function(config) {
 					    	 .attr("transform","translate("+ (-0.5*overlay_width) + "," + (-0.5*overlay_height)+")");
 
 		     edges = vis.selectAll("path.link")
-	    				   .data(links)
+	    				   .data(links, function(l) { return l.edge_id;})
 					    .enter().append("path")
 					       .attr("class", "link")
 					       .style('stroke-opacity',edgeOpacity)
@@ -117,6 +105,7 @@ var TreeChart = function(config) {
 					       .data(node_list,function(d) { return d[label];})
 					     .enter().append("g")
 					       .attr("class", "node")
+					       .attr('cursor','pointer')
 					       .style('stroke-opacity',nodeOpacity)
 					       .style('fill-opacity',nodeOpacity)
 					       .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
@@ -124,7 +113,6 @@ var TreeChart = function(config) {
 
 					   nodes.append("circle")
 					       .attr("r", circle.radius)
-					       .attr('cursor','pointer')
 					       .on('mouseover',highlightSubTree)
 					       .on('mouseout',removeHighlights)
 					       .on('click',nodeClickListener);
@@ -152,20 +140,83 @@ var TreeChart = function(config) {
 								     .attr("d", edgeRoute);
 								  });
 
-	treeChart.redraw = function() {
-		redrawNodes();
-		redrawEdges();
+	treeChart.redraw = function(selection) {
+		selection.each(function(){
+		redrawNodes(this);
+		redrawEdges(this);
+	});
 	};
 
-	function redrawEdges() {
-		d3.selectAll('path.link')
-	       .style('stroke-opacity',edgeOpacity);	       
+
+	function setupData() {
+
+	 	xScale = d3.scale.linear()
+	 						.domain(d3.extent(_.pluck(node_list,x)))
+	 						.range([10,padded_height-10]);
+
+		yScale = d3.scale.linear()
+	 						.domain(d3.extent(_.pluck(node_list,y)))
+	 						.range([[padded_width-40],10]);
+
+		updatePositionData();
+		updateEdgeData();
+	 }
+
+	 function updatePositionData() {
+	 	 	_.each(node_list,function(node) {
+	 		node._pos = {
+	 				x:xScale(node[x]),
+	 				y:yScale(node[y])
+	 		};
+	 	});
+	 }
+
+ 	function updateEdgeData() {
+		_.each(links, function(l) { 
+			l.edge_id = node_list[l.source].feature_id + '_' + node_list[l.target].feature_id; 
+	});
 	}
 
-	function redrawNodes() {
-	    d3.selectAll('g.node')
-	       .style('stroke-opacity',nodeOpacity)
-	       .style('fill-opacity',nodeOpacity);
+	function redrawEdges(selection) {
+		 var edges = d3.select(selection).select('g g').selectAll("path.link")
+	    				   .data(links,function(l) { return l.edge_id; });  
+ 
+		    edges.enter()
+			    .append("path")
+			       .attr("class", "link")
+			       .style('stroke-opacity',edgeOpacity)
+		    	   .attr("d", edgeRoute)
+		       	  .on('click',edgeClickListener);       
+
+		    edges.exit().remove();
+	}
+
+	function redrawNodes(selection) {
+	var nodes = d3.select(selection).select('g g').selectAll('g.node')
+	    .data(node_list,function(d) { return d[label];});
+      			
+			var g = nodes.enter()
+			.append("g")
+      			.attr("class", "node")
+		        .attr('cursor','pointer')
+		        .style('stroke-opacity',nodeOpacity)
+		        .style('fill-opacity',nodeOpacity)
+		        .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
+		        .call(dragGroup);
+
+		        g.append("circle")
+					       .attr("r", circle.radius)
+					       .on('mouseover',highlightSubTree)
+					       .on('mouseout',removeHighlights)
+					       .on('click',nodeClickListener);
+					      					 
+			   g.append("text")
+			       .attr("dx", function(d,i) { return dx; })
+			       .attr("dy", 3)
+			       .attr("text-anchor","start")
+			       .text(function(d) { return d[label];});
+
+		     nodes.exit().remove();
 	}
 
 	function gatherConnectedPaths(node_index) {
@@ -216,9 +267,17 @@ var TreeChart = function(config) {
 	    return this;
 	};
 
-	treeChart.data = function(value) {
-		if (!arguments.length) return data;
-	    data = value;
+	treeChart.nodes = function(value) {
+		if (!arguments.length) return node_list;
+	    node_list = value;
+	    updatePositionData();
+	    return this;
+	};
+
+	treeChart.edges = function(value) {
+		if (!arguments.length) return links;
+	    links = value;
+	    updateEdgeData();
 	    return this;
 	};
 

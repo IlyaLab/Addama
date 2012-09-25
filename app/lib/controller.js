@@ -115,7 +115,13 @@ Controller = {
 				}
 			}
 
-			Controller.vis[vis_type](model);
+			model.fetch({
+				success : function(model,resp) {
+					var memory_model = new Model(model.toJSON());
+					memory_model.set('original_model',model);
+					Controller.vis[vis_type](memory_model);
+				}
+			});
 	},
 
 	vis : {
