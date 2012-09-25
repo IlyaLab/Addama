@@ -9,8 +9,29 @@ module.exports = View.extend({
   model : Graph,
   template:template,
 
+    events: {
+        "click .graph-controls-reset": "resetControls",
+        "click .toggle-labels .toggle-on": "showLabels",
+        "click .toggle-labels .toggle-off": "hideLabels",
+        "click .toggle-lines .toggle-on": "showLines",
+        "click .toggle-lines .toggle-off": "hideLines",
+        "click .toggle-on, .toggle-off": "toggleActive",
+        "click #dl-straight, #dl-diagonal, #dl-diagonal-directed": "toggleDynLayout",
+        "click #dl-straight": "layoutStraight",
+        "click #dl-diagonal": "layoutDiagonal",
+        "click #dl-diagonal-directed": "layoutDiagonalDirected",
+        "click #dimensions-x a": "changeXAxis",
+        "click #dimensions-y a": "changeYAxis",
+        "click #colorby-nodes a": "colorByNodes",
+        "click #colorby-edges a": "colorByEdges"
+    },
+
   initialize : function() {
-      _.bindAll(this,'afterRender','renderGraph','redrawTree');
+      _.bindAll(this, 'afterRender', 'renderGraph', 'redrawTree', 'resetControls',
+                  'showLabels', 'hideLabels', 'showLines', 'hideLines',
+                  'toggleActive', 'toggleDynLayout',
+                  'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
+                  'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
       this.redrawTree = _.throttle(this.redrawTree,300);
   },
   
@@ -73,7 +94,7 @@ module.exports = View.extend({
       pc_view.showData();
 
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
-
+   
       function dimension_selected(dimension) {
         var nodes = _this.model.getNodesArray();
         var scale = d3.scale.linear().domain(d3.extent(_.pluck(nodes,dimension))).range([0.1,1.0]);
@@ -89,6 +110,70 @@ module.exports = View.extend({
       function edgeClicked(edge) {
         Backbone.Mediator.publish('edge:select', new Edge(edge));
       }
-  }
+  },
+    
+    showLabels: function(ev) {
+        console.log("showLabels");
+    },
+
+    hideLabels: function(ev) {
+        console.log("hideLabels");
+    },
+
+    showLines: function() {
+        console.log("showLines");
+    },
+
+    hideLines: function() {
+        console.log("hideLines");
+    },
+
+    resetControls: function() {
+        console.log("resetControls");
+    },
+
+    toggleActive: function(ev) {
+        var el = ev.target;
+        if (!$(el).hasClass("active")) {
+            $(el.parentNode).find("button").toggleClass("active");
+        }
+    },
+
+    toggleDynLayout: function(ev) {
+        $(".dynamic-layout .active").removeClass("active");
+        $(ev.target).addClass("active");
+    },
+
+    layoutStraight: function(ev) {
+        console.log("layoutStraight");
+    },
+
+    layoutDiagonal: function(ev) {
+        console.log("layoutDiagonal");
+    },
+
+    layoutDiagonalDirected: function(ev) {
+        console.log("layoutDiagonalDirected");
+    },
+
+    changeXAxis: function(ev) {
+        ev.preventDefault();
+        console.log("changeXAxis:" + $(ev.target).html());
+    },
+
+    changeYAxis: function(ev) {
+        ev.preventDefault();
+        console.log("changeYAxis:" + $(ev.target).html());
+    },
+
+    colorByNodes: function(ev) {
+        ev.preventDefault();
+        console.log("colorByNodes:" + $(ev.target).html());
+    },
+
+    colorByEdges: function(ev) {
+        ev.preventDefault();
+        console.log("colorByEdges:" + $(ev.target).html());
+    }
 
 });
