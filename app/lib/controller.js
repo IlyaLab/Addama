@@ -117,8 +117,14 @@ Controller = {
 
 			model.fetch({
 				success : function(model,resp) {
-					var memory_model = new Model(model.toJSON());
-					memory_model.set('original_model',model);
+					var memory_model;
+					if (Model.prototype.add) {
+						memory_model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
+						memory_model.add(model.toJSON(),{silent:true});
+					} else {
+							memory_model = new Model(model.toJSON());
+					}
+					memory_model.original(model);
 					Controller.vis[vis_type](memory_model);
 				}
 			});
