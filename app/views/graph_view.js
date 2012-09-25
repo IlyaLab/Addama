@@ -38,6 +38,36 @@ module.exports = View.extend({
   afterRender: function() {
     var _this = this;
     this.$el.addClass('row-fluid');
+    var analysisid = this.model.get('analysis_id');
+    var split_d_id = this.model.get('dataset_id').split("_");
+    var s_value = (split_d_id.length == 1 ? -1 : split_d_id[split_d_id.length-1])
+    
+    var slider_options = {};
+    
+    switch(analysisid){
+      case "rf-ace":
+        slider_options.max=40;
+        slider_options.step=1;
+        slider_options.value=s_value != -1 ? s_value : 16;
+        slider_options.change=function(event, ui) {
+          qed.app.router.navigate("/rf-ace/cons_predictor_12800_cutoff_"+ui.value+".0/graph",{trigger: true,replace:false}); 
+        }
+        break;
+      case "pairwise":
+        slider_options.max=1;
+        slider_options.step=.1;
+        slider_options.value=s_value != -1 ? s_value : .3;
+        slider_options.change=function(event, ui) {
+          qed.app.router.navigate("/pairwise/continuous_pwpv_"+ui.value+"/graph",{trigger: true,replace:false}); 
+        }
+        break;
+      case "mds":
+        slider_options.disabled=true;
+        this.$el.find(".subset-btn").removeClass("disabled").click( function (){qed.app.router.navigate("/mds/fig3/graph",{trigger: true,replace:false}); } );
+      break;
+    }
+
+    this.$el.find(".edgeslider").slider(slider_options);
     this.model.fetch().done(_this.renderGraph);
   },
 
