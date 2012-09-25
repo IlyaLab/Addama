@@ -1,12 +1,12 @@
 <div class="graph-container span9"></div>
 <div class="span3">
-    <div class="filter-container parcoords"></div>
+    <div class="filter-container parcoords" style="height:300px"></div>
     <div class="graph-controls well" style="margin-top: 30px;">
-        <h4>Controls</h4>
+        <h5>Controls</h4>
         <button class="btn btn-small graph-controls-reset pull-right">Reset</button>
         <hr/>
 
-        <h5>Dynamic Edge Layout</h5>
+        <h6>Dynamic Edge Layout</h6>
 
         <div class="btn-group dynamic-layout" data-toggle="buttons-radio">
             <button id="dl-straight" data-toggle="button" class="btn btn-small active">Straight</button>
@@ -14,14 +14,14 @@
             <button id="dl-diagonal-directed" data-toggle="button" class="btn btn-small">Diagonal Directed</button>
         </div>
 
-        <h5>Labels</h5>
+        <h6>Labels</h6>
 
         <div class="btn-group toggle-labels" data-toggle="buttons-radio">
             <button class="btn btn-small toggle-on active">On</button>
             <button class="btn btn-small toggle-off">Off</button>
         </div>
 
-        <h5>Lines</h5>
+        <h6>Lines</h6>
 
         <div class="btn-group toggle-lines" data-toggle="buttons-radio">
             <button class="btn btn-small active toggle-on">On</button>
@@ -29,7 +29,7 @@
         </div>
 
         <div class="btn-toolbar">
-            <h5>Dimensions</h5>
+            <h6>Dimensions</h6>
 
             <div id="dimensions-x" class="btn-group dropup">
                 <button class="btn" data-toggle="dropdown">Select X-Axis</button>
@@ -64,7 +64,7 @@
         </div>
 
         <div class="btn-toolbar">
-            <h5>Color By</h5>
+            <h6>Color By</h6>
 
             <div id="colorby-nodes" class="btn-group dropup">
                 <button class="btn" data-toggle="dropdown">Nodes</button>
@@ -94,5 +94,10 @@
                 </ul>
             </div>
         </div>
+        <div>
+            <h6>Filter Edges</h6>
+            <div class="edgeslider"></div><br/>
+        </div>
+        <button type="button" class="subset-btn btn btn-warning btn-block disabled" >Reanalyze Subset</button>
     </div>
 </div>
