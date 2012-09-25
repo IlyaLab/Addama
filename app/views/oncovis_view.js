@@ -1,9 +1,9 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
-var Mutations = require('../models/mutations');
+var FeatureMatrix = require('../models/featureMatrix');
 
 module.exports = View.extend({
-    model: Mutations,
+    model: FeatureMatrix,
     template:template,
     label: "Oncovis",
 
@@ -19,16 +19,44 @@ module.exports = View.extend({
     },
 
     afterRender:function () {
-        var _this = this;
         this.$el.addClass('row');
-        this.initControls();
-        this.model.fetch().done(_this.renderGraph);
+        this.model.fetch().done(this.renderGraph);
     },
 
     renderGraph:function () {
         console.log("renderGraph:start");
 
-        var oncovisData = this.model.toJSON();
+        var loaded_data = this.model.toJSON();
+
+        var cluster_property = "B:CLIN:Mode_of_Delivery:M::::";
+        var interesting_properties = ["C:SURV:Mothers_Country_of_Birth:F:::::", "C:SURV:Mothers_Country_of_Birth:F:::::"];
+
+        var oncovisData = {
+            data: {},
+            cluster_labels: ["spontaneous", "c-section"],
+            row_labels: interesting_properties
+        };
+
+        _.each(loaded_data, function(item) {
+            var feature_id = item.feature_id;
+            if (interesting_properties.indexOf(feature_id) >= 0) {
+                _.each(item, function(value, key) {
+                    if (!oncovisData.data[key]) oncovisData.data[key] = {};
+                    oncovisData.data[key][feature_id] = value;
+                });
+            }
+        });
+
+        var clusterGroups = {};
+        _.each(oncovisData.cluster_labels, function(cluster_label) {
+            clusterGroups[cluster_label] = [];
+        });
+        oncovisData.columns_by_cluster = clusterGroups;
+
+        _.each(oncovisData.data, function(obj, key) {
+            var cluster = obj[cluster_property];
+            clusterGroups[cluster] = key;
+        });
 
         var categories = _.uniq(_.compact(_.flatten(_.map(oncovisData.data, function(obj) {
             return _.map(obj, function(sub) {
