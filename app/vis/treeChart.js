@@ -22,6 +22,7 @@ var TreeChart = function(config) {
 	 	edges,
 	 	xScale,
 	 	yScale,
+	 	scale = 1,
 	 	selection_list,
 	 	vis;
 
@@ -51,7 +52,7 @@ var TreeChart = function(config) {
 	 	selection.each(function render(){
 
 	 		var zoom = function() {
-	 			var scale = d3.event.scale;
+	 			scale = d3.event.scale;
 	 			vis.attr('transform','translate('+d3.event.translate+')scale(' + scale + ')');
 	 			d3.selectAll('.node circle')
 	 				.attr('r', circle.radius/scale)
@@ -185,6 +186,7 @@ var TreeChart = function(config) {
 			    .append("path")
 			       .attr("class", "link")
 			       .style('stroke-opacity',edgeOpacity)
+			       .style('stroke-width',link.stroke_width/scale+'px')
 		    	   .attr("d", edgeRoute)
 		       	  .on('click',edgeClickListener);       
 
@@ -205,14 +207,16 @@ var TreeChart = function(config) {
 		        .call(dragGroup);
 
 		        g.append("circle")
-					       .attr("r", circle.radius)
+					       .attr('r', circle.radius/scale)
+					       	.style('stroke-width', circle.stroke_width/scale+'px')
 					       .on('mouseover',highlightSubTree)
 					       .on('mouseout',removeHighlights)
 					       .on('click',nodeClickListener);
 					      					 
 			   g.append("text")
-			       .attr("dx", function(d,i) { return dx; })
-			       .attr("dy", 3)
+			       		.attr('dx',dx / scale)
+			       		.attr('dy', dy / scale)
+	 					.style('font-size',12 / scale + 'px')
 			       .attr("text-anchor","start")
 			       .text(function(d) { return d[label];});
 
