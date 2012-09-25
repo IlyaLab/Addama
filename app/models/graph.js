@@ -19,8 +19,9 @@ module.exports = Model.extend({
 	},
 
 	initialize: function() {
-		_.bindAll(this,'getEdgesArray','getNodesArray','url','parse','defaultParameters'
-			,'parseTSV','parseJSON','fetch');
+		_.bindAll(this,'getEdgesArray','getNodesArray','url','parse','defaultParameters',
+			'filterNodes','buildIndexes','filterEdgesByNodes',
+			'parseTSV','parseJSON','fetch');
 	},
 
 	getEdgesArray : function() {
@@ -49,6 +50,61 @@ module.exports = Model.extend({
 			return options;
 	},
 
+	buildIndexes: function() {
+		var me = this;
+			var nodeIdx = this.all_node_index = new Object();
+			var nodes = this.all_nodes = this.original().getNodesArray();
+			this.all_edges = this.original().getEdgesArray();
+			_.each(nodes,function(node,idx){
+				nodeIdx[node.feature_id]={idx:idx, edge_arr: []};
+			});
+
+			_.each(this.all_edges,function(edge,idx){
+				nodeIdx[nodes[edge['source']].feature_id].edge_arr.push(idx);
+				nodeIdx[nodes[edge['target']].feature_id].edge_arr.push(idx);
+			});
+
+	},
+
+	filterEdgesByNodes: function(nodes) {
+			var me = this;
+			var keepers = [];
+			var node_labels = _.pluck(nodes,'feature_id');
+			var edge_helper = _.map(_.range(this.all_edges.length),function(){ return 0;});  // a list of zeros
+			_.each(node_labels,function(label) {	//for each node that we're keeping
+				 _.each(me.all_node_index[label].edge_arr,function (edge_idx) {  //find all of its edges
+				 		if (++edge_helper[edge_idx] === 2) { keepers.push(me.all_edges[edge_idx]);}
+				 });
+			});
+
+			var new_edges = keepers.map(function(edge) { 
+				return {
+					source:me.current_node_index[me.all_nodes[edge.source].feature_id].idx,
+					target:me.current_node_index[me.all_nodes[edge.target].feature_id].idx,
+					weight: edge.weight
+				};
+			});
+			this.get('edges').reset(new_edges);
+
+	},
+
+	filterNodes: function(nodes) {
+			var me = this;			
+			if (_.isUndefined(this.all_node_index)) this.buildIndexes();
+
+			this.get('nodes').reset(nodes);
+			//build index of current nodes
+			this.current_node_index = new Object();
+
+			_.each(nodes,function(node,idx){
+				me.current_node_index[node.feature_id]={idx:idx, edge_arr: []};
+			});
+
+			this.filterEdgesByNodes(nodes);
+
+			this.trigger('reset',nodes);
+	},
+
 	parse: function(graphData){
 		if (!!~this.get('dataset_id').indexOf('.tsv')) {
 			return this.parseTSV(graphData);
@@ -69,8 +125,8 @@ module.exports = Model.extend({
 			var feature1 = row[0],
 			    feature2 = row[1];
 			    var lookup = qed.app.labels;			
-			var node1 = {feature_id: feature1, label: lookup[feature1] }, 
-			    node2 = {feature_id: feature2, label: lookup[feature2] }, 
+			var node1 = {feature_id: feature1, label: lookup[feature1]  || feature1.split(':')[2]}, 
+			    node2 = {feature_id: feature2, label: lookup[feature2] || feature2.split(':')[2]}, 
 			     edge = {};
 
 			if (idx = node_map[feature1]) {
@@ -103,7 +159,9 @@ module.exports = Model.extend({
 	        node_data[a] = _.clone(graphData[a]);
 	      });
 
-	    node_data.label = node_data.nByi.map(function(f) { return lookup[f];});
+	    node_data.label = node_data.nByi.map(function(f) { return lookup[f] || f.split(':')[2];});
+
+	    node_data.feature_id = node_data.nByi;
 
 	    data_keys = _.keys(node_data);
 	    key_len = data_keys.length;

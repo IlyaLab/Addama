@@ -14,11 +14,12 @@ module.exports = View.extend({
  },
 
   showData: function() {
+  	var me = this;
 
   	var data = new Array();
     var ignore_keys = ['label','type','source','feature_id','nByi'];
-  	
-  	var nodes = this.model.getNodesArray();
+  	var model = this.model.original();
+  	var nodes = model.getNodesArray();
   	var keys = _.difference(Object.keys(nodes[0]),ignore_keys);
 
 	var pc = d3.parcoords()('#test');
@@ -27,13 +28,13 @@ module.exports = View.extend({
 	  .data(nodes)
 	  .render()
 	  .color("#000")
-	  .alpha(0.2)
-	  .margin({ top: 24, left: 0, bottom: 12, right: 0 })
+	  .alpha(0.3)
+	  .margin({ top: 30, left: 0, bottom: 12, right: 0 })
 	  .render()
 	  .reorderable()
 	  .brushable()
 	  .on('brush', function(data){
-	   	console.log('brush!');
+	   	me.model.filterNodes(data);
 	  });
 
     pc.svg.selectAll(".parcoords-dimension")

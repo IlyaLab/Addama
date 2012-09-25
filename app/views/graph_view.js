@@ -27,18 +27,60 @@ module.exports = View.extend({
     },
 
   initialize : function() {
-      _.bindAll(this, 'afterRender', 'renderGraph', 'resetControls',
+      _.bindAll(this, 'afterRender', 'renderGraph', 'redrawTree', 'resetControls',
                   'showLabels', 'hideLabels', 'showLines', 'hideLines',
                   'toggleActive', 'toggleDynLayout',
                   'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
                   'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
-
+      this.redrawTree = _.throttle(this.redrawTree,300);
   },
   
   afterRender: function() {
     var _this = this;
+    this.model.bind('change', _this.redrawTree);
+    this.model.bind('reset', _this.redrawTree);
+
     this.$el.addClass('row-fluid');
-    this.model.fetch().done(_this.renderGraph);
+    var analysisid = this.model.get('analysis_id');
+    var split_d_id = this.model.get('dataset_id').split("_");
+    var s_value = (split_d_id.length == 1 ? -1 : split_d_id[split_d_id.length-1])
+    
+    var slider_options = {};
+    
+    switch(analysisid){
+      case "rf-ace":
+        slider_options.max=40;
+        slider_options.step=1;
+        slider_options.value=s_value != -1 ? s_value : 16;
+        slider_options.change=function(event, ui) {
+          qed.app.router.navigate("/rf-ace/cons_predictor_12800_cutoff_"+ui.value+".0/graph",{trigger: true,replace:false}); 
+        }
+        break;
+      case "pairwise":
+        slider_options.max=1;
+        slider_options.step=.1;
+        slider_options.value=s_value != -1 ? s_value : .3;
+        slider_options.change=function(event, ui) {
+          qed.app.router.navigate("/pairwise/continuous_pwpv_"+ui.value+"/graph",{trigger: true,replace:false}); 
+        }
+        break;
+      case "mds":
+        slider_options.disabled=true;
+        this.$el.find(".subset-btn").removeClass("disabled").click( function (){qed.app.router.navigate("/mds/fig3/graph",{trigger: true,replace:false}); } );
+      break;
+    }
+
+    this.$el.find(".edgeslider").slider(slider_options);
+    this.model.fetch({silent:true}).done(_this.renderGraph);
+   
+  },
+
+  redrawTree: function(){
+      this.treeChart.nodes(this.model.getNodesArray())
+                    .edges(this.model.getEdgesArray());
+                    
+      d3.select('.graph-container')
+        .call(this.treeChart.redraw);
   },
 
   renderGraph: function(options) {
@@ -57,7 +99,7 @@ module.exports = View.extend({
           return edge_scale(edge.weight);
       };
 
-  		var treeChart = TreeChart({
+  		this.treeChart = new TreeChart({
                           			width:w, 
                           			height:h,   			
                           			nodes:{
@@ -75,7 +117,7 @@ module.exports = View.extend({
                     .on('edge',edgeClicked);
 
   		d3.select('.graph-container')
-              .call(treeChart);
+              .call(this.treeChart);
 
       var filter = this.$el.find('.filter-container');
       var pc_view = new PC({model:this.model});
@@ -85,9 +127,11 @@ module.exports = View.extend({
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
    
       function dimension_selected(dimension) {
-        var scale = d3.scale.linear().domain(d3.extent(graphData[dimension])).range([0.1,1.0]);
-        treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
-        treeChart.redraw();
+        var nodes = _this.model.getNodesArray();
+        var scale = d3.scale.linear().domain(d3.extent(_.pluck(nodes,dimension))).range([0.1,1.0]);
+        _this.treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
+         d3.select('.graph-container')
+            .call(_this.treeChart.redraw);
       }
 
       function nodeClicked(node) {

@@ -21,7 +21,7 @@ module.exports = Model.extend({
 
 		var feature = response.feature_id.split(':');		
 		
-		response.label = lookup[feature];
+		response.label = lookup[response.feature_id] || feature[2];
 		response.type = feature[0];
 		response.source = feature[1];
 
@@ -30,8 +30,6 @@ module.exports = Model.extend({
 		response.stop = feature[5];
 		response.strand=feature[6];
 		response.modifier=feature[8];
-
-		delete response['LABEL'];
 
 		return response;
 	}
