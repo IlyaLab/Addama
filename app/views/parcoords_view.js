@@ -18,7 +18,7 @@ module.exports = View.extend({
 
   	var data = new Array();
     var ignore_keys = ['label','type','source','feature_id','nByi'];
-  	var model = this.model.get('original_model');
+  	var model = this.model.original();
   	var nodes = model.getNodesArray();
   	var keys = _.difference(Object.keys(nodes[0]),ignore_keys);
 
