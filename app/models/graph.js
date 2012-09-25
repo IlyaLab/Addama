@@ -53,8 +53,8 @@ module.exports = Model.extend({
 	buildIndexes: function() {
 		var me = this;
 			var nodeIdx = this.all_node_index = new Object();
-			var nodes = this.all_nodes = this.get('original_model').getNodesArray();
-			this.all_edges = this.get('original_model').getEdgesArray();
+			var nodes = this.all_nodes = this.original().getNodesArray();
+			this.all_edges = this.original().getEdgesArray();
 			_.each(nodes,function(node,idx){
 				nodeIdx[node.feature_id]={idx:idx, edge_arr: []};
 			});
