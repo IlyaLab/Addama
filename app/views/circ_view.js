@@ -9,13 +9,15 @@ module.exports = View.extend({
   template:template,
 
   initialize : function() {
-      _.bindAll(this,'afterRender','renderCirc');
+      _.bindAll(this,'afterRender','renderCirc','loadData');
+      this.renderCirc = _.once(this.renderCirc);
   },
   
   afterRender: function() {
     var _this = this;
     this.$el.addClass('row-fluid');
-    this.model.fetch().done(_this.renderCirc);
+    this.model.on('load',_this.loadData);
+    _.defer( function( view ){_this.renderCirc();},_this);
   },
 
   renderCirc: function(options) {
@@ -25,15 +27,12 @@ module.exports = View.extend({
 
       $('.circ-container',this.$el).attr('id',this.model.dataset_id);
 
-      var features = this.model.toJSON();
-      var extent = d3.extent(features,function(f) { return f['ig'];});
-
       var width = parentDiv.height(),
          height = parentDiv.height(),
          ring_radius = width / 10;
 
       //var vis_options = this.model.defaultParameters(),
-        var   chrom_info = qed.vis.genome;
+        var chrom_info = qed.vis.genome;
         var hovercard_config = {
           Feature: 'label',
           Location: function(feature) { 
@@ -45,9 +44,10 @@ module.exports = View.extend({
           hovercard_config[header] = header;
         });
 
-        var color_scale = d3.scale.linear().domain(extent).range(['green','red']);
-
-        var fill_style = function(feature) { return color_scale(feature.ig);};
+      //var extent = d3.extent(features,function(f) { return f['ig'];});
+      var extent = [0,0.5];
+      var color_scale = d3.scale.linear().domain(extent).range(['green','red']);
+      var fill_style = function(feature) { return color_scale(feature.ig);};
 
       var circle_vis = new vq.CircVis();
    
@@ -95,7 +95,7 @@ module.exports = View.extend({
                         type :   'scatterplot'
                     },
                     DATA:{
-                        data_array : features,
+                        data_array : [],
                         value_key : 'ig'
                     },
                     OPTIONS: {
@@ -158,7 +158,15 @@ module.exports = View.extend({
       // //   treeChart.nodeOpacity(function(node) { return scale(node[dimension]);})
       // //   treeChart.redraw();
       // }
-     
+     this.vis = circle_vis;
+  },
+
+  loadData : function() {
+      this.renderCirc();//it can only be executed once, so it's safe.
+      var features = this.model.toJSON();
+
+      this.vis.addNodes(features);
+      
   }
 
 });

@@ -94,7 +94,6 @@ Controller = {
 					Model = require('../models/featureList');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
 				}
-
 			} else if ( analysis_type === 'mutations' ) {
 					Model = require('../models/mutations');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });			
