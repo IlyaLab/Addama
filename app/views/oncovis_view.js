@@ -19,7 +19,7 @@ module.exports = View.extend({
     },
 
     afterRender:function () {
-        this.$el.addClass('row');
+        this.$el.addClass('row-fluid');
         this.model.fetch().done(this.renderGraph);
     },
 
