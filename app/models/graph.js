@@ -184,10 +184,10 @@ module.exports = Model.extend({
 	},
 	fetch: function(options) {
 		if (!!~this.url().indexOf('tsv')) {
-			return Backbone.Model.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
+			return Model.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
 		}
 		else {
-			return Backbone.Model.prototype.fetch.call(this, options);
+			return Model.prototype.fetch.call(this, options);
 		}
 	}
 });
