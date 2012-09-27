@@ -1417,13 +1417,13 @@ vq.models.CircVisData.prototype._insertNode = function(node) {
 vq.models.CircVisData.prototype._insertNodes = function(node_array) {
     var that = this;
     var nodes = [];
-    var insert_nodes = that.add_network_node(node_array);
+    var insert_nodes = that._add_network_node(node_array);
     _.each(insert_nodes, function(node) {
              that._add_wedge_data(node);
         }
     );
     //this._retileNodes();
-    return nodes;
+    return insert_nodes;
 };
 
 vq.models.CircVisData.prototype._retileNodes = function() {
