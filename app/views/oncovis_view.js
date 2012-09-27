@@ -81,7 +81,7 @@ module.exports = View.extend({
         var columns_by_cluster = {};
         _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
             columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
-                return _.map(rowLabels, function (row_label) { return data[sample][row_label]["value"]; });
+                return _.map(rowLabels, function (row_label) { return data[sample][row_label]["value"].toLowerCase(); });
             });
         });
 
