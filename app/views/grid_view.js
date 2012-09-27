@@ -16,7 +16,7 @@ module.exports = View.extend({
   afterRender: function() {
   	var _this = this;
     this.$el.addClass('row-fluid');
-    this.collection.fetch().done(_this.renderGrid);
+    this.collection.bind('load',_this.renderGrid);
   },
 
   renderGrid : function(){
@@ -43,7 +43,7 @@ module.exports = View.extend({
 	    columns.unshift(checkboxSelector.getColumnDefinition());
 
 		var options = {
-			enableCellNavigation: true,
+			enableCellNavigation: false,
 			enableColumnReorder: false
 		};
 

@@ -15,14 +15,11 @@ module.exports = View.extend({
         _.bindAll(this,'renderGraph','initControls','autocomplete','render','resetSliders');
     },
 
-    getRenderData:function () {
-    },
-
     afterRender:function () {
         var _this = this;
         this.$el.addClass('row');
         this.initControls();
-        this.model.fetch().done(_this.renderGraph);
+        this.model.on('load', _this.renderGraph);
     },
 
     renderGraph:function () {

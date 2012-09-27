@@ -5,17 +5,18 @@ module.exports = View.extend({
 
 	model:Graph,
 
- getRenderData : function() {},
-
- render: function() {
+ initialize: function() {
  	_.bindAll(this,'render','showData');
- 	this.$el.addClass('parcoords').attr('id','test');
- 	return this;
  },
 
-  showData: function() {
-  	var me = this;
+ afterRender: function() {
+ 	var me = this;
+ 	this.$el.addClass('parcoords').attr('id','test');
+ 	this.model.on('load', me.showData);
+ },
 
+ showData: function() {
+  	var me = this;
   	var data = new Array();
     var ignore_keys = ['label','type','source','feature_id','nByi'];
   	var model = this.model.original();

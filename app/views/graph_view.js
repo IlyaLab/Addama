@@ -37,8 +37,12 @@ module.exports = View.extend({
   
   afterRender: function() {
     var _this = this;
-    this.model.bind('change', _this.redrawTree);
-    this.model.bind('reset', _this.redrawTree);
+
+    var filter = this.$el.find('.filter-container');
+    var pc_view = new PC({model:this.model});
+    filter.html(pc_view.render().el);
+
+    this.model.on('load',_this.renderGraph);
 
     this.$el.addClass('row-fluid');
     var analysisid = this.model.get('analysis_id');
@@ -66,12 +70,14 @@ module.exports = View.extend({
         break;
       case "mds":
         slider_options.disabled=true;
-        this.$el.find(".subset-btn").removeClass("disabled").click( function (){qed.app.router.navigate("/mds/fig3/graph",{trigger: true,replace:false}); } );
+        this.$el.find(".subset-btn")
+                        .removeClass("disabled")
+                        .click( function (){qed.app.router.navigate("/mds/fig3/graph",{trigger: true,replace:false}); } );
       break;
     }
 
     this.$el.find(".edgeslider").slider(slider_options);
-    this.model.fetch({silent:true}).done(_this.renderGraph);
+    
    
   },
 
@@ -119,13 +125,13 @@ module.exports = View.extend({
   		d3.select('.graph-container')
               .call(this.treeChart);
 
-      var filter = this.$el.find('.filter-container');
-      var pc_view = new PC({model:this.model});
-      filter.html(pc_view.render().el);
-      pc_view.showData();
+
 
       Backbone.Mediator.subscribe('dimension:select',dimension_selected, this, false );
-   
+
+      this.model.on('change', _this.redrawTree);
+      this.model.on('reset', _this.redrawTree);
+      
       function dimension_selected(dimension) {
         var nodes = _this.model.getNodesArray();
         var scale = d3.scale.linear().domain(d3.extent(_.pluck(nodes,dimension))).range([0.1,1.0]);
