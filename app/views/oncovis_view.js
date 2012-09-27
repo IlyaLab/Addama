@@ -31,25 +31,39 @@ module.exports = View.extend({
         var loaded_data = this.model.toJSON();
 
         var cluster_property = "C:CLIN:Assisted_Pregnancy:M::::";
+        var rowLabels = [
+            "C:SURV:Alcohol_Consumption:F::::",
+            "C:SURV:Alcohol_Consumption:M::::",
+            "C:SURV:Family_History_of_PTB:F::::",
+            "C:SURV:Family_History_of_PTB:M::::",
+            "C:SURV:Mothers_Country_of_Birth:F::::"
+        ];
 
         var data = {};
-        var rowLabels = ["C:SURV:Mothers_Country_of_Birth:F::::", "C:SURV:Alcohol_Consumption:F::::"];
         var clusterGroups = {};
         var clusterLabels = [];
+        var categories_by_rowlabel = {};
 
         _.each(loaded_data, function (item) {
             var feature_id = item["feature_id"];
-            _.each(_.without(_.without(_.keys(item), "label"), "feature_id"), function (sampleId) {
-                var value = item[sampleId];
 
-                if (rowLabels.indexOf(feature_id) >= 0) {
-                    if (!data[sampleId]) data[sampleId] = {};
-                    data[sampleId][feature_id] = {
-                        "value":value, "label":sampleId + "\n" + item.label + "\n" + value
-                    };
+            var isRowLabel = (rowLabels.indexOf(feature_id) >= 0);
+
+            var isClusterLabel = (cluster_property == feature_id);
+            var sample_ids = _.without(_.without(_.keys(item), "label"), "feature_id");
+
+            _.each(sample_ids, function (sampleId) {
+                var value = item[sampleId];
+                if (!data[sampleId]) data[sampleId] = {};
+
+                if (isRowLabel) {
+                    data[sampleId][feature_id] = { "value":value, "row": feature_id, "label":sampleId + "\n" + item.label + "\n" + value };
+
+                    if (!categories_by_rowlabel[feature_id]) categories_by_rowlabel[feature_id] = {};
+                    categories_by_rowlabel[feature_id][value] = true;
                 }
 
-                if (cluster_property == feature_id) {
+                if (isClusterLabel) {
                     if (!clusterGroups[value]) clusterGroups[value] = [];
                     clusterGroups[value].push(sampleId);
                     clusterLabels.push(value);
@@ -64,17 +78,6 @@ module.exports = View.extend({
             row_labels: rowLabels
         };
 
-        var categories = _.uniq(_.compact(_.flatten(_.map(oncovisData.data, function (obj) {
-            return _.map(obj, function (sub) {
-                return sub["value"];
-            });
-        }))));
-
-        var color_categories = {};
-        _.each(colorbrewer.Set1[categories.length], function (color, idx) {
-            color_categories[categories[idx]] = color;
-        });
-
         var columns_by_cluster = {};
         _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
             columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
@@ -84,6 +87,17 @@ module.exports = View.extend({
             });
         });
 
+        var colorscales_by_rowlabel = {};
+        _.each(categories_by_rowlabel, function(obj, rowLabel) {
+            var categories = _.keys(obj);
+            colorscales_by_rowlabel[rowLabel] = d3.scale.ordinal()
+                                                          .domain(categories)
+                                                          .range(d3.range(categories.length)
+                                                          .map(d3.scale.linear().domain([0, categories.length - 1])
+                                                          .range(["yellow", "blue"])
+                                                          .interpolate(d3.interpolateLab)));
+        });
+
         var optns = {
             bar_width:4,
             column_spacing:1,
@@ -91,7 +105,7 @@ module.exports = View.extend({
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
-                return (color_categories[d.value]) ? color_categories[d.value] : "lightgray";
+                return colorscales_by_rowlabel[d.row](d.value);
             },
             columns_by_cluster:columns_by_cluster,
             cluster_labels:oncovisData.cluster_labels,
@@ -107,7 +121,29 @@ module.exports = View.extend({
 
         this.$el.find(".oncovis-container").oncovis(oncovisData.data, optns);
 
+        this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
+
         console.log("renderGraph:end");
+    },
+
+    renderLegend: function(categories_by_rowlabel, colorscales_by_rowlabel) {
+        console.log("renderLegend:start");
+
+        var accordionEl = this.$el.find(".oncovis-legend");
+        _.each(categories_by_rowlabel, function(obj, rowLabel) {
+            var categories = _.keys(obj);
+            accordionEl.append("<h5><a href='#'>" + rowLabel + "</a></h5>");
+            var lis = [];
+            _.each(categories, function(category) {
+                var color = colorscales_by_rowlabel[rowLabel](category);
+                lis.push("<li><span style='background-color:" + color + "'>&nbsp;&nbsp;&nbsp;</span>" + category + "</li>");
+            });
+            accordionEl.append("<ul>" + lis.join("") + "</ul>");
+        });
+
+        accordionEl.accordion({ "collapsible": true, "autoHeight": false });
+
+        console.log("renderLegend:end");
     },
 
     initControls:function () {
