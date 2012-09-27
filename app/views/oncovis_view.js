@@ -41,7 +41,7 @@ module.exports = View.extend({
 
         var data = {};
         var clusterGroups = {};
-        var clusterLabels = [];
+        var clusterLabels = {};
         var categories_by_rowlabel = {};
 
         _.each(loaded_data, function (item) {
@@ -66,7 +66,7 @@ module.exports = View.extend({
                 if (isClusterLabel) {
                     if (!clusterGroups[value]) clusterGroups[value] = [];
                     clusterGroups[value].push(sampleId);
-                    clusterLabels.push(value);
+                    clusterLabels[value] = true;
                 }
             });
         });
@@ -74,16 +74,14 @@ module.exports = View.extend({
         var oncovisData = {
             data: data,
             columns_by_cluster: clusterGroups,
-            cluster_labels:_.uniq(clusterLabels),
+            cluster_labels:_.keys(clusterLabels),
             row_labels: rowLabels
         };
 
         var columns_by_cluster = {};
         _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
             columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
-                return _.map(oncovisData.row_labels, function (row_label) {
-                    return oncovisData.data[sample][row_label]["value"];
-                });
+                return _.map(rowLabels, function (row_label) { return data[sample][row_label]["value"]; });
             });
         });
 
