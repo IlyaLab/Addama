@@ -28,7 +28,7 @@ module.exports = Collection.extend({
 	},
 
 	fetch : function(options) {
-		return Backbone.Collection.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
+		return Collection.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
 	}
 
 });
