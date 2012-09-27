@@ -110,13 +110,13 @@ var TreeChart = function(config) {
 					       .style('stroke-opacity',nodeOpacity)
 					       .style('fill-opacity',nodeOpacity)
 					       .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
+					       .on('mouseover',highlightSubTree)
+					       .on('mouseout',removeHighlights)
+					       .on('click',nodeClickListener)
 					       .call(dragGroup);
 
 					   nodes.append("circle")
-					       .attr("r", circle.radius)
-					       .on('mouseover',highlightSubTree)
-					       .on('mouseout',removeHighlights)
-					       .on('click',nodeClickListener);
+					       .attr("r", circle.radius);
 					      					 
 					   nodes.append("text")
 					       .attr("dx", function(d,i) { return dx; })
@@ -198,21 +198,21 @@ var TreeChart = function(config) {
 	    .data(node_list,function(d) { return d[label];});
       			
 			var g = nodes.enter()
-			.append("g")
-      			.attr("class", "node")
-		        .attr('cursor','pointer')
-		        .style('stroke-opacity',nodeOpacity)
-		        .style('fill-opacity',nodeOpacity)
-		        .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
-		        .call(dragGroup);
+            		.append("g")
+	      			.attr("class", "node")
+			        .attr('cursor','pointer')
+			        .style('stroke-opacity',nodeOpacity)
+			        .style('fill-opacity',nodeOpacity)
+			        .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
+			        .on('mouseover',highlightSubTree)
+					.on('mouseout',removeHighlights)
+					.on('click',nodeClickListener)
+			        .call(dragGroup);
 
 		        g.append("circle")
 					       .attr('r', circle.radius/scale)
-					       	.style('stroke-width', circle.stroke_width/scale+'px')
-					       .on('mouseover',highlightSubTree)
-					       .on('mouseout',removeHighlights)
-					       .on('click',nodeClickListener);
-					      					 
+					       	.style('stroke-width', circle.stroke_width/scale+'px');
+					       					      					 
 			   g.append("text")
 			       		.attr('dx',dx / scale)
 			       		.attr('dy', dy / scale)
