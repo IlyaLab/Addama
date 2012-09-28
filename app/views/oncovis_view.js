@@ -6,6 +6,7 @@ module.exports = View.extend({
     model:FeatureMatrix,
     template:template,
     label:"Oncovis",
+    className: "row-fluid",
 
     events:{
         "click .reset-sliders":"resetSliders"
@@ -17,7 +18,6 @@ module.exports = View.extend({
 
     afterRender:function () {
         var _this = this;
-        this.$el.addClass('row');
         this.initControls();
         this.model.on('load', _this.renderGraph);
     },
