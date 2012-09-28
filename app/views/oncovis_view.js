@@ -6,6 +6,7 @@ module.exports = View.extend({
     model:FeatureMatrix,
     template:template,
     label:"Oncovis",
+    className: "row-fluid",
 
     events:{
         "click .reset-sliders":"resetSliders"
@@ -17,7 +18,6 @@ module.exports = View.extend({
 
     afterRender:function () {
         var _this = this;
-        this.$el.addClass('row');
         this.initControls();
         this.model.on('load', _this.renderGraph);
     },
@@ -84,7 +84,7 @@ module.exports = View.extend({
             });
         });
 
-        var colorscales_by_rowlabel = {};
+        var colorscales_by_rowlabel = { overrides: {} };
         _.each(categories_by_rowlabel, function(obj, rowLabel) {
             var categories = _.keys(obj);
             colorscales_by_rowlabel[rowLabel] = d3.scale.ordinal()
@@ -133,12 +133,67 @@ module.exports = View.extend({
             var lis = [];
             _.each(categories, function(category) {
                 var color = colorscales_by_rowlabel[rowLabel](category);
-                lis.push("<li><span style='background-color:" + color + "'>&nbsp;&nbsp;&nbsp;</span>" + category + "</li>");
+                lis.push("<li><span data-row='" + rowLabel + "' data-ref='" + category + "' class='color-category' style='background-color:" + color + "'>&nbsp;&nbsp;&nbsp;</span>" + category + "</li>");
             });
             accordionEl.append("<ul>" + lis.join("") + "</ul>");
         });
 
         accordionEl.accordion({ "collapsible": true, "autoHeight": false });
+
+        var oncovis_container = this.$el.find(".oncovis-container");
+
+        $(".color-selection").live("click", function(e) {
+            var data = $(e.target).data();
+            var row = data["row"];
+            var ref = data["ref"];
+            var color = data["color"];
+
+            if (!colorscales_by_rowlabel.overrides[row]) colorscales_by_rowlabel.overrides[row] = {};
+            colorscales_by_rowlabel.overrides[row][ref] = color;
+
+            oncovis_container.update({
+                color_fn: function(d) {
+                    if (colorscales_by_rowlabel.overrides[d.row] && colorscales_by_rowlabel.overrides[d.row][d.value]) {
+                        return colorscales_by_rowlabel.overrides[d.row][d.value];
+                    }
+                    return colorscales_by_rowlabel[d.row](d.value);
+                }
+            });
+
+            _.each($(".color-category"), function(cc) {
+                var el = $(cc);
+                if (el.data()["row"] == row && el.data()["ref"] == ref) cc.style["background-color"] = color;
+            });
+
+            $(".color-category").popover("hide");
+        });
+
+        $(".color-category").popover({
+            placement: "left",
+            title: function() {
+                return "Color Selection (" + $(this).data()["ref"] + ")";
+            },
+            content: function() {
+                var row = $(this).data()["row"];
+                var ref = $(this).data()["ref"];
+
+
+                var addColorSpan = function(color) {
+                    return "<span class='color-selection' style='background-color:" + color + "' data-row='" + row + "' data-color='" + color + "' data-ref='" + ref + "'>&nbsp;&nbsp;&nbsp;</span>";
+                };
+                var html = "";
+                html += "<ul>";
+                html += addColorSpan("red");
+                html += addColorSpan("blue");
+                html += addColorSpan("green");
+                html += addColorSpan("yellow");
+                html += addColorSpan("lightgray");
+                html += addColorSpan("lightgreen");
+                html += addColorSpan("lightblue");
+                html += "</ul>";
+                return html;
+            }
+        });
 
         console.log("renderLegend:end");
     },

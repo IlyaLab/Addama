@@ -1,0 +1,18 @@
+.profile_pic {
+    width: 50px;
+}
+
+.profile_dtls {
+    float: right;
+    margin-top: 5px;
+}
+
+.profile_links {
+    border-top: 1px solid #d3d3d3;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.popover {
+    width: 300px;
+}

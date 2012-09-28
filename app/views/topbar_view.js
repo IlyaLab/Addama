@@ -13,6 +13,7 @@ module.exports = View.extend({
     afterRender: function() {
         this.initSearchAutocomplete();
         this.addAutocompleteSource();
+        this.initSignIn();
     },
 
     initSearchAutocomplete: function() {
@@ -57,5 +58,52 @@ module.exports = View.extend({
 
     addAutocompleteSource: function(newSource) {
         this._autocompleteSources.push(newSource);
+    },
+
+    /*
+     * Configures logic for sign-in
+     * Checks to see if user is authenticated (via whoami)
+     * - if known user, display popover with sign in details
+     * If user signs out
+     * - clear session (via signout)
+     * - re-enable sign-in logic
+     */
+    initSignIn: function() {
+        var isSignedIn = true;
+
+        $.ajax({
+            url: "/svc/auth/whoami",
+            method:"GET",
+            context: this,
+            success: function(json) {
+                var firstName = json["first_name"];
+                var fullName = json["full_name"];
+                var lastName = json["last_name"];
+                var email = json["email"];
+                var profile_pic = json["profile_pic"];
+
+                var html = "";
+                html += "<div class='profile_container'>";
+                html += "<img class='profile_pic' src='" + profile_pic + "' alt='No profile picture'/>";
+                html += "<div class='profile_dtls'>" + fullName + "<br/><b>" + email + "</b></div>";
+                html += "<div class='profile_links'>";
+                html += "<a class='signout_link' href='#'>Sign Out</a>";
+                html += "</div>";
+                html += "</div>";
+
+                var signInBtn = this.$el.find(".sign-in");
+                signInBtn.click(function(e) {
+                    if (isSignedIn) e.preventDefault();
+                });
+                signInBtn.popover({ placement: "bottom", title: "QED Sign In", content: html });
+
+                $(".signout_link").live("click", function(e) {
+                    e.preventDefault();
+                    signInBtn.popover("destroy");
+                    isSignedIn = false;
+                    $.ajax({ url: "/svc/auth/signout", method: "GET" });
+                });
+            }
+        });
     }
 });

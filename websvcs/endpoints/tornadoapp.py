@@ -23,6 +23,7 @@ All services return -1 if there is any error.
 import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
+import tornado.auth
 import qedconf
 import os
 
@@ -112,8 +113,37 @@ class FilterHandler(tornado.web.RequestHandler):
         except:
             self.write("-1")
 
+class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
+    @tornado.web.asynchronous
+    def get(self):
+        print "GoogleHandler.get"
+        if self.get_argument("openid.mode", None):
+            self.get_authenticated_user(self.async_callback(self._on_auth))
+            return
+        self.authenticate_redirect(callback_uri="/svc/auth/signin")
 
+    def _on_auth(self, user):
+        print "GoogleHandler._on_auth(%s)" % user
+        if not user:
+            raise tornado.web.HTTPError(500, "Google auth failed")
+        # Save the user with, e.g., set_secure_cookie()
+        self.set_cookie("whoami", user["email"])
+        self.redirect("/")
 
+class WhoamiHandler(tornado.web.RequestHandler):
+    def get(self):
+        userkey = self.get_cookie("whoami")
+        if userkey is None:
+            self.set_status(404)
+            return
+
+        self.write({ "first_name": "Example", "last_name": "User", "full_name": "Example User", "email": userkey, "profile_pic": "/img/isblogo.png" });
+        self.set_status(200)
+
+class SignoutHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.clear_all_cookies()
+        self.set_status(200)
 
 def main():
     tornado.options.parse_command_line()
@@ -121,6 +151,9 @@ def main():
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/data?(.*)", FilterHandler),
+        (r"/auth/signin", GoogleHandler),
+        (r"/auth/signout", SignoutHandler),
+        (r"/auth/whoami", WhoamiHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
