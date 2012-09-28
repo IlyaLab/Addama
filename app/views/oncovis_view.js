@@ -15,12 +15,11 @@ module.exports = View.extend({
         _.bindAll(this, 'renderGraph', 'initControls', 'autocomplete', 'render', 'resetSliders');
     },
 
-    getRenderData:function () {
-    },
-
     afterRender:function () {
-        this.$el.addClass('row-fluid');
-        this.model.fetch().done(this.renderGraph);
+        var _this = this;
+        this.$el.addClass('row');
+        this.initControls();
+        this.model.on('load', _this.renderGraph);
     },
 
     renderGraph:function () {

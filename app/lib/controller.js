@@ -79,7 +79,7 @@ Controller = {
 			     Model,  model,
 			     vis_type = '';
 
-			   if(len > 0 ) { //if there's param (even an empty one)
+			if(len > 0 ) { //if there's param (even an empty one)
 			     	vis_type = arg_array[len-1];
 			     }
 
@@ -94,9 +94,12 @@ Controller = {
 					Model = require('../models/featureList');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
 				}
+			} else if ( analysis_type === 'mutations' ) {
+					Model = require('../models/mutations');
+					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });			
 
 			} else if ( analysis_type === 'information_gain' ) {
-				Model = require('../models/genomic_featureList');
+					Model = require('../models/genomic_featureList');
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });			
 
 			} else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
@@ -110,20 +113,22 @@ Controller = {
 					model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
 				}
 			}
-
-			model.fetch({
-				success : function(model,resp) {
-					var memory_model;
+		
+			Controller.vis[vis_type](model);
+				model.fetch({
+					success:
+				function(model,resp) {
+					var original_model;
 					if (Model.prototype.add) {
-						memory_model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
-						memory_model.add(model.toJSON(),{silent:true});
+						original_model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
+						original_model.add(model.toJSON(),{silent:true});
 					} else {
-							memory_model = new Model(model.toJSON());
+						original_model = new Model(model.toJSON());
 					}
-					memory_model.original(model);
-					Controller.vis[vis_type](memory_model);
+					model.original(original_model);
+					model.trigger('load');
 				}
-			});
+				});
 	},
 
 	vis : {
@@ -140,7 +145,7 @@ Controller = {
 			'circ'	: function(model) {
 						var CircView = require('../views/circ_view');
 						var circView = new CircView({model:model});
-						$('#mainDiv').html(circView.render().el);
+							$('#mainDiv').html(circView.render().el);
 			},
 			'twoD'	: function(model) {},
 			'kde'	: function(model) {},
@@ -148,7 +153,7 @@ Controller = {
 			'heat' : function(model) {
 						var Oncovis = require('../views/oncovis_view');
 	    				var oncovisView =  new Oncovis({model:model});
-						$('#mainDiv').html(oncovisView.render().el);
+							$('#mainDiv').html(oncovisView.render().el);
 			}
 	}
 };
