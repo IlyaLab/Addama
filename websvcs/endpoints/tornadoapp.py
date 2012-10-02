@@ -120,7 +120,7 @@ class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
         if self.get_argument("openid.mode", None):
             self.get_authenticated_user(self.async_callback(self._on_auth))
             return
-        self.authenticate_redirect(callback_uri="/svc/auth/signin")
+        self.authenticate_redirect(callback_uri="/svc/auth/signin/google_plus")
 
     def _on_auth(self, user):
         print "GoogleHandler._on_auth(%s)" % user
@@ -133,11 +133,37 @@ class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
 class WhoamiHandler(tornado.web.RequestHandler):
     def get(self):
         userkey = self.get_cookie("whoami")
-        if userkey is None:
-            self.set_status(404)
-            return
 
-        self.write({ "first_name": "Example", "last_name": "User", "full_name": "Example User", "email": userkey, "profile_pic": "/img/isblogo.png" });
+        providers = []
+
+        if not userkey is None:
+            user = {
+                "pic": "https://plus.google.com/u/0/me",
+                "fullname": "Example User",
+                "email": userkey
+            }
+
+            providers.append({
+                "id": "google_plus",
+                "label": "Google+",
+                "user": user,
+                "active": True
+            })
+        else:
+            providers.append({
+                "id": "google_plus",
+                "label": "Google+",
+                "active": False
+            })
+
+        providers.append({ "id": "facebook", "label": "Facebook", "active": False })
+
+        self.write({"providers":providers});
+        self.set_status(200)
+
+class GoogleSignoutHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.clear_all_cookies()
         self.set_status(200)
 
 class SignoutHandler(tornado.web.RequestHandler):
@@ -151,8 +177,8 @@ def main():
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/data?(.*)", FilterHandler),
-        (r"/auth/signin", GoogleHandler),
-        (r"/auth/signout", SignoutHandler),
+        (r"/auth/signin/google_plus", GoogleHandler),
+        (r"/auth/signout/google_plus", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler)
     ], **settings)
     application.listen(options.port, **server_settings)

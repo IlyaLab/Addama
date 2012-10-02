@@ -15,5 +15,9 @@ module.exports = Backbone.View.extend({
     return this;
   },
 
+    refresh: function() {
+        this.$el.html(this.template(this.getRenderData()));
+    },
+
   afterRender: function() {}
 });

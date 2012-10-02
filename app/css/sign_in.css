@@ -1,0 +1,23 @@
+.signin-container {
+    width: 400px;
+}
+
+.provider {
+    margin-bottom: 20px;
+}
+
+.provider .user-pic {
+    width: 50px;
+    float: left;
+    margin: 5px;
+}
+
+.provider .email {
+    font-weight: bold;
+}
+
+.provider a {
+    font-size: smaller;
+    margin-top: 10px;
+    padding-top: 10px;
+}
