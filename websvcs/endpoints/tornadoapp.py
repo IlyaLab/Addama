@@ -24,11 +24,21 @@ import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
 import tornado.auth
+import tornado.httpclient
 import qedconf
 import os
+import json
 
+from oauth2client.client import AccessTokenRefreshError
+from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.file import Storage
+
+import urlparse
 
 define("port", default=8000, help="run on the given port", type=int)
+define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
+define("client_id", help="Client ID for Google OAuth2")
+define("client_secret", help="Client Secrets for Google OAuth2")
 
 settings = {
     "debug": True,
@@ -54,8 +64,6 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class FilterHandler(tornado.web.RequestHandler):
-   
-
     def get(self,filepath):
         self.content_type = "text/plain"
         try:
@@ -63,7 +71,7 @@ class FilterHandler(tornado.web.RequestHandler):
             if len(rows) > 0: 
                 rows = rows[0].split(",")
             cols=self.get_arguments("cols")
-            if len(cols) > 0: 
+            if len(cols) > 0:
                 cols = frozenset(cols[0].split(","))
             
             goodcols=[0]
@@ -113,40 +121,66 @@ class FilterHandler(tornado.web.RequestHandler):
         except:
             self.write("-1")
 
-class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class GoogleOAuth2Handler(tornado.web.RequestHandler):
     def get(self):
-        print "GoogleHandler.get"
-        if self.get_argument("openid.mode", None):
-            self.get_authenticated_user(self.async_callback(self._on_auth))
-            return
-        self.authenticate_redirect(callback_uri="/svc/auth/signin/google_plus")
+        if "oauth2_callback" in self.request.uri:
+            redirect = "%s/svc/auth/signin/google_plus/oauth2_callback" % (options.client_host)
+            scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+            flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
 
-    def _on_auth(self, user):
-        print "GoogleHandler._on_auth(%s)" % user
-        if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
-        # Save the user with, e.g., set_secure_cookie()
-        self.set_cookie("whoami", user["email"])
-        self.redirect("/")
+            parsed = urlparse.urlparse(self.request.uri)
+            code = urlparse.parse_qs(parsed.query)["code"][0]
+            credentials = flow.step2_exchange(code)
+
+            cred_json = json.loads(credentials.to_json())
+            user_email = cred_json["id_token"]["email"]
+            access_token = cred_json["access_token"]
+            storage = Storage('credentials-%s.dat' % (user_email))
+            storage.put(credentials)
+
+            http_client = tornado.httpclient.HTTPClient()
+            response = http_client.fetch("https://www.googleapis.com/oauth2/v1/userinfo?access_token=%s"%(access_token))
+            f = open('userinfo-%s.dat' % (user_email), 'w+')
+            f.write(response.body)
+
+            self.set_cookie("whoami", user_email)
+            self.redirect("/")
+        else:
+            userkey = self.get_cookie("whoami")
+            storage = Storage('credentials-%s.dat' % (userkey))
+            credentials = storage.get()
+
+            if credentials is None or credentials.invalid:
+                self.respond_redirect_to_auth_server()
+
+    def respond_redirect_to_auth_server(self):
+        redirect = "%s/svc/auth/signin/google_plus/oauth2_callback" % (options.client_host)
+        scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+        flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
+
+        self.set_status(301)
+        self.set_header('Cache-Control', 'no-cache')
+        self.set_header('Location', flow.step1_get_authorize_url())
 
 class WhoamiHandler(tornado.web.RequestHandler):
     def get(self):
         userkey = self.get_cookie("whoami")
+        user = None
+        if not userkey is None:
+            user = json.load(open('userinfo-%s.dat' % (userkey)))
 
         providers = []
 
-        if not userkey is None:
-            user = {
-                "pic": "https://plus.google.com/u/0/me",
-                "fullname": "Example User",
-                "email": userkey
-            }
-
+        if not user is None:
             providers.append({
                 "id": "google_plus",
                 "label": "Google+",
-                "user": user,
+                "user": {
+                    "pic": user["picture"],
+                    "fullname": user["name"],
+                    "email": user["email"],
+                    "profileLink": user["link"]
+                },
                 "active": True
             })
         else:
@@ -166,18 +200,14 @@ class GoogleSignoutHandler(tornado.web.RequestHandler):
         self.clear_all_cookies()
         self.set_status(200)
 
-class SignoutHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.clear_all_cookies()
-        self.set_status(200)
-
 def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/data?(.*)", FilterHandler),
-        (r"/auth/signin/google_plus", GoogleHandler),
+        (r"/auth/signin/google_plus", GoogleOAuth2Handler),
+        (r"/auth/signin/google_plus/oauth2_callback", GoogleOAuth2Handler),
         (r"/auth/signout/google_plus", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler)
     ], **settings)
