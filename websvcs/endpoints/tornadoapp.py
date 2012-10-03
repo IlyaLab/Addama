@@ -124,7 +124,7 @@ class FilterHandler(tornado.web.RequestHandler):
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
     def get(self):
         if "oauth2_callback" in self.request.uri:
-            redirect = "%s/svc/auth/signin/google_plus/oauth2_callback" % (options.client_host)
+            redirect = "%s/svc/auth/signin/google/oauth2_callback" % (options.client_host)
             scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
             flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
 
@@ -154,7 +154,7 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
                 self.respond_redirect_to_auth_server()
 
     def respond_redirect_to_auth_server(self):
-        redirect = "%s/svc/auth/signin/google_plus/oauth2_callback" % (options.client_host)
+        redirect = "%s/svc/auth/signin/google/oauth2_callback" % (options.client_host)
         scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
         flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
 
@@ -171,26 +171,19 @@ class WhoamiHandler(tornado.web.RequestHandler):
 
         providers = []
 
+        google_provider = { "id": "google", "label": "Google+", "active": False, "logo": "https://www.google.com/images/icons/ui/gprofile_button-64.png" }
         if not user is None:
-            providers.append({
-                "id": "google_plus",
-                "label": "Google+",
-                "user": {
-                    "pic": user["picture"],
-                    "fullname": user["name"],
-                    "email": user["email"],
-                    "profileLink": user["link"]
-                },
-                "active": True
-            })
-        else:
-            providers.append({
-                "id": "google_plus",
-                "label": "Google+",
-                "active": False
-            })
+            google_provider["active"] = True
+            google_provider["user"] = {
+                "pic": user["picture"],
+                "fullname": user["name"],
+                "email": user["email"],
+                "profileLink": user["link"]
+            }
 
-        providers.append({ "id": "facebook", "label": "Facebook", "active": False })
+        providers.append(google_provider)
+        providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "/img/facebook_logo.jpg" })
+        providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
 
         self.write({"providers":providers});
         self.set_status(200)
@@ -206,9 +199,9 @@ def main():
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/data?(.*)", FilterHandler),
-        (r"/auth/signin/google_plus", GoogleOAuth2Handler),
-        (r"/auth/signin/google_plus/oauth2_callback", GoogleOAuth2Handler),
-        (r"/auth/signout/google_plus", GoogleSignoutHandler),
+        (r"/auth/signin/google", GoogleOAuth2Handler),
+        (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
+        (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler)
     ], **settings)
     application.listen(options.port, **server_settings)

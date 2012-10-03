@@ -9,7 +9,7 @@ module.exports = View.extend({
     _autocompleteSources:[],
 
     events:{
-        "click .sign-in": function(e) {
+        "click .signin": function(e) {
             e.preventDefault();
             this.$signInModal.modal("toggle");
         }
