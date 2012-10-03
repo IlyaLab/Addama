@@ -28,6 +28,9 @@ import tornado.httpclient
 import qedconf
 import os
 import json
+import uuid
+import glob
+import ast
 
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import OAuth2WebServerFlow
@@ -193,6 +196,50 @@ class GoogleSignoutHandler(tornado.web.RequestHandler):
         self.clear_all_cookies()
         self.set_status(200)
 
+class StorageHandler(tornado.web.RequestHandler):
+    def get(self, identity):
+        ids = identity.split("/")
+        if len(ids) == 1:
+            json_items = []
+            for item in glob.glob("STORAGE/%s/*.dat" % ids[0]):
+                item_id = item.replace("STORAGE/%s/" % ids[0], "").replace(".dat", "")
+                json_items.append({
+                    "id": item_id,
+                    "uri": self.request.uri + "/" + item_id
+                })
+            self.write({ "items": json_items })
+            self.set_status(200)
+            return
+        elif len(ids) == 2:
+            file_path = "STORAGE/%s/%s.dat" % (ids[0],ids[1])
+            if os.path.exists(file_path):
+                json_data=open(file_path).read()
+                self.write(json.loads(json_data))
+                self.set_status(200)
+                return
+            else:
+                self.set_status(404)
+                return
+
+        self.set_status(404)
+
+    def post(self, identity):
+        ids = identity.split("/")
+
+        item_id = None
+        if len(ids) == 1: item_id = uuid.uuid4()
+        elif len(ids) == 2: item_id = ids[1]
+        else: return
+
+        if not os.path.exists("STORAGE"): os.makedirs("STORAGE")
+        if not os.path.exists("STORAGE/" + ids[0]): os.makedirs("STORAGE/" + ids[0])
+
+        f = open('STORAGE/%s/%s.dat' % (ids[0], item_id), 'w+')
+        f.write(json.dumps(self.request.arguments))
+
+        self.write({ "id": str(item_id) })
+        self.set_status(200)
+
 def main():
     tornado.options.parse_command_line()
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
@@ -202,7 +249,8 @@ def main():
         (r"/auth/signin/google", GoogleOAuth2Handler),
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
         (r"/auth/signout/google", GoogleSignoutHandler),
-        (r"/auth/whoami", WhoamiHandler)
+        (r"/auth/whoami", WhoamiHandler),
+        (r"/storage/(.*)", StorageHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
