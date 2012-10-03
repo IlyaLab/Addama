@@ -99,7 +99,7 @@ module.exports = View.extend({
                 success: function(json) {
                     console.log("success loading session " + sessionId);
                     if (json) {
-                        _.each(_.without(_.keys(json), "id"), function(key) {
+                        _.each(_.without(_.without(_.keys(json), "id"), "label"), function(key) {
                             localStorage.setItem(key, json[key]);
                         });
                     }
