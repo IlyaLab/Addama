@@ -17,7 +17,7 @@ Read:
 Filter:
 /data/path/to/file?rows=id1,id2&cols=colid1,colid2
 
-All services return -1 if there is any error.
+All services return status_code 500 if there is any error.
 
 """
 import tornado.ioloop
@@ -117,7 +117,7 @@ class FilterHandler(tornado.web.RequestHandler):
                 rfile.close()
 
         except:
-            self.write("-1")
+            self.set_status(500)
 
 class WhoamiHandler(tornado.web.RequestHandler):
     def get(self):
