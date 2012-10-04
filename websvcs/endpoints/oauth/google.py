@@ -2,6 +2,7 @@ from tornado.options import options
 import tornado.web
 import tornado.httpclient
 import json
+import urlparse
 
 from oauth2client.client import OAuth2WebServerFlow, AccessTokenRefreshError
 from oauth2client.file import Storage

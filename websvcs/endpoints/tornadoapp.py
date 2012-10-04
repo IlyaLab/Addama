@@ -26,7 +26,7 @@ import tornado.web
 import json
 
 from data import LocalFileHandler
-from storage import StorageHandler
+from storage import MongoStorageHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -71,7 +71,7 @@ class WhoamiHandler(tornado.web.RequestHandler):
             }
 
         providers.append(google_provider)
-        providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "/img/facebook_logo.jpg" })
+        providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "img/facebook_logo.jpg" })
         providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
 
         self.write({"providers":providers});
