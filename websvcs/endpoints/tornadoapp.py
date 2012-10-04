@@ -55,7 +55,10 @@ def _writeFilteredRow(self,line,cols):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("Service Root")
+        items = []
+        items.append({ "id": "data", "uri": self.request.uri + "data" })
+        self.write({"items":items});
+        self.set_status(200)
 
 class WhoamiHandler(tornado.web.RequestHandler):
     def get(self):
