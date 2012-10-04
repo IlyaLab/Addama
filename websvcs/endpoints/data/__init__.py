@@ -1,1 +1,1 @@
-from local_files import FilterHandler
+from local_files import LocalFileHandler

@@ -3,7 +3,7 @@ import tornado.web
 import os
 import sys
 
-class FilterHandler(tornado.web.RequestHandler):
+class LocalFileHandler(tornado.web.RequestHandler):
     def get(self,filepath):
         self.content_type = "text/plain"
         try:
@@ -60,3 +60,12 @@ class FilterHandler(tornado.web.RequestHandler):
 
         except:
             raise tornado.web.HTTPError(500, str(sys.exc_info()[1]))
+
+def _writeFilteredRow(self,line,cols):
+    if len(cols)==1:
+        self.write(line)
+    else:
+        vs=line.rstrip("\n\r").split("\t")
+
+        self.write("\t".join([vs[i] for i in cols]))
+        self.write("\n")

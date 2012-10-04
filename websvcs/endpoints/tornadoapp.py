@@ -25,7 +25,7 @@ from tornado.options import define, options, logging
 import tornado.web
 import json
 
-from data import FilterHandler
+from data import LocalFileHandler
 from storage import StorageHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
@@ -43,15 +43,6 @@ server_settings = {
     "xheaders" : True,
     "address" : "0.0.0.0"
 }
-
-def _writeFilteredRow(self,line,cols):
-    if len(cols)==1:
-        self.write(line)
-    else:
-        vs=line.rstrip("\n\r").split("\t")
-
-        self.write("\t".join([vs[i] for i in cols]))
-        self.write("\n")
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -91,7 +82,7 @@ def main():
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
         (r"/", MainHandler),
-        (r"/data?(.*)", FilterHandler),
+        (r"/data?(.*)", LocalFileHandler),
         (r"/auth/signin/google", GoogleOAuth2Handler),
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
         (r"/auth/signout/google", GoogleSignoutHandler),
