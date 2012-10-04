@@ -1,20 +1,10 @@
-import tornado.ioloop
-from tornado.options import define, options, logging
+from tornado.options import options
 import tornado.web
-import tornado.auth
 import tornado.httpclient
-import qedconf
-import os
 import json
-import uuid
-import glob
-import ast
 
-from oauth2client.client import AccessTokenRefreshError
-from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.client import OAuth2WebServerFlow, AccessTokenRefreshError
 from oauth2client.file import Storage
-
-import urlparse
 
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
     def get(self):

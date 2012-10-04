@@ -30,16 +30,9 @@ import os
 import json
 import uuid
 import glob
-import ast
 
-from oauth2client.client import AccessTokenRefreshError
-from oauth2client.client import OAuth2WebServerFlow
-from oauth2client.file import Storage
+from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
-from oauth import GoogleOAuth2Handler
-from oauth import GoogleSignoutHandler
-
-import urlparse
 
 define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
