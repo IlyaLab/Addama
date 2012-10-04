@@ -84,9 +84,14 @@
             this.rows.append("text")
                 .attr("class", "row-label")
                 .text(function (d) {
+                    if (d.length > 8) return d.substring(0,8) + "...";
                     return d;
                 })
-                .attr("font-size", this.label_fontsize + "px");
+                .attr("font-size", this.label_fontsize + "px")
+                .append("svg:title")
+                .text(function (d) {
+                     return d;
+                });
 
             this.cluster_columns = this.cluster_g.selectAll("g.cluster-column")
                 .data(function (cluster_info) {
