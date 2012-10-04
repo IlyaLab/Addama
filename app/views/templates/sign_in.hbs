@@ -1,11 +1,13 @@
 <div class="provider">
-    <h4 class="label">{{label}}</h4>
     <div class="user-details" style="display: none;">
         <img class="user-pic" src="{{user.pic}}" alt="No profile picture" style="display: none;"/>
-        <span>{{user.fullname}}</span><br/>
+        <span><a href="{{user.profileLink}}" target="_blank">{{user.fullname}}</a></span><br/>
         <span class="email">{{user.email}}</span>
         <br/>
         <a class="signout-link">Sign Out</a>
     </div>
-    <a class="signin-link" href="/svc/auth/signin/{{id}}">Sign In</a>
+    <div class="signin-link">
+        <img class="logo" src="{{logo}}" alt="{{label}}"/>
+        <a href="/svc/auth/signin/{{id}}">Sign In</a>
+    </div>
 </div>

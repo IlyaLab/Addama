@@ -13,6 +13,7 @@ module.exports = Collection.extend({
 		this.analysis_id = options.analysis_id;
 		this.dataset_id  = options.dataset_id;
 		this.feature_ids = options.feature_ids;
+        this.dims = options.dims;
 	},
 
 	getHeaders: function() {

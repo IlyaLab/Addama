@@ -17,18 +17,23 @@ Read:
 Filter:
 /data/path/to/file?rows=id1,id2&cols=colid1,colid2
 
-All services return -1 if there is any error.
+All services return status_code 500 if there is any error.
 
 """
 import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
-import tornado.auth
-import qedconf
-import os
+import json
 
+from data import LocalFileHandler
+from storage import StorageHandler
+from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
+define("data_path", default="../..", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
+define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
+define("client_id", help="Client ID for Google OAuth2")
+define("client_secret", help="Client Secrets for Google OAuth2")
 
 settings = {
     "debug": True,
@@ -39,136 +44,37 @@ server_settings = {
     "address" : "0.0.0.0"
 }
 
-def _writeFilteredRow(self,line,cols):
-    if len(cols)==1:
-        self.write(line)
-    else:
-        vs=line.rstrip("\n\r").split("\t")
-
-        self.write("\t".join([vs[i] for i in cols]))
-        self.write("\n")
-
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write("Service Root")
-
-
-class FilterHandler(tornado.web.RequestHandler):
-   
-
-    def get(self,filepath):
-        self.content_type = "text/plain"
-        try:
-            rows=self.get_arguments("rows")
-            if len(rows) > 0: 
-                rows = rows[0].split(",")
-            cols=self.get_arguments("cols")
-            if len(cols) > 0: 
-                cols = frozenset(cols[0].split(","))
-            
-            goodcols=[0]
-            
-            if len(rows) > 0 or len(cols)>0: 
-                
-
-                rfile = open(qedconf.BASE_PATH + filepath)
-                for idx, line in enumerate(rfile):
-                    if idx == 0:
-                        colhead = line.rstrip("\n\r").split()
-                        if len(cols) > 0:
-                            for i,h in enumerate(colhead):
-                                if h in cols:
-                                    goodcols.append(i)
-                        goodcols=frozenset(goodcols)
-                        _writeFilteredRow(self,line,goodcols)
-
-                        
-                    elif len(rows)==0:
-                        _writeFilteredRow(self,line,goodcols)
-                    else:
-                        rheaader = line[:line.rfind("\t")]
-                        for id in rows:
-                            if id in rheaader:
-                                _writeFilteredRow(self, line, goodcols)
-                                break
-            elif os.path.isdir(qedconf.BASE_PATH + filepath):
-                dirs=[]
-                files=[]
-                for f in os.listdir(qedconf.BASE_PATH + filepath):
-                    if not f.startswith("."):
-                        label = os.path.basename(f)
-                        item = '{"label":"%s", "uri":"%s"}' % (label, os.path.join(filepath,f))
-
-                        if os.path.isdir(qedconf.BASE_PATH + filepath + f):
-                            dirs.append(item)
-                        else:
-                            files.append(item)
-
-                self.write('{ "directories": [' + ",".join(dirs) + '], "files": [' + ",".join(files) + '] }')
-            else:
-                rfile = open(qedconf.BASE_PATH + filepath)
-                self.write(rfile.read())
-                rfile.close()
-
-        except:
-            self.write("-1")
-
-class GoogleHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
-    def get(self):
-        print "GoogleHandler.get"
-        if self.get_argument("openid.mode", None):
-            self.get_authenticated_user(self.async_callback(self._on_auth))
-            return
-        self.authenticate_redirect(callback_uri="/svc/auth/signin/google_plus")
-
-    def _on_auth(self, user):
-        print "GoogleHandler._on_auth(%s)" % user
-        if not user:
-            raise tornado.web.HTTPError(500, "Google auth failed")
-        # Save the user with, e.g., set_secure_cookie()
-        self.set_cookie("whoami", user["email"])
-        self.redirect("/")
+        items = []
+        items.append({ "id": "data", "uri": self.request.uri + "data" })
+        self.write({"items":items});
+        self.set_status(200)
 
 class WhoamiHandler(tornado.web.RequestHandler):
     def get(self):
         userkey = self.get_cookie("whoami")
+        user = None
+        if not userkey is None:
+            user = json.load(open('userinfo-%s.dat' % (userkey)))
 
         providers = []
 
-        if not userkey is None:
-            user = {
-                "pic": "https://plus.google.com/u/0/me",
-                "fullname": "Example User",
-                "email": userkey
+        google_provider = { "id": "google", "label": "Google+", "active": False, "logo": "https://www.google.com/images/icons/ui/gprofile_button-64.png" }
+        if not user is None:
+            google_provider["active"] = True
+            google_provider["user"] = {
+                "pic": user["picture"],
+                "fullname": user["name"],
+                "email": user["email"],
+                "profileLink": user["link"]
             }
 
-            providers.append({
-                "id": "google_plus",
-                "label": "Google+",
-                "user": user,
-                "active": True
-            })
-        else:
-            providers.append({
-                "id": "google_plus",
-                "label": "Google+",
-                "active": False
-            })
-
-        providers.append({ "id": "facebook", "label": "Facebook", "active": False })
+        providers.append(google_provider)
+        providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "/img/facebook_logo.jpg" })
+        providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
 
         self.write({"providers":providers});
-        self.set_status(200)
-
-class GoogleSignoutHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.clear_all_cookies()
-        self.set_status(200)
-
-class SignoutHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.clear_all_cookies()
         self.set_status(200)
 
 def main():
@@ -176,10 +82,12 @@ def main():
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
         (r"/", MainHandler),
-        (r"/data?(.*)", FilterHandler),
-        (r"/auth/signin/google_plus", GoogleHandler),
-        (r"/auth/signout/google_plus", GoogleSignoutHandler),
-        (r"/auth/whoami", WhoamiHandler)
+        (r"/data?(.*)", LocalFileHandler),
+        (r"/auth/signin/google", GoogleOAuth2Handler),
+        (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
+        (r"/auth/signout/google", GoogleSignoutHandler),
+        (r"/auth/whoami", WhoamiHandler),
+        (r"/storage/(.*)", StorageHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()

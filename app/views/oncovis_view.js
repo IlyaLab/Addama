@@ -29,14 +29,8 @@ module.exports = View.extend({
 
         var loaded_data = this.model.toJSON();
 
-        var cluster_property = "C:CLIN:Assisted_Pregnancy:M::::";
-        var rowLabels = [
-            "C:SURV:Alcohol_Consumption:F::::",
-            "C:SURV:Alcohol_Consumption:M::::",
-            "C:SURV:Family_History_of_PTB:F::::",
-            "C:SURV:Family_History_of_PTB:M::::",
-            "C:SURV:Mothers_Country_of_Birth:F::::"
-        ];
+        var cluster_property = this.model.dims.getClusterProperty();
+        var rowLabels = this.model.dims.getRowLabels();
 
         var data = {};
         var clusterGroups = {};
@@ -80,7 +74,12 @@ module.exports = View.extend({
         var columns_by_cluster = {};
         _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
             columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
-                return _.map(rowLabels, function (row_label) { return data[sample][row_label]["value"].toLowerCase(); });
+                return _.map(rowLabels, function (row_label) {
+                    if (data[sample][row_label] && data[sample][row_label]["value"]) {
+                        return data[sample][row_label]["value"].toLowerCase();
+                    }
+                    return "NA";
+                });
             });
         });
 
@@ -102,7 +101,10 @@ module.exports = View.extend({
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
-                return colorscales_by_rowlabel[d.row](d.value);
+                if (d) {
+                    return colorscales_by_rowlabel[d.row](d.value);
+                }
+                return "white";
             },
             columns_by_cluster:columns_by_cluster,
             cluster_labels:oncovisData.cluster_labels,

@@ -2,17 +2,22 @@ var View = require('./view');
 var template = require('./templates/topbar');
 var SignInModal = require("./templates/sign_in_modal");
 var SignInView = require("./sign_in");
+var SessionsView = require("./sessions_view");
 
 module.exports = View.extend({
     id:'top-bar',
     template:template,
     _autocompleteSources:[],
+    sessionsView: new SessionsView(),
 
     events:{
-        "click .sign-in": function(e) {
+        "click .signin": function(e) {
             e.preventDefault();
             this.$signInModal.modal("toggle");
-        }
+        },
+        "click .new-session": function(e) { this.sessionsView.newSession(e); },
+        "click .open-session": function(e) { this.sessionsView.openSession(e); },
+        "click .save-session": function(e) { this.sessionsView.saveSession(e); }
     },
 
     initialize:function () {
@@ -22,6 +27,8 @@ module.exports = View.extend({
     afterRender:function () {
         this.initSearchAutocomplete();
         this.initSignIn();
+
+        this.$el.find(".sessions-container").append(this.sessionsView.render().el);
     },
 
     initSearchAutocomplete:function () {
