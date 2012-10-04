@@ -79,7 +79,7 @@ module.exports = View.extend({
         this.$signInModal = $("body").append(SignInModal()).find(".signin-container");
 
         $.ajax({
-            url:"/svc/auth/whoami",
+            url:"svc/auth/whoami",
             method:"GET",
             context:this,
             success:function (json) {

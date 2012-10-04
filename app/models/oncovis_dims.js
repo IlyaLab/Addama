@@ -6,7 +6,7 @@ module.exports = Model.extend({
 
         // TODO : Figure out the backbone way to do this
         $.ajax({
-            url: "/svc/data/lookups/" + options.dataset_id + ".json",
+            url: "svc/data/lookups/" + options.dataset_id + ".json",
             type: "GET",
             dataType: "json",
             context: this,
