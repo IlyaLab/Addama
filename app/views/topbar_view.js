@@ -2,28 +2,33 @@ var View = require('./view');
 var template = require('./templates/topbar');
 var SignInModal = require("./templates/sign_in_modal");
 var SignInView = require("./sign_in");
+var SessionsView = require("./sessions_view");
 
 module.exports = View.extend({
     id:'top-bar',
     template:template,
     _autocompleteSources:[],
+    sessionsView: new SessionsView(),
 
     events:{
         "click .signin": function(e) {
             e.preventDefault();
             this.$signInModal.modal("toggle");
         },
-        "click .save-session-link": "saveSession"
+        "click .new-session": function(e) { this.sessionsView.newSession(e); },
+        "click .open-session": function(e) { this.sessionsView.openSession(e); },
+        "click .save-session": function(e) { this.sessionsView.saveSession(e); }
     },
 
     initialize:function () {
-        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'loadSession', 'saveSession');
+        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource');
     },
 
     afterRender:function () {
         this.initSearchAutocomplete();
         this.initSignIn();
-        this.loadSession();
+
+        this.$el.find(".sessions-container").append(this.sessionsView.render().el);
     },
 
     initSearchAutocomplete:function () {
@@ -85,63 +90,6 @@ module.exports = View.extend({
                         sign_in_view.signout();
                     });
                 }, this);
-            }
-        });
-    },
-
-    loadSession: function() {
-        var sessionId = localStorage.getItem("session_id");
-        if (sessionId) {
-            $.ajax({
-                url: "/svc/storage/sessions/" + sessionId,
-                type: "GET",
-                dataType: "json",
-                success: function(json) {
-                    console.log("success loading session " + sessionId);
-                    if (json) {
-                        _.each(_.without(_.without(_.keys(json), "id"), "label"), function(key) {
-                            localStorage.setItem(key, json[key]);
-                        });
-                    }
-                },
-                error: function(e,o) {
-                    console.log("failure loading session");
-                }
-            });
-        } else {
-            // TODO : Load sessions
-        }
-    },
-
-    saveSession: function(e) {
-        e.preventDefault();
-
-        var data = {};
-        var storage_keys = _.without(_.without(_.keys(localStorage), "session_id"), "session_label");
-        _.each(storage_keys, function(key) {
-            data[key] = localStorage.getItem(key);
-        });
-
-        var label = localStorage.getItem("session_label");
-        data["label"] = (label) ? label : "Untitled Session";
-        // TODO : Capture session label...
-
-        var sessionId = localStorage.getItem("session_id");
-        var url = (sessionId) ? "/svc/storage/sessions/" + sessionId : "/svc/storage/sessions";
-
-        $.ajax({
-            url: url,
-            type: "POST",
-            data: data,
-            dataType: "json",
-            success: function(json) {
-                console.log("success saving session");
-                if (json && json.id) {
-                    localStorage.setItem("session_id", json.id);
-                }
-            },
-            error: function() {
-                console.log("failure saving session");
             }
         });
     }
