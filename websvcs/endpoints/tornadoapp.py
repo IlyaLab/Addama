@@ -25,7 +25,6 @@ from tornado.options import define, options, logging
 import tornado.web
 import tornado.auth
 import tornado.httpclient
-import qedconf
 import os
 import json
 import uuid
@@ -33,7 +32,7 @@ import glob
 
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
-
+define("data_path", default="../../", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
 define("client_id", help="Client ID for Google OAuth2")
@@ -78,7 +77,7 @@ class FilterHandler(tornado.web.RequestHandler):
             if len(rows) > 0 or len(cols)>0: 
                 
 
-                rfile = open(qedconf.BASE_PATH + filepath)
+                rfile = open(options.data_path + filepath)
                 for idx, line in enumerate(rfile):
                     if idx == 0:
                         colhead = line.rstrip("\n\r").split()
@@ -98,22 +97,22 @@ class FilterHandler(tornado.web.RequestHandler):
                             if id in rheaader:
                                 _writeFilteredRow(self, line, goodcols)
                                 break
-            elif os.path.isdir(qedconf.BASE_PATH + filepath):
+            elif os.path.isdir(options.data_path + filepath):
                 dirs=[]
                 files=[]
-                for f in os.listdir(qedconf.BASE_PATH + filepath):
+                for f in os.listdir(options.data_path + filepath):
                     if not f.startswith("."):
                         label = os.path.basename(f)
                         item = '{"label":"%s", "uri":"%s"}' % (label, os.path.join(filepath,f))
 
-                        if os.path.isdir(qedconf.BASE_PATH + filepath + f):
+                        if os.path.isdir(options.data_path + filepath + f):
                             dirs.append(item)
                         else:
                             files.append(item)
 
                 self.write('{ "directories": [' + ",".join(dirs) + '], "files": [' + ",".join(files) + '] }')
             else:
-                rfile = open(qedconf.BASE_PATH + filepath)
+                rfile = open(options.data_path + filepath)
                 self.write(rfile.read())
                 rfile.close()
 
