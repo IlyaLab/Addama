@@ -11,53 +11,49 @@
         max:100,
 
         init:function () {
+            var $this = $(this);
+
             var foundStart = localStorage.getItem(this.storageId);
             this.rawValue = (foundStart) ? parseInt(foundStart) : this.initialStep;
 
-            var me = this;
+            var _this = this;
             this.element.slider({
                 value:this.rawValue,
                 min:this.min,
                 max:this.max,
                 slide:function (event, ui) {
-                    me.rawValue = ui.value;
-                    localStorage.setItem(me.storageId, me.rawValue);
-                    me._publishValues();
+                    _this.rawValue = ui.value;
+                    localStorage.setItem(_this.storageId, _this.rawValue);
+                    $this.trigger("slide-to", _this.rawValue);
                 }
             });
 
-            this._publishValues();
+            $this.trigger("slide-to", this.rawValue);
         },
 
         _resetSliderValue: function() {
             localStorage.removeItem(this.storageId);
             this.rawValue = this.initialStep;
-            this._publishValues();
+            $this.trigger("slide-to", this.rawValue);
             this.element.slider("value", this.rawValue);
-        },
-
-        _publishValues: function() {
-            if (this.slide) {
-                this.slide(this.rawValue);
-            }
         }
     };
 
     // jQuery Plugin
     $.fn.oncovis_range = function (options) {
-        return this.each(function () {
-            var $this = $(this);
-            var ft = $this.data("OncovisSlider");
-            if (!ft) $this.data("OncovisSlider", (ft = new OncovisSlider(this, options)));
-            ft.init();
-        });
-    };
-
-    $.fn.oncovis_range_value = function () {
         var $this = $(this);
         var ft = $this.data("OncovisSlider");
-        if (ft) return ft.rawValue;
-        return 0;
+        if (ft) {
+            if (_.isString(options)) {
+                if (options == "reset") ft._resetSliderValue();
+                if (options == "value") return ft.rawValue;
+            }
+            return;
+        }
+
+        $this.data("OncovisSlider", (ft = new OncovisSlider(this, options)));
+        ft.init();
+//        this.each(function () {});
     };
 
     $.fn.oncovis_range_reset = function() {
