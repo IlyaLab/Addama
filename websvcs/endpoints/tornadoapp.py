@@ -87,7 +87,7 @@ def main():
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
-        (r"/storage/(.*)", StorageHandler)
+        (r"/storage/(.*)", MongoStorageHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
