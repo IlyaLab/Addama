@@ -1,9 +1,9 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
-var FeatureMatrix = require('../models/featureMatrix');
+var FeatureMatrix2 = require('../models/featureMatrix2');
 
 module.exports = View.extend({
-    model:FeatureMatrix,
+    model:FeatureMatrix2,
     template:template,
     label:"Oncovis",
     className: "row-fluid",
@@ -13,7 +13,7 @@ module.exports = View.extend({
     },
 
     initialize:function () {
-        _.bindAll(this, 'renderGraph', 'initControls', 'autocomplete', 'render', 'resetSliders');
+        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders');
     },
 
     afterRender:function () {
@@ -25,62 +25,40 @@ module.exports = View.extend({
     renderGraph:function () {
         console.log("renderGraph:start");
 
-        var loaded_data = this.model.toJSON();
-
-        var cluster_property = this.model.dims.getClusterProperty();
         var rowLabels = this.model.dims.getRowLabels();
-
-        var data = {};
         var clusterGroups = {};
-        var clusterLabels = {};
-        var categories_by_rowlabel = {};
 
-        var sample_ids = [];
+        var columns = this.model.COLUMNS;
+        var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
+        _.each(this.model.DATA[cluster_idx], function(cell, idx) {
+            cell = cell.trim();
+            if (!clusterGroups[cell]) clusterGroups[cell] = [];
+            clusterGroups[cell].push(this.model.COLUMNS[idx]);
+        }, this);
 
-        var value = null;
-        _.each(loaded_data, function (item) {
-            var feature_id = item["feature_id"];
-
-            var isRowLabel = (rowLabels.indexOf(feature_id) >= 0);
-
-            var isClusterLabel = (cluster_property == feature_id);
-            sample_ids = _.difference(_.keys(item),["label", "feature_id"]);
-
-            _.each(sample_ids, function (sampleId) {
-                value = item[sampleId];
-                if (!data[sampleId]) data[sampleId] = {};
-
-                if (isRowLabel) {
-                    data[sampleId][feature_id] = { "value":value, "row": feature_id, "label":sampleId + "\n" + item.label + "\n" + value };
-
-                    if (!categories_by_rowlabel[feature_id]) categories_by_rowlabel[feature_id] = {};
-                    categories_by_rowlabel[feature_id][value] = true;
-                }
-
-                if (isClusterLabel) {
-                    if (!clusterGroups[value]) clusterGroups[value] = [];
-                    clusterGroups[value].push(sampleId);
-                    clusterLabels[value] = true;
-                }
+        var columns_by_cluster = {};
+        var _this = this;
+        _.each(clusterGroups, function(column_idxs, cluster) {
+            columns_by_cluster[cluster] = _.sortBy(column_idxs, function(column_idx) {
+                return _.map(rowLabels, function(rowLabel) {
+                    var row_idx = _this.model.ROWS.indexOf(rowLabel);
+                    var value = _this.model.DATA[row_idx][column_idx];
+                    return (value && value.toLowerCase) ? value.toLowerCase() : value;
+                });
             });
         });
 
-        var oncovisData = {
-            data: data,
-            columns_by_cluster: clusterGroups,
-            cluster_labels:_.keys(clusterLabels),
-            row_labels: rowLabels
-        };
+        var data = {};
+        var categories_by_rowlabel = {};
+        _.each(rowLabels, function(rowLabel) {
+            categories_by_rowlabel[rowLabel] = {};
 
-        var columns_by_cluster = {};
-        _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
-            columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
-                return _.map(rowLabels, function (row_label) {
-                    if (data[sample][row_label] && data[sample][row_label]["value"]) {
-                        return data[sample][row_label]["value"].toLowerCase();
-                    }
-                    return "NA";
-                });
+            var row_idx = _this.model.ROWS.indexOf(rowLabel);
+            _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
+                var columnLabel = _this.model.COLUMNS[cellIdx];
+                if (!data[columnLabel]) data[columnLabel] = {};
+                categories_by_rowlabel[rowLabel][cell] = true;
+                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
 
@@ -96,8 +74,6 @@ module.exports = View.extend({
         });
 
         var optns = {
-            bar_width:4,
-            column_spacing:1,
             plot_width:3000,
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
@@ -107,19 +83,19 @@ module.exports = View.extend({
                 }
                 return "white";
             },
-            columns_by_cluster:columns_by_cluster,
-            cluster_labels:oncovisData.cluster_labels,
-            row_labels:oncovisData.row_labels,
-            // slider initial values
-            "bar_height":this.$el.find(".slider_barheight").oncovis_range("value"),
-            "row_spacing":this.$el.find(".slider_rowspacing").oncovis_range("value"),
-            "bar_width":this.$el.find(".slider_barwidth").oncovis_range("value"),
-            "column_spacing":this.$el.find(".slider_barspacing").oncovis_range("value"),
-            "cluster_spacing":this.$el.find(".slider_clusterspacing").oncovis_range("value"),
-            "label_fontsize":this.$el.find(".slider_fontsize").oncovis_range("value")
+            columns_by_cluster:clusterGroups,
+            cluster_labels: _.keys(clusterGroups),
+            row_labels:rowLabels,
+            // initial values based on slider defaults
+            bar_height:this.$el.find(".slider_barheight").oncovis_range("value"),
+            row_spacing:this.$el.find(".slider_rowspacing").oncovis_range("value"),
+            bar_width:this.$el.find(".slider_barwidth").oncovis_range("value"),
+            column_spacing:this.$el.find(".slider_barspacing").oncovis_range("value"),
+            cluster_spacing:this.$el.find(".slider_clusterspacing").oncovis_range("value"),
+            label_fontsize:this.$el.find(".slider_fontsize").oncovis_range("value")
         };
 
-//        this.$el.find(".oncovis-container").oncovis(oncovisData.data, optns);
+        this.$el.find(".oncovis-container").oncovis(data, optns);
 
 //        this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
 
@@ -203,46 +179,39 @@ module.exports = View.extend({
 
     initControls:function () {
         console.log("initControls:start");
-        var me = this;
-        var containerEl = this.$el.find(".oncovis-container")
+
+        this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
+        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:0, max:50, initialStep:10 });
+        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:5 });
+        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:2 });
+        this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
+        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14 });
+
+        var targetEl = this.$el.find(".oncovis-container");
         var visrangeFn = function (property) {
             return function (value) {
                 var dim = {};
                 dim[property] = value;
-                containerEl.update(dim);
+                visrangeFn.update(dim);
             }
         };
 
-        this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20, slide:visrangeFn("bar_height") });
-        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:0, max:50, initialStep:10, slide:visrangeFn("row_spacing") });
-        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:5, slide:visrangeFn("bar_width") });
-        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:2, slide:visrangeFn("column_spacing") });
-        this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10, slide:visrangeFn("cluster_spacing") });
-        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14, slide:visrangeFn("label_fontsize") });
+        this.$el.find(".slider_barheight").on("slide-to", visrangeFn("bar_height"));
+        this.$el.find(".slider_rowspacing").on("slide-to", visrangeFn("row_spacing"));
+        this.$el.find(".slider_barwidth").on("slide-to", visrangeFn("bar_width"));
+        this.$el.find(".slider_barspacing").on("slide-to", visrangeFn("column_spacing"));
+        this.$el.find(".slider_clusterspacing").on("slide-to", visrangeFn("cluster_spacing"));
+        this.$el.find(".slider_fontsize").on("slide-to", visrangeFn("label_fontsize"));
 
         console.log("initControls:end");
     },
 
-    autocomplete:function (query, resultBin) {
-        var found = [];
-
-        var queryterms = query.toLowerCase().split(" ");
-        _.each(queryterms, function (queryterm) {
-            _.each(oncovisData.data, function (val, key) {
-                if (key.toLowerCase().indexOf(queryterm) >= 0) {
-                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + "</a>");
-                }
-            });
-        });
-        resultBin(found);
-    },
-
     resetSliders:function () {
-        this.$el.find(".slider_barheight").oncovis_range("reset");
-        this.$el.find(".slider_rowspacing").oncovis_range("reset");
-        this.$el.find(".slider_barwidth").oncovis_range("reset");
-        this.$el.find(".slider_barspacing").oncovis_range("reset");
-        this.$el.find(".slider_clusterspacing").oncovis_range("reset");
-        this.$el.find(".slider_fontsize").oncovis_range("reset");
+        this.$el.find(".slider_barheight").oncovis_range_reset();
+        this.$el.find(".slider_rowspacing").oncovis_range_reset();
+        this.$el.find(".slider_barwidth").oncovis_range_reset();
+        this.$el.find(".slider_barspacing").oncovis_range_reset();
+        this.$el.find(".slider_clusterspacing").oncovis_range_reset();
+        this.$el.find(".slider_fontsize").oncovis_range_reset();
     }
 });

@@ -108,7 +108,7 @@ Controller = {
                     OncovisDims = require('../models/oncovis_dims');
                     oncovisDims = new OncovisDims({dataset_id : dataset_id });
 
-					 Model = require('../models/featureMatrix');
+					 Model = require('../models/featureMatrix2');
 					 model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
 				}
 				else {
