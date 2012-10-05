@@ -13,7 +13,7 @@ module.exports = View.extend({
     },
 
     initialize:function () {
-        _.bindAll(this, 'renderGraph', 'initControls', 'autocomplete', 'render', 'resetSliders');
+        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders');
     },
 
     afterRender:function () {
@@ -27,59 +27,33 @@ module.exports = View.extend({
 
         console.log("renderGraph:start");
 
-        var loaded_data = this.model.toJSON();
-
-        var cluster_property = this.model.dims.getClusterProperty();
         var rowLabels = this.model.dims.getRowLabels();
-
-        var data = {};
         var clusterGroups = {};
-        var clusterLabels = {};
-        var categories_by_rowlabel = {};
 
-        _.each(loaded_data, function (item) {
-            var feature_id = item["feature_id"];
+        var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
+        _.each(this.model.DATA[cluster_idx], function(cell, idx) {
+            if (!clusterGroups[value]) clusterGroups[value] = [];
+            clusterGroups[value].push(idx);
+        });
 
-            var isRowLabel = (rowLabels.indexOf(feature_id) >= 0);
-
-            var isClusterLabel = (cluster_property == feature_id);
-            var sample_ids = _.without(_.without(_.keys(item), "label"), "feature_id");
-
-            _.each(sample_ids, function (sampleId) {
-                var value = item[sampleId];
-                if (!data[sampleId]) data[sampleId] = {};
-
-                if (isRowLabel) {
-                    data[sampleId][feature_id] = { "value":value, "row": feature_id, "label":sampleId + "\n" + item.label + "\n" + value };
-
-                    if (!categories_by_rowlabel[feature_id]) categories_by_rowlabel[feature_id] = {};
-                    categories_by_rowlabel[feature_id][value] = true;
-                }
-
-                if (isClusterLabel) {
-                    if (!clusterGroups[value]) clusterGroups[value] = [];
-                    clusterGroups[value].push(sampleId);
-                    clusterLabels[value] = true;
-                }
+        var columns_by_cluster = {};
+        var _this = this;
+        _.each(clusterGroups, function(column_idxs, cluster) {
+            columns_by_cluster[cluster] = _.sortBy(column_idxs, function(column_idx) {
+                return _.map(rowLabels, function(rowLabel) {
+                    var row_idx = _this.model.ROWS.indexOf(rowLabel);
+                    var value = _this.model.DATA[row_idx][column_idx];
+                    return (value && value.toLowerCase) ? value.toLowerCase() : value;
+                });
             });
         });
 
-        var oncovisData = {
-            data: data,
-            columns_by_cluster: clusterGroups,
-            cluster_labels:_.keys(clusterLabels),
-            row_labels: rowLabels
-        };
-
-        var columns_by_cluster = {};
-        _.each(oncovisData.columns_by_cluster, function (columns, cluster) {
-            columns_by_cluster[cluster] = _.sortBy(columns, function (sample) {
-                return _.map(rowLabels, function (row_label) {
-                    if (data[sample][row_label] && data[sample][row_label]["value"]) {
-                        return data[sample][row_label]["value"].toLowerCase();
-                    }
-                    return "NA";
-                });
+        var categories_by_rowlabel = {};
+        _.each(rowLabels, function(rowLabel) {
+            categories_by_rowlabel[rowLabel] = {};
+            var row_idx = _this.model.ROWS.indexOf(rowLabel);
+            _.each(_this.model.DATA[row_idx], function(cell) {
+                categories_by_rowlabel[rowLabel][cell] = true;
             });
         });
 
@@ -106,9 +80,9 @@ module.exports = View.extend({
                 }
                 return "white";
             },
-            columns_by_cluster:columns_by_cluster,
-            cluster_labels:oncovisData.cluster_labels,
-            row_labels:oncovisData.row_labels
+            columns_by_cluster:clusterGroups,
+            cluster_labels: _.keys(clusterGroups),
+            row_labels:rowLabels
         };
 
         _.extend(optns, { "bar_height":this.$el.find(".slider_barheight").oncovis_range_value() });
@@ -118,7 +92,7 @@ module.exports = View.extend({
         _.extend(optns, { "cluster_spacing":this.$el.find(".slider_clusterspacing").oncovis_range_value() });
         _.extend(optns, { "label_fontsize":this.$el.find(".slider_fontsize").oncovis_range_value() });
 
-        this.$el.find(".oncovis-container").oncovis(oncovisData.data, optns);
+        this.$el.find(".oncovis-container").oncovis(this.model.DATA, optns);
 
         this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
 
@@ -219,20 +193,6 @@ module.exports = View.extend({
         this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14, slide:visrangeFn("label_fontsize") });
 
         console.log("initControls:end");
-    },
-
-    autocomplete:function (query, resultBin) {
-        var found = [];
-
-        var queryterms = query.toLowerCase().split(" ");
-        _.each(queryterms, function (queryterm) {
-            _.each(oncovisData.data, function (val, key) {
-                if (key.toLowerCase().indexOf(queryterm) >= 0) {
-                    found.push("<a href='#oncovis/p:" + key + "'>Patient ID " + key + "</a>");
-                }
-            });
-        });
-        resultBin(found);
     },
 
     resetSliders:function () {
