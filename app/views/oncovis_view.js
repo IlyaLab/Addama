@@ -56,26 +56,37 @@ module.exports = View.extend({
         console.log("renderGraph:start");
 
         var rowLabels = this.model.dims.getRowLabels();
-        var clusterGroups = {};
+        var cluster_property = this.model.dims.getClusterProperty();
+        var cluster_idx = this.model.ROWS.indexOf(cluster_property);
 
-        var columns = this.model.COLUMNS;
-        var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
-        _.each(this.model.DATA[cluster_idx], function(cell, idx) {
-            cell = cell.trim();
-            if (!clusterGroups[cell]) clusterGroups[cell] = [];
-            clusterGroups[cell].push(this.model.COLUMNS[idx]);
-        }, this);
+        var _this = this;
+        var column_data = {};
+
+        var appendFn = function(rowLabel, cells) {
+            _.each(cells, function(cell, columnIdx) {
+                if (!column_data[columnIdx]) {
+                    column_data[columnIdx] = { "colIdx": columnIdx };
+                }
+                column_data[columnIdx][rowLabel] = cell;
+            });
+        };
+
+        appendFn(cluster_property, this.model.DATA[cluster_idx]);
+        _.each(rowLabels, function(rowLabel) {
+            var row_idx = _this.model.ROWS.indexOf(rowLabel);
+            appendFn(rowLabel, _this.model.DATA[row_idx]);
+        });
+
+        _.each(rowLabels, function(rowLabel) {
+            column_data = _.sortBy(column_data, rowLabel);
+        });
+        column_data = _.sortBy(column_data, cluster_property);
 
         var columns_by_cluster = {};
-        var _this = this;
-        _.each(clusterGroups, function(column_idxs, cluster) {
-            columns_by_cluster[cluster] = _.sortBy(column_idxs, function(column_idx) {
-                return _.map(rowLabels, function(rowLabel) {
-                    var row_idx = _this.model.ROWS.indexOf(rowLabel);
-                    var value = _this.model.DATA[row_idx][column_idx];
-                    return (value && value.toLowerCase) ? value.toLowerCase() : value;
-                });
-            });
+        _.each(column_data, function(column_item) {
+            var cluster_value = column_item[cluster_property].trim();
+            if (!columns_by_cluster[cluster_value]) columns_by_cluster[cluster_value] = [];
+            columns_by_cluster[cluster_value].push(_this.model.COLUMNS[column_item.colIdx]);
         });
 
         var data = {};
@@ -114,8 +125,8 @@ module.exports = View.extend({
                 }
                 return "white";
             },
-            columns_by_cluster:clusterGroups,
-            cluster_labels: _.keys(clusterGroups),
+            columns_by_cluster:columns_by_cluster,
+            cluster_labels: _.keys(columns_by_cluster),
             row_labels:rowLabels,
             // initial values based on slider defaults
             bar_height: this.$el.find(".slider_barheight").oncovis_range("value"),
