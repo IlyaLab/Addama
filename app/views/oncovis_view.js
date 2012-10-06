@@ -52,53 +52,90 @@ module.exports = View.extend({
         console.log("initControls:end");
     },
 
+    getModelAsTree: function() {
+        var _this = this;
+
+        var column_tree = {};
+        column_tree.name = "ROOT";
+        column_tree.children = [];
+
+        var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
+        var rowLabels = this.model.dims.getRowLabels();
+        var numberOfRowLabels = rowLabels.length;
+        
+        var cluster_directory = {};
+        _.each(_this.model.DATA[cluster_idx], function(cluster_cell, cluster_cell_idx) {
+            cluster_cell = cluster_cell.trim();
+            var cluster_trunk = cluster_directory[cluster_cell];
+            if (!cluster_trunk) {
+                cluster_trunk = { "name": cluster_cell, "children": [] };
+                cluster_directory[cluster_cell] = cluster_trunk;
+                column_tree.children.push(cluster_trunk);
+            }
+
+            var row_directory = {};
+            var row_path = cluster_cell;
+            _.each(rowLabels, function(rowLabel, rowLabelIdx) {
+                rowLabel = rowLabel.trim();
+                row_path += "/" + rowLabel;
+                var row_branch = row_directory[row_path];
+                if (!row_branch) {
+                    row_branch = { "name": rowLabel, "children": [] };
+                    row_directory[row_path] = row_branch;
+                    cluster_trunk.children.push(row_branch);
+                }
+
+                var row_idx = _this.model.ROWS.indexOf(rowLabel);
+                var cell_value = _this.model.DATA[row_idx][cluster_cell_idx];
+                if (rowLabelIdx == (numberOfRowLabels - 1)) {
+                    row_branch.children.push({ columnIdx: cluster_cell_idx, columnLabel: _this.model.COLUMNS[cluster_cell_idx] });
+                }
+                cluster_trunk = row_branch;
+            });
+        });
+
+        return column_tree;
+    },
+
+    getColumnsByCluster: function(column_tree) {
+        var cluster_nodes = d3.layout.cluster().nodes(column_tree);
+        var columns_by_cluster = {};
+        _.each(column_tree.children, function(column_branch) { columns_by_cluster[column_branch.name] = true; });
+        _.each(cluster_nodes, function(cluster_node) {
+            if (columns_by_cluster[cluster_node.name]) {
+                var ordered_columns = [];
+                var recurseFn = function(parent) {
+                    if (parent.children) _.each(parent.children, recurseFn);
+                    if (parent.columnLabel) ordered_columns.push(parent.columnLabel);
+                };
+                _.each(cluster_node.children, recurseFn);
+                columns_by_cluster[cluster_node.name] = ordered_columns;
+            }
+        });
+        return columns_by_cluster;
+    },
+
     renderGraph:function () {
         console.log("renderGraph:start");
 
-        var rowLabels = this.model.dims.getRowLabels();
-        var cluster_property = this.model.dims.getClusterProperty();
-        var cluster_idx = this.model.ROWS.indexOf(cluster_property);
-
         var _this = this;
-        var column_data = {};
 
-        var appendFn = function(rowLabel, cells) {
-            _.each(cells, function(cell, columnIdx) {
-                if (!column_data[columnIdx]) {
-                    column_data[columnIdx] = { "colIdx": columnIdx };
-                }
-                column_data[columnIdx][rowLabel] = cell;
-            });
-        };
+        var column_tree = this.getModelAsTree();
 
-        appendFn(cluster_property, this.model.DATA[cluster_idx]);
-        _.each(rowLabels, function(rowLabel) {
-            var row_idx = _this.model.ROWS.indexOf(rowLabel);
-            appendFn(rowLabel, _this.model.DATA[row_idx]);
-        });
+        var columns_by_cluster = this.getColumnsByCluster(column_tree);
 
-        _.each(rowLabels, function(rowLabel) {
-            column_data = _.sortBy(column_data, rowLabel);
-        });
-        column_data = _.sortBy(column_data, cluster_property);
-
-        var columns_by_cluster = {};
-        _.each(column_data, function(column_item) {
-            var cluster_value = column_item[cluster_property].trim();
-            if (!columns_by_cluster[cluster_value]) columns_by_cluster[cluster_value] = [];
-            columns_by_cluster[cluster_value].push(_this.model.COLUMNS[column_item.colIdx]);
-        });
-
+        var rowLabels = this.model.dims.getRowLabels();
         var data = {};
         var categories_by_rowlabel = {};
         _.each(rowLabels, function(rowLabel) {
-            categories_by_rowlabel[rowLabel] = {};
-
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
+            categories_by_rowlabel[rowLabel] = _.uniq(_this.model.DATA[row_idx]);
+
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
+                cell = cell.trim();
                 var columnLabel = _this.model.COLUMNS[cellIdx];
                 if (!data[columnLabel]) data[columnLabel] = {};
-                categories_by_rowlabel[rowLabel][cell] = true;
+                // categories_by_rowlabel[rowLabel][cell] = true;
                 data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
@@ -107,11 +144,11 @@ module.exports = View.extend({
         _.each(categories_by_rowlabel, function(obj, rowLabel) {
             var categories = _.keys(obj);
             colorscales_by_rowlabel[rowLabel] = d3.scale.ordinal()
-                                                          .domain(categories)
-                                                          .range(d3.range(categories.length)
-                                                          .map(d3.scale.linear().domain([0, categories.length - 1])
-                                                          .range(["yellow", "blue"])
-                                                          .interpolate(d3.interpolateLab)));
+                .domain(categories)
+                .range(d3.range(categories.length)
+                .map(d3.scale.linear().domain([0, categories.length - 1])
+                .range(["yellow", "green"])
+                .interpolate(d3.interpolateLab)));
         });
 
         var optns = {
