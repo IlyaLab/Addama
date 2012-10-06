@@ -1,9 +1,9 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
-var FeatureMatrix = require('../models/featureMatrix');
+var FeatureMatrix2 = require('../models/featureMatrix2');
 
 module.exports = View.extend({
-    model:FeatureMatrix,
+    model:FeatureMatrix2,
     template:template,
     label:"Oncovis",
     className: "row-fluid",
@@ -22,19 +22,49 @@ module.exports = View.extend({
         this.model.on('load', _this.renderGraph);
     },
 
-    renderGraph:function () {
-        this.initControls();
+    initControls:function () {
+        console.log("initControls:start");
 
+        this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
+        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:10, max:50, initialStep:20 });
+        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:5 });
+        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:2 });
+        this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
+        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14 });
+
+        var oncovis_container = this.$el.find(".oncovis-container");
+        var visrangeFn = function (property) {
+            return function (event, value) {
+                console.log("visrangeFn(" + property + "=" + value + ")");
+                var dim = {};
+                dim[property] = value;
+                oncovis_container.update(dim);
+            }
+        };
+
+        this.$el.find(".slider_barheight").on("slide-to", visrangeFn("bar_height"));
+        this.$el.find(".slider_rowspacing").on("slide-to", visrangeFn("row_spacing"));
+        this.$el.find(".slider_barwidth").bind("slide-to", visrangeFn("bar_width"));
+        this.$el.find(".slider_barspacing").bind("slide-to", visrangeFn("column_spacing"));
+        this.$el.find(".slider_clusterspacing").bind("slide-to", visrangeFn("cluster_spacing"));
+        this.$el.find(".slider_fontsize").bind("slide-to", visrangeFn("label_fontsize"));
+
+        console.log("initControls:end");
+    },
+
+    renderGraph:function () {
         console.log("renderGraph:start");
 
         var rowLabels = this.model.dims.getRowLabels();
         var clusterGroups = {};
 
+        var columns = this.model.COLUMNS;
         var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
         _.each(this.model.DATA[cluster_idx], function(cell, idx) {
-            if (!clusterGroups[value]) clusterGroups[value] = [];
-            clusterGroups[value].push(idx);
-        });
+            cell = cell.trim();
+            if (!clusterGroups[cell]) clusterGroups[cell] = [];
+            clusterGroups[cell].push(this.model.COLUMNS[idx]);
+        }, this);
 
         var columns_by_cluster = {};
         var _this = this;
@@ -48,12 +78,17 @@ module.exports = View.extend({
             });
         });
 
+        var data = {};
         var categories_by_rowlabel = {};
         _.each(rowLabels, function(rowLabel) {
             categories_by_rowlabel[rowLabel] = {};
+
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
-            _.each(_this.model.DATA[row_idx], function(cell) {
+            _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
+                var columnLabel = _this.model.COLUMNS[cellIdx];
+                if (!data[columnLabel]) data[columnLabel] = {};
                 categories_by_rowlabel[rowLabel][cell] = true;
+                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
 
@@ -69,9 +104,8 @@ module.exports = View.extend({
         });
 
         var optns = {
-            bar_width:4,
-            column_spacing:1,
             plot_width:3000,
+            plot_height:3000,
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
@@ -82,19 +116,19 @@ module.exports = View.extend({
             },
             columns_by_cluster:clusterGroups,
             cluster_labels: _.keys(clusterGroups),
-            row_labels:rowLabels
+            row_labels:rowLabels,
+            // initial values based on slider defaults
+            bar_height: this.$el.find(".slider_barheight").oncovis_range("value"),
+            row_spacing: this.$el.find(".slider_rowspacing").oncovis_range("value"),
+            bar_width: this.$el.find(".slider_barwidth").oncovis_range("value"),
+            column_spacing: this.$el.find(".slider_barspacing").oncovis_range("value"),
+            cluster_spacing: this.$el.find(".slider_clusterspacing").oncovis_range("value"),
+            label_fontsize: this.$el.find(".slider_fontsize").oncovis_range("value")
         };
 
-        _.extend(optns, { "bar_height":this.$el.find(".slider_barheight").oncovis_range_value() });
-        _.extend(optns, { "row_spacing":this.$el.find(".slider_rowspacing").oncovis_range_value() });
-        _.extend(optns, { "bar_width":this.$el.find(".slider_barwidth").oncovis_range_value() });
-        _.extend(optns, { "column_spacing":this.$el.find(".slider_barspacing").oncovis_range_value() });
-        _.extend(optns, { "cluster_spacing":this.$el.find(".slider_clusterspacing").oncovis_range_value() });
-        _.extend(optns, { "label_fontsize":this.$el.find(".slider_fontsize").oncovis_range_value() });
+        this.$el.find(".oncovis-container").oncovis(data, optns);
 
-        this.$el.find(".oncovis-container").oncovis(this.model.DATA, optns);
-
-        this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
+//        this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
 
         console.log("renderGraph:end");
     },
@@ -174,33 +208,12 @@ module.exports = View.extend({
         console.log("renderLegend:end");
     },
 
-    initControls:function () {
-        console.log("initControls:start");
-        var me = this;
-        var visrangeFn = function (property) {
-            return function (value) {
-                var dim = {};
-                dim[property] = value;
-                me.$el.find(".oncovis-container").update(dim);
-            }
-        };
-
-        this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20, slide:visrangeFn("bar_height") });
-        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:0, max:50, initialStep:10, slide:visrangeFn("row_spacing") });
-        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:5, slide:visrangeFn("bar_width") });
-        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:2, slide:visrangeFn("column_spacing") });
-        this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10, slide:visrangeFn("cluster_spacing") });
-        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14, slide:visrangeFn("label_fontsize") });
-
-        console.log("initControls:end");
-    },
-
     resetSliders:function () {
-        this.$el.find(".slider_barheight").oncovis_range_reset();
-        this.$el.find(".slider_rowspacing").oncovis_range_reset();
-        this.$el.find(".slider_barwidth").oncovis_range_reset();
-        this.$el.find(".slider_barspacing").oncovis_range_reset();
-        this.$el.find(".slider_clusterspacing").oncovis_range_reset();
-        this.$el.find(".slider_fontsize").oncovis_range_reset();
+        this.$el.find(".slider_barheight").oncovis_range("reset");
+        this.$el.find(".slider_rowspacing").oncovis_range("reset");
+        this.$el.find(".slider_barwidth").oncovis_range("reset");
+        this.$el.find(".slider_barspacing").oncovis_range("reset");
+        this.$el.find(".slider_clusterspacing").oncovis_range("reset");
+        this.$el.find(".slider_fontsize").oncovis_range("reset");
     }
 });
