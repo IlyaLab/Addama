@@ -26,7 +26,7 @@ import tornado.web
 import json
 
 from data import LocalFileHandler
-from storage import MongoStorageHandler
+from storage import StorageHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
