@@ -52,65 +52,28 @@ module.exports = View.extend({
         console.log("initControls:end");
     },
 
-    getModelAsTree: function() {
+    getColumnModel: function() {
         var _this = this;
-
-        var column_tree = {};
-        column_tree.name = "ROOT";
-        column_tree.children = [];
-
-        var cluster_idx = this.model.ROWS.indexOf(this.model.dims.getClusterProperty());
-        var rowLabels = this.model.dims.getRowLabels();
-        var numberOfRowLabels = rowLabels.length;
-        
-        var cluster_directory = {};
-        _.each(_this.model.DATA[cluster_idx], function(cluster_cell, cluster_cell_idx) {
-            cluster_cell = cluster_cell.trim();
-            var cluster_trunk = cluster_directory[cluster_cell];
-            if (!cluster_trunk) {
-                cluster_trunk = { "name": cluster_cell, "children": [] };
-                cluster_directory[cluster_cell] = cluster_trunk;
-                column_tree.children.push(cluster_trunk);
-            }
-
-            var row_directory = {};
-            var row_path = cluster_cell;
-            _.each(rowLabels, function(rowLabel, rowLabelIdx) {
-                rowLabel = rowLabel.trim();
-                row_path += "/" + rowLabel;
-                var row_branch = row_directory[row_path];
-                if (!row_branch) {
-                    row_branch = { "name": rowLabel, "children": [] };
-                    row_directory[row_path] = row_branch;
-                    cluster_trunk.children.push(row_branch);
-                }
-
-                var row_idx = _this.model.ROWS.indexOf(rowLabel);
-                var cell_value = _this.model.DATA[row_idx][cluster_cell_idx];
-                if (rowLabelIdx == (numberOfRowLabels - 1)) {
-                    row_branch.children.push({ columnIdx: cluster_cell_idx, columnLabel: _this.model.COLUMNS[cluster_cell_idx] });
-                }
-                cluster_trunk = row_branch;
+        var unsorted_columns = [];
+        _.each(this.model.COLUMNS, function(column_name, col_idx) {
+            var cluster_idx = _this.model.ROWS.indexOf(_this.model.dims.getClusterProperty());
+            var cluster_value = _this.model.DATA[cluster_idx][col_idx].trim();
+            var column = { "name": column_name.trim(), "cluster": cluster_value, "values": [cluster_value] };
+            _.each(_this.model.dims.getRowLabels(), function(row_label) {
+                var row_idx = _this.model.ROWS.indexOf(row_label);
+                column.values.push(_this.model.DATA[row_idx][col_idx].trim());
             });
+            unsorted_columns.push(column);
         });
+        var sorted_columns = _.sortBy(unsorted_columns, "values");
+        var grouped_columns = _.groupBy(sorted_columns, "cluster");
 
-        return column_tree;
-    },
-
-    getColumnsByCluster: function(column_tree) {
-        var cluster_nodes = d3.layout.cluster().nodes(column_tree);
         var columns_by_cluster = {};
-        _.each(column_tree.children, function(column_branch) { columns_by_cluster[column_branch.name] = true; });
-        _.each(cluster_nodes, function(cluster_node) {
-            if (columns_by_cluster[cluster_node.name]) {
-                var ordered_columns = [];
-                var recurseFn = function(parent) {
-                    if (parent.children) _.each(parent.children, recurseFn);
-                    if (parent.columnLabel) ordered_columns.push(parent.columnLabel);
-                };
-                _.each(cluster_node.children, recurseFn);
-                columns_by_cluster[cluster_node.name] = ordered_columns;
-            }
+        _.each(grouped_columns, function(values, key) {
+            columns_by_cluster[key] = [];
+            _.each(values, function(value) {
+                columns_by_cluster[key].push(value.name);
+            })
         });
         return columns_by_cluster;
     },
@@ -118,24 +81,19 @@ module.exports = View.extend({
     renderGraph:function () {
         console.log("renderGraph:start");
 
-        var _this = this;
-
-        var column_tree = this.getModelAsTree();
-
-        var columns_by_cluster = this.getColumnsByCluster(column_tree);
-
+        var columns_by_cluster = this.getColumnModel();
         var rowLabels = this.model.dims.getRowLabels();
         var data = {};
         var categories_by_rowlabel = {};
+        var _this = this;
         _.each(rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
             categories_by_rowlabel[rowLabel] = _.uniq(_this.model.DATA[row_idx]);
 
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
-                var columnLabel = _this.model.COLUMNS[cellIdx];
+                var columnLabel = _this.model.COLUMNS[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
-                // categories_by_rowlabel[rowLabel][cell] = true;
                 data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
