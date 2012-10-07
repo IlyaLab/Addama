@@ -89,7 +89,7 @@ module.exports = View.extend({
         _.each(rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
             var categories = _.uniq(_this.model.DATA[row_idx]);
-            colorscales_by_rowlabel[rowLabel] = colorbrewer.PuBu[(categories.length < 3) ? 3 : categories.length];
+            colorscales_by_rowlabel[rowLabel] = colorbrewer.YlOrBr[(categories.length < 3) ? 3 : categories.length];
 
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
