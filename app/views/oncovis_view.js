@@ -84,11 +84,12 @@ module.exports = View.extend({
         var columns_by_cluster = this.getColumnModel();
         var rowLabels = this.model.dims.getRowLabels();
         var data = {};
-        var categories_by_rowlabel = {};
+        var colorscales_by_rowlabel = { overrides: {} };
         var _this = this;
         _.each(rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
-            categories_by_rowlabel[rowLabel] = _.uniq(_this.model.DATA[row_idx]);
+            var categories = _.uniq(_this.model.DATA[row_idx]);
+            colorscales_by_rowlabel[rowLabel] = colorbrewer.PuBu[(categories.length < 3) ? 3 : categories.length];
 
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
@@ -98,17 +99,6 @@ module.exports = View.extend({
             });
         });
 
-        var colorscales_by_rowlabel = { overrides: {} };
-        _.each(categories_by_rowlabel, function(obj, rowLabel) {
-            var categories = _.keys(obj);
-            colorscales_by_rowlabel[rowLabel] = d3.scale.ordinal()
-                .domain(categories)
-                .range(d3.range(categories.length)
-                .map(d3.scale.linear().domain([0, categories.length - 1])
-                .range(["yellow", "green"])
-                .interpolate(d3.interpolateLab)));
-        });
-
         var optns = {
             plot_width:3000,
             plot_height:3000,
@@ -116,7 +106,7 @@ module.exports = View.extend({
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
                 if (d) {
-                    return colorscales_by_rowlabel[d.row](d.value);
+                    return colorscales_by_rowlabel[d.row][d.value];
                 }
                 return "white";
             },
@@ -134,84 +124,7 @@ module.exports = View.extend({
 
         this.$el.find(".oncovis-container").oncovis(data, optns);
 
-//        this.renderLegend(categories_by_rowlabel, colorscales_by_rowlabel);
-
         console.log("renderGraph:end");
-    },
-
-    renderLegend: function(categories_by_rowlabel, colorscales_by_rowlabel) {
-        console.log("renderLegend:start");
-
-        var accordionEl = this.$el.find(".oncovis-legend");
-        _.each(categories_by_rowlabel, function(obj, rowLabel) {
-            var categories = _.keys(obj);
-            accordionEl.append("<h5><a href='#'>" + rowLabel + "</a></h5>");
-            var lis = [];
-            _.each(categories, function(category) {
-                var color = colorscales_by_rowlabel[rowLabel](category);
-                lis.push("<li><span data-row='" + rowLabel + "' data-ref='" + category + "' class='color-category' style='background-color:" + color + "'>&nbsp;&nbsp;&nbsp;</span>" + category + "</li>");
-            });
-            accordionEl.append("<ul>" + lis.join("") + "</ul>");
-        });
-
-        accordionEl.accordion({ "collapsible": true, "autoHeight": false });
-
-        var oncovis_container = this.$el.find(".oncovis-container");
-
-        $(".color-selection").live("click", function(e) {
-            var data = $(e.target).data();
-            var row = data["row"];
-            var ref = data["ref"];
-            var color = data["color"];
-
-            if (!colorscales_by_rowlabel.overrides[row]) colorscales_by_rowlabel.overrides[row] = {};
-            colorscales_by_rowlabel.overrides[row][ref] = color;
-
-            oncovis_container.update({
-                color_fn: function(d) {
-                    if (colorscales_by_rowlabel.overrides[d.row] && colorscales_by_rowlabel.overrides[d.row][d.value]) {
-                        return colorscales_by_rowlabel.overrides[d.row][d.value];
-                    }
-                    return colorscales_by_rowlabel[d.row](d.value);
-                }
-            });
-
-            _.each($(".color-category"), function(cc) {
-                var el = $(cc);
-                if (el.data()["row"] == row && el.data()["ref"] == ref) cc.style["background-color"] = color;
-            });
-
-            $(".color-category").popover("hide");
-        });
-
-        $(".color-category").popover({
-            placement: "left",
-            title: function() {
-                return "Color Selection (" + $(this).data()["ref"] + ")";
-            },
-            content: function() {
-                var row = $(this).data()["row"];
-                var ref = $(this).data()["ref"];
-
-
-                var addColorSpan = function(color) {
-                    return "<span class='color-selection' style='background-color:" + color + "' data-row='" + row + "' data-color='" + color + "' data-ref='" + ref + "'>&nbsp;&nbsp;&nbsp;</span>";
-                };
-                var html = "";
-                html += "<ul>";
-                html += addColorSpan("red");
-                html += addColorSpan("blue");
-                html += addColorSpan("green");
-                html += addColorSpan("yellow");
-                html += addColorSpan("lightgray");
-                html += addColorSpan("lightgreen");
-                html += addColorSpan("lightblue");
-                html += "</ul>";
-                return html;
-            }
-        });
-
-        console.log("renderLegend:end");
     },
 
     resetSliders:function () {
