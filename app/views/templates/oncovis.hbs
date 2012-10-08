@@ -1,8 +1,14 @@
-<div class="oncovis-container span9"></div>
-<div class="span3">
-    <div class="well">
-        <h4>Controls</h4>
-
+<div class="oncovis-controls well">
+    <a href=".oncovis-modal" role="button" class="btn" data-toggle="modal">Controls</a>
+</div>
+<div class="oncovis-container">
+</div>
+<div class="oncovis-modal modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Controls</h3>
+    </div>
+    <div class="modal-body">
         <h5>Bar Height</h5>
         <div class="slider_barheight"></div>
 
@@ -23,5 +29,8 @@
 
         <hr/>
         <button class="btn reset-sliders">Reset</button>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
     </div>
 </div>
