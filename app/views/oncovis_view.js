@@ -1,9 +1,11 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
+//var Genelist = require('../models/genelist');
 
 module.exports = View.extend({
     model:FeatureMatrix2,
+    genelist: [],
     template:template,
     label:"Oncovis",
     className: "row-fluid",
@@ -84,18 +86,17 @@ module.exports = View.extend({
         var columns_by_cluster = this.getColumnModel();
         var rowLabels = this.model.dims.getRowLabels();
         var data = {};
-        var colorscales_by_rowlabel = { overrides: {} };
         var _this = this;
         _.each(rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
             var categories = _.uniq(_this.model.DATA[row_idx]);
-            colorscales_by_rowlabel[rowLabel] = colorbrewer.YlOrBr[(categories.length < 3) ? 3 : categories.length];
 
+            var colorscales = colorbrewer.YlOrBr[(categories.length < 3) ? 3 : categories.length];
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
                 var columnLabel = _this.model.COLUMNS[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
-                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "label":columnLabel + "\n" + rowLabel + "\n" + cell };
+                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "colorscale": colorscales[cell], "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
 
@@ -104,12 +105,7 @@ module.exports = View.extend({
             plot_height:3000,
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
-            color_fn:function (d) {
-                if (d) {
-                    return colorscales_by_rowlabel[d.row][d.value];
-                }
-                return "white";
-            },
+            color_fn:function (d) { return d ? d.colorscale : "white"; },
             columns_by_cluster:columns_by_cluster,
             cluster_labels: _.keys(columns_by_cluster),
             row_labels:rowLabels,
