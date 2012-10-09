@@ -24,9 +24,6 @@ module.exports = View.extend({
         this.model.on('load', this.renderGraph);
 
         this.$el.find("#genelist-modal .modal-body").append(this.genelistView.render().el);
-        
-        this.$el.find("#genelist-modal").modal("toggle"); // TODO :Remove this line
-
         this.genelistView.on("genelist-selected", this.onNewRows);
     },
 
