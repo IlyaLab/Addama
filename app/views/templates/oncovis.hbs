@@ -1,9 +1,23 @@
-<div class="oncovis-controls well">
-    <a href=".oncovis-modal" role="button" class="btn" data-toggle="modal">Controls</a>
+<ul class="nav nav-pills">
+  <li><a href="#oncovis-modal" role="button" data-toggle="modal">Controls</a></li>
+  <li><a href="#genelist-modal" role="button" data-toggle="modal">Gene Lists</a></li>
+</ul>
+
+<div class="oncovis-container"></div>
+
+<div id="genelist-modal" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Gene Lists</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
 </div>
-<div class="oncovis-container">
-</div>
-<div class="oncovis-modal modal hide fade">
+
+<div id="oncovis-modal" class="modal hide fade">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
         <h3>Controls</h3>

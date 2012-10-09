@@ -1,27 +1,33 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
-//var Genelist = require('../models/genelist');
+var Genelist = require('./gene_list_view');
 
 module.exports = View.extend({
     model:FeatureMatrix2,
-    genelist: [],
     template:template,
+    genelistView: new Genelist(),
     label:"Oncovis",
     className: "row-fluid",
+    rowLabels: [],
 
     events:{
         "click .reset-sliders":"resetSliders"
     },
 
     initialize:function () {
-        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders');
+        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
     },
 
     afterRender:function () {
-        var _this = this;
         this.initControls();
-        this.model.on('load', _this.renderGraph);
+        this.model.on('load', this.renderGraph);
+
+        this.$el.find("#genelist-modal .modal-body").append(this.genelistView.render().el);
+        
+        this.$el.find("#genelist-modal").modal("toggle"); // TODO :Remove this line
+
+        this.genelistView.on("genelist-selected", this.onNewRows);
     },
 
     initControls:function () {
@@ -61,7 +67,7 @@ module.exports = View.extend({
             var cluster_idx = _this.model.ROWS.indexOf(_this.model.dims.getClusterProperty());
             var cluster_value = _this.model.DATA[cluster_idx][col_idx].trim();
             var column = { "name": column_name.trim(), "cluster": cluster_value, "values": [cluster_value] };
-            _.each(_this.model.dims.getRowLabels(), function(row_label) {
+            _.each(_this.rowLabels, function(row_label) {
                 var row_idx = _this.model.ROWS.indexOf(row_label);
                 column.values.push(_this.model.DATA[row_idx][col_idx].trim());
             });
@@ -81,13 +87,16 @@ module.exports = View.extend({
     },
 
     renderGraph:function () {
+        if (!this.rowLabels || !this.rowLabels.length) {
+            this.rowLabels = this.model.dims.getRowLabels();
+        }
+
         console.log("renderGraph:start");
 
         var columns_by_cluster = this.getColumnModel();
-        var rowLabels = this.model.dims.getRowLabels();
         var data = {};
         var _this = this;
-        _.each(rowLabels, function(rowLabel) {
+        _.each(this.rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
             var categories = _.uniq(_this.model.DATA[row_idx]);
 
@@ -105,10 +114,12 @@ module.exports = View.extend({
             plot_height:3000,
             label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
-            color_fn:function (d) { return d ? d.colorscale : "white"; },
+            color_fn:function (d) {
+                return d ? d.colorscale : "white";
+            },
             columns_by_cluster:columns_by_cluster,
             cluster_labels: _.keys(columns_by_cluster),
-            row_labels:rowLabels,
+            row_labels:this.rowLabels,
             // initial values based on slider defaults
             bar_height: this.$el.find(".slider_barheight").oncovis_range("value"),
             row_spacing: this.$el.find(".slider_rowspacing").oncovis_range("value"),
@@ -123,6 +134,19 @@ module.exports = View.extend({
         console.log("renderGraph:end");
     },
 
+    onNewRows: function(genelist) {
+        this.$el.find("#genelist-modal").modal("hide");
+
+        var all_rows = this.model.ROWS;
+        this.rowLabels = _.flatten(_.compact(_.map(genelist.values, function(gene) {
+            return _.flatten(_.compact(_.map(all_rows, function(row) {
+                if (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0) return row;
+            })));
+        })));
+        console.log("reload-model");
+        this.model.trigger('load');
+    },
+        
     resetSliders:function () {
         this.$el.find(".slider_barheight").oncovis_range("reset");
         this.$el.find(".slider_rowspacing").oncovis_range("reset");
