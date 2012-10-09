@@ -8,18 +8,22 @@ module.exports = View.extend({
     genelists: {},
 
     events:{
-        "click .save-gene-list":"saveGeneList",
-        "click .new-gene-list":"newGeneList",
-        "click .gene-lists li .genelist-edit":"editGeneList",
+        "click .gene-list-view .save-list":"saveGL",
+        "click .gene-list-view .new-list":"newGL",
+        "click .gene-list-view .genelist-edit":"editGL",
+        "click .gene-list-view .genelist-view":"viewGL",
         "click .gene-lists li a":function(e) {
             e.preventDefault();
             this.trigger("genelist-selected", this.genelists[$(e.target).data("id")]);
+        },
+        "click .gene-list-view .item-remover": function(e) {
+            $(e.target.parentNode).remove();
         }
     },
 
     initialize:function () {
         console.log("initialize:gene_list_view");
-        _.bindAll(this, "initTypeahead", "initGenelists", "saveGeneList", "newGeneList", "editGeneList");
+        _.bindAll(this, "initTypeahead", "initGenelists", "saveGL", "newGL", "viewGL", "editGL");
 
         $.ajax({
             url: "svc/data/lookups/genes",
@@ -34,7 +38,7 @@ module.exports = View.extend({
             type: "GET",
             dataType: "json",
             context: "this",
-            success: this.initGenelists
+            success: this.initGenelists(false) // TODO: this.initGenelists(false)
         });
     },
 
@@ -42,7 +46,7 @@ module.exports = View.extend({
         console.log("gene_list_view.afterRender");
         this.$el.find(".sortable_list ul, li").disableSelection();
         this.$el.find(".gene-list-members").sortable({ revert:true });
-        this.$el.find(".edit-gene-list").css("font-size", "smaller");
+        this.setEditsDisabled(true);
     },
 
     initTypeahead: function(txt) {
@@ -61,96 +65,113 @@ module.exports = View.extend({
             },
 
             updater: function(a) {
-                _this.trigger("genes-selected", a);
-                return "";
+                _this.addGene(a);
+                return a;
             }
         });
     },
 
-    initGenelists: function(json) {
-        var _genelists = this.genelists;
-        var genelistUL = this.$el.find(".gene-lists");
-        if (json && json.files) {
-            _.each(json.files, function(gene_list) {
-                $.ajax({
-                    url: "svc/data" + gene_list.uri,
-                    type: "GET",
-                    dataType: "text",
-                    context: this,
-                    success: function(text) {
-                        genelistUL.append("<li><a href='#' data-id='" + gene_list.uri + "'>" + gene_list.label + "</a> <i class='icon-pencil genelist-edit'></i></li>");
-                        _genelists[gene_list.uri] = _.extend(gene_list, { values: text.trim().split("\n") });
+    initGenelists: function(writable) {
+        var _this = this;
+        return function(json) {
+            var genelistUL = _this.$el.find(".gene-lists");
+            if (json && json.files) {
+                _.each(json.files, function(gene_list) {
+                    if (writable) {
+                        genelistUL.append("<li><a href='#' data-id='" + gene_list.uri + "'>" + gene_list.label + "</a> <i  class='icon-pencil genelist-edit' data-id='" + gene_list.uri + "'></i></li>");
+                    } else {
+                        genelistUL.append("<li><a href='#' data-id='" + gene_list.uri + "'>" + gene_list.label + "</a> <i  class='icon-list genelist-view' data-id='" + gene_list.uri + "'></i></li>");
                     }
+                    $.ajax({
+                        url: "svc/data" + gene_list.uri,
+                        type: "GET",
+                        dataType: "text",
+                        context: _this,
+                        success: function(text) {
+                            _this.genelists[gene_list.uri] = _.extend(gene_list, { values: text.trim().split("\n") });
+                        }
+                    });
                 });
-            });
+            }
         }
     },
 
-    newGeneList: function(e) {
+    newGL: function(e) {
         e.preventDefault();
-        console.log("gene_list_view.newGeneList");
-
-//        this.$el.find(".gene-lists li a").css("font-weight", "normal");
-//        this.$el.find(".gene-lists").append("<li><a href='#' style='font-weight: bolder;' data-id='localStorage:genelists.untitled'>Untitled</a></li>");
+        console.log("gene_list_view.newGL");
+        this.$el.find(".gene-list-members").empty();
+        this.$el.find(".genelist-label").val("Untitled");
+        this.setEditsDisabled(false);
     },
 
-    saveGeneList: function(e) {
+    saveGL: function(e) {
+        console.log("gene_list_view.saveGL");
         e.preventDefault();
-        console.log("gene_list_view.saveGeneList");
-        var link = $(e.target);
+
+        var gene_list_label = this.$el.find(".genelist-label").val();
+        var gene_list = _.compact(_.map(this.$el.find(".genes-typeahead"), function(typeahead) {
+            if (typeahead.val) return typeahead.val();
+        }));
+
+        if (gene_list_label && gene_list && gene_list.length) {
+            // TODO : save new list with proper id
+            this.genelists[Math.random()] = { label: gene_list_label, values: gene_list };
+        }
     },
 
-    editGeneList: function(e) {
+    viewGL: function(e) {
+        e.preventDefault();
+        console.log("gene_list_view.viewGL");
+
         var gene_list_id = $(e.target).data("id");
-        console.log("editGeneList:" + $(e.target).data("id"));
 
-        e.preventDefault();
-//        this.$el.find(".gene-lists li a").css("font-weight", "normal");
+        var gene_list = this.genelists[gene_list_id];
+
+        this.$el.find(".gene-lists li a").css("font-weight", "normal");
         $(e.target).css("font-weight", "bolder");
 
-        var posLocStorageUri = gene_list_id.indexOf("localStorage:");
         var gene_ids = [];
 
         var geneListEl = this.$el.find(".gene-list-members");
-        var loadGenesFromListFn = function(gene_array) {
-            geneListEl.empty();
-            _.each(gene_array, function(gene) {
-                geneListEl.append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span>&nbsp;<span class='item-remover' data-list='" + gene_list_id + "' data-gene='" + gene + "'>x</span></li>");
-            });
-        };
-        if (posLocStorageUri >= 0) {
-            var foundGenes = localStorage.getItem(posLocStorageUri.substring(posLocStorageUri));
-            if (foundGenes && foundGenes.length) {
-                loadGenesFromListFn(foundGenes.split("\t"));
-            }
-        } else {
-//            $.ajax({
-//                url: "svc/data" + gene_list_id,
-//                type: "GET",
-//                dataType: "text",
-//                context: this,
-//                success: function(txt) {
-//                    loadGenesFromListFn(txt.trim().split("\n"));
-//                }
-//            });
-            loadGenesFromListFn(this.genelists[gene_list_id].values);
-        }
+        geneListEl.empty();
+        this.$el.find(".genelist-label").val(gene_list.label);
+        _.each(gene_list.values, function(gene) {
+            geneListEl.append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span></li>");
+        });
 
-//        this.on("genes-selected", function(selection) {
-//            var gene = selection.gene;
-//            var list = selection.list;
-//            genesToBeAdded.append("<li><a href='#' class='gene-item' data-id='" + gene + "'>" + gene + "</a><a href='#' class='remove-gene' data-list='" + list + "' data-gene='" + gene + "'>x</a></li>");
-//        });
+        this.setEditsDisabled(true);
+    },
 
-//        genesToBeAdded.find(".remove-gene").click(function(e) {
-//            e.preventDefault();
-//
-//            var link = $(e.target);
-//            _this.trigger("gene-removed", { list: link.data("list"), gene: link.data("gene") });
-//            link.remove();
-//        });
-//        genesToBeAdded.find(".gene-item").click(function(e) {
-//            e.preventDefault();
-//        });
+    editGL: function(e) {
+        e.preventDefault();
+
+        var gene_list_id = $(e.target).data("id");
+
+        var gene_list = this.genelists[gene_list_id];
+
+        this.$el.find(".gene-lists li a").css("font-weight", "normal");
+        $(e.target).css("font-weight", "bolder");
+
+        var gene_ids = [];
+
+        var geneListEl = this.$el.find(".gene-list-members");
+        geneListEl.empty();
+
+        this.$el.find(".genelist-label").val(gene_list.label);
+        _.each(gene_list.values, function(gene) {
+            geneListEl.append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span>&nbsp;<i class='icon-trash item-remover' data-gene='" + gene + "'></i></li>");
+        });
+
+        this.setEditsDisabled(false);
+    },
+
+    addGene: function(gene) {
+        this.$el.find(".gene-list-members").append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span>&nbsp;<i class='icon-trash item-remover' data-gene='" + gene + "'></i></li>");
+    },
+
+    setEditsDisabled: function(disableFlag) {
+        this.$el.find(".gene-list-view .save-list").prop("disabled", disableFlag);
+        this.$el.find(".gene-list-view .genelist-label").prop("disabled", disableFlag);
+        this.$el.find(".gene-list-view .genes-typeahead").prop("disabled", disableFlag);
     }
 });
