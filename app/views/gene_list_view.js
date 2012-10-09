@@ -170,8 +170,11 @@ module.exports = View.extend({
     },
 
     setEditsDisabled: function(disableFlag) {
-        this.$el.find(".gene-list-view .save-list").prop("disabled", disableFlag);
-        this.$el.find(".gene-list-view .genelist-label").prop("disabled", disableFlag);
-        this.$el.find(".gene-list-view .genes-typeahead").prop("disabled", disableFlag);
+        this.$el.find(".gene-list-view .editors").prop("disabled", disableFlag);
+        if (disableFlag) {
+            this.$el.find(".gene-list-view .editors").css("color", "grey");
+        } else {
+            this.$el.find(".gene-list-view .editors").css("color", "black");
+        }
     }
 });
