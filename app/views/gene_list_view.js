@@ -1,5 +1,6 @@
 var View = require('./view');
 var template = require("./templates/gene_list");
+var GeneListItem = require("./templates/gene_list_item");
 
 module.exports = View.extend({
     template:template,
@@ -25,21 +26,9 @@ module.exports = View.extend({
         console.log("initialize:gene_list_view");
         _.bindAll(this, "initTypeahead", "initGenelists", "saveGL", "newGL", "viewGL", "editGL");
 
-        $.ajax({
-            url: "svc/data/lookups/genes",
-            type: "GET",
-            dataType: "text",
-            context: this,
-            success: this.initTypeahead
-        });
-
-        $.ajax({
-            url: "svc/data/lookups/genelists",
-            type: "GET",
-            dataType: "json",
-            context: "this",
-            success: this.initGenelists(false) // TODO: this.initGenelists(false)
-        });
+        $.ajax({ url: "svc/data/lookups/genes", type: "GET", dataType: "text", context: this, success: this.initTypeahead });
+        $.ajax({ url: "svc/data/lookups/genelists", type: "GET", dataType: "json", context: "this", success: this.initGenelists(false) });
+        $.ajax({ url: "svc/storage/genelists", type: "GET", dataType: "json", context: "this", success: this.initGenelists(true) });
     },
 
     afterRender: function() {
@@ -75,23 +64,45 @@ module.exports = View.extend({
         var _this = this;
         return function(json) {
             var genelistUL = _this.$el.find(".gene-lists");
-            if (json && json.files) {
-                _.each(json.files, function(gene_list) {
-                    if (writable) {
-                        genelistUL.append("<li><a href='#' data-id='" + gene_list.uri + "'>" + gene_list.label + "</a> <i  class='icon-pencil genelist-edit' data-id='" + gene_list.uri + "'></i></li>");
-                    } else {
-                        genelistUL.append("<li><a href='#' data-id='" + gene_list.uri + "'>" + gene_list.label + "</a> <i  class='icon-list genelist-view' data-id='" + gene_list.uri + "'></i></li>");
-                    }
-                    $.ajax({
-                        url: "svc/data" + gene_list.uri,
-                        type: "GET",
-                        dataType: "text",
-                        context: _this,
-                        success: function(text) {
-                            _this.genelists[gene_list.uri] = _.extend(gene_list, { values: text.trim().split("\n") });
+            if (json) {
+                if (json.files) {
+                    _.each(json.files, function(gene_list) {
+                        if (writable) {
+                            genelistUL.append(GeneListItem(_.extend(gene_list, {"cls": 'icon-pencil genelist-edit'})));
+                        } else {
+                            genelistUL.append(GeneListItem(_.extend(gene_list, {"cls": 'icon-list genelist-view'})));
                         }
+                        $.ajax({
+                            url: "svc/data" + gene_list.uri,
+                            type: "GET",
+                            dataType: "text",
+                            context: _this,
+                            success: function(text) {
+                                _this.genelists[gene_list.uri] = _.extend(gene_list, { values: text.trim().split("\n") });
+                            }
+                        });
                     });
-                });
+                }
+                if (json.items) {
+                    _.each(json.items, function(item) {
+                        var uri = item.uri;
+                        $.ajax({
+                            url: "svc" + uri,
+                            type: "GET",
+                            dataType: "json",
+                            context: _this,
+                            success: function(json) {
+                                if (writable) {
+                                    genelistUL.append(GeneListItem(_.extend(json, {"uri": uri, "cls": 'icon-pencil genelist-edit'})));
+                                } else {
+                                    genelistUL.append(GeneListItem(_.extend(json, {"uri": uri, "cls": 'icon-list genelist-view'})));
+                                }
+
+                                _this.genelists[uri] = json;
+                            }
+                        });
+                    })
+                }
             }
         }
     },
@@ -109,14 +120,20 @@ module.exports = View.extend({
         e.preventDefault();
 
         var gene_list_label = this.$el.find(".genelist-label").val();
-        var gene_list = _.compact(_.map(this.$el.find(".genes-typeahead"), function(typeahead) {
-            if (typeahead.val) return typeahead.val();
-        }));
-
-        if (gene_list_label && gene_list && gene_list.length) {
-            // TODO : save new list with proper id
-            this.genelists[Math.random()] = { label: gene_list_label, values: gene_list };
-        }
+        var gene_list = _.compact(_.map(this.$el.find(".gene-list-members li span"), function(item) { return $(item).data("id") }));
+        $.ajax({
+            url: "svc/storage/genelists",
+            type: "POST",
+            dataType: "json",
+            data: {
+                label: gene_list_label, values: gene_list
+            },
+            context: this,
+            success: function(json) {
+                this.genelists[json.uri] = gene_list;
+                this.$el.find(".gene-lists").append(GeneListItem(_.extend(json, {"label":gene_list_label, "cls": 'icon-pencil genelist-edit'})));
+            }
+        });
     },
 
     viewGL: function(e) {
@@ -127,7 +144,7 @@ module.exports = View.extend({
 
         var gene_list = this.genelists[gene_list_id];
 
-        this.$el.find(".gene-lists li a").css("font-weight", "normal");
+        this.$el.find(".gene-lists li span").css("font-weight", "normal");
         $(e.target).css("font-weight", "bolder");
 
         var gene_ids = [];
@@ -149,7 +166,7 @@ module.exports = View.extend({
 
         var gene_list = this.genelists[gene_list_id];
 
-        this.$el.find(".gene-lists li a").css("font-weight", "normal");
+        this.$el.find(".gene-lists li span").css("font-weight", "normal");
         $(e.target).css("font-weight", "bolder");
 
         var gene_ids = [];
