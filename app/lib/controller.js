@@ -104,7 +104,7 @@ Controller = {
 
 			} else {  //tabular data like /feature_matrix/data_freeze_3 or information gain
 				vis_type = vis_type || 'grid';  //or parcoords?
-				if ( len <= 2 ) {  // 1 or no parameters.  just draw vis of analysis
+				if ( vis_type == 'heat' ) {  // 1 or no parameters.  just draw vis of analysis
                     OncovisDims = require('../models/oncovis_dims');
                     oncovisDims = new OncovisDims({dataset_id : dataset_id });
 
