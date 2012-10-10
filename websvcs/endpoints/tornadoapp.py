@@ -37,7 +37,7 @@ define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
 define("client_id", help="Client ID for Google OAuth2")
 define("client_secret", help="Client Secrets for Google OAuth2")
-define("config_file", default="../tornado.config", help="Path to data files")
+define("config_file", help="Path to config file")
 define("authorized_users", default=[], help="List of authorized user emails")
 
 settings = {
@@ -94,9 +94,17 @@ class AuthProvidersHandler(tornado.web.RequestHandler):
 
 def main():
     tornado.options.parse_command_line()
-    tornado.options.parse_config_file(options.config_file)
+    if not options.config_file is None:
+        tornado.options.parse_config_file(options.config_file)
+        tornado.options.parse_command_line()
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
+    logging.info("--data_path=%s" % options.data_path)
+    logging.info("--client_host=%s" % options.client_host)
+    logging.info("--authorized_users=%s" % options.authorized_users)
+    if not options.config_file is None:
+        logging.info("--config_file=%s" % options.config_file)
+
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/data?(.*)", LocalFileHandler),
