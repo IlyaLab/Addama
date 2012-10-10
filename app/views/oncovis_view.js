@@ -150,16 +150,18 @@ module.exports = View.extend({
     },
 
     onNewRows: function(genelist) {
+        var _this = this;
         this.$el.find("#genelist-modal").modal("hide");
-
-        var all_rows = this.model.get("ROWS");
-        this.rowLabels = _.flatten(_.compact(_.map(genelist.values, function(gene) {
-            return _.flatten(_.compact(_.map(all_rows, function(row) {
-                if (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0) return row;
-            })));
-        })));
+        _.defer(function() {
+        var all_rows = _this.model.get("ROWS");
+        _this.rowLabels = _.filter(all_rows, function(row) { 
+                            return _.any(genelist.values, function(gene) {
+                                    return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
+                                    });
+                            });
         console.log("reload-model");
-        this.model.trigger('load');
+        _this.model.trigger('load');
+        });
     },
         
     resetSliders:function () {

@@ -14,8 +14,9 @@ module.exports = View.extend({
         "click .gene-list-view .genelist-edit":"editGL",
         "click .gene-list-view .genelist-view":"viewGL",
         "click .gene-lists li a":function(e) {
-            e.preventDefault();
+            //e.preventDefault();
             this.trigger("genelist-selected", this.genelists[$(e.target).data("id")]);
+            return false;
         },
         "click .gene-list-view .item-remover": function(e) {
             $(e.target.parentNode).remove();
