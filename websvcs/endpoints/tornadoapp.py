@@ -60,7 +60,7 @@ class MainHandler(tornado.web.RequestHandler):
 class WhoamiHandler(tornado.web.RequestHandler):
     @authenticated
     def get(self):
-        userkey = self.get_cookie("whoami")
+        userkey = self.get_secure_cookie("whoami")
         user = None
         if not userkey is None:
             user = json.load(open('userinfo-%s.dat' % (userkey)))
@@ -97,6 +97,8 @@ def main():
     if not options.config_file is None:
         tornado.options.parse_config_file(options.config_file)
         tornado.options.parse_command_line()
+
+    settings["cookie_secret"] = options.client_secret
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     logging.info("--data_path=%s" % options.data_path)

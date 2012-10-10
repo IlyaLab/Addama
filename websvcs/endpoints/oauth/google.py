@@ -29,10 +29,10 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
             f = open('userinfo-%s.dat' % (user_email), 'w+')
             f.write(response.body)
 
-            self.set_cookie("whoami", user_email)
+            self.set_secure_cookie("whoami", user_email, expires_days=None)
             self.redirect(options.client_host)
         else:
-            userkey = self.get_cookie("whoami")
+            userkey = self.get_secure_cookie("whoami")
             storage = Storage('credentials-%s.dat' % (userkey))
             credentials = storage.get()
 

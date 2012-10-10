@@ -7,7 +7,7 @@ def authenticated(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
         if len(options.authorized_users) > 0:
-            whoami = self.get_cookie("whoami")
+            whoami = self.get_secure_cookie("whoami")
             if not whoami:
                 raise tornado.web.HTTPError(403)
 
