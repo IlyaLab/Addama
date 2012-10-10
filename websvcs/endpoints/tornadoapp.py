@@ -24,7 +24,10 @@ import tornado.ioloop
 from tornado.options import define, options, logging
 import tornado.web
 import json
+import sys
+import uuid
 
+from auth_decorator import authenticated
 from data import LocalFileHandler
 from storage import StorageHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
@@ -34,9 +37,12 @@ define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
 define("client_id", help="Client ID for Google OAuth2")
 define("client_secret", help="Client Secrets for Google OAuth2")
+define("config_file", default="../tornado.config", help="Path to data files")
+define("authorized_users", default=[], help="List of authorized user emails")
 
 settings = {
     "debug": True,
+    "cookie_secret": uuid.uuid4()
 }
 
 server_settings = {
@@ -52,6 +58,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.set_status(200)
 
 class WhoamiHandler(tornado.web.RequestHandler):
+    @authenticated
     def get(self):
         userkey = self.get_cookie("whoami")
         user = None
@@ -77,8 +84,18 @@ class WhoamiHandler(tornado.web.RequestHandler):
         self.write({"providers":providers});
         self.set_status(200)
 
+class AuthProvidersHandler(tornado.web.RequestHandler):
+    def get(self):
+        providers = []
+        providers.append({ "id": "google", "label": "Google+", "active": False, "logo": "https://www.google.com/images/icons/ui/gprofile_button-64.png" })
+
+        self.write({"providers":providers});
+        self.set_status(200)
+
 def main():
     tornado.options.parse_command_line()
+    tornado.options.parse_config_file(options.config_file)
+
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     application = tornado.web.Application([
         (r"/", MainHandler),
@@ -87,6 +104,7 @@ def main():
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
+        (r"/auth/providers", AuthProvidersHandler),
         (r"/storage/(.*)", StorageHandler)
     ], **settings)
     application.listen(options.port, **server_settings)

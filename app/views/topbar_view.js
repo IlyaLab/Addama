@@ -78,19 +78,34 @@ module.exports = View.extend({
     initSignIn:function () {
         this.$signInModal = $("body").append(SignInModal()).find(".signin-container");
 
+        var _this = this;
+        var addAuthProviders = function(json) {
+            _.each(json.providers, function (provider) {
+                var sign_in_view = new SignInView({ "provider":provider });
+                _this.$signInModal.find(".modal-body").append(sign_in_view.render().el);
+                _this.$signInModal.find(".signout-all").click(function() {
+                    sign_in_view.signout();
+                });
+            });
+        };
         $.ajax({
             url:"svc/auth/whoami",
             method:"GET",
             context:this,
-            success:function (json) {
-                _.each(json.providers, function (provider) {
-                    var sign_in_view = new SignInView({ "provider":provider });
-                    this.$signInModal.find(".modal-body").append(sign_in_view.render().el);
-                    this.$signInModal.find(".signout-all").click(function() {
-                        sign_in_view.signout();
-                    });
-                }, this);
-            }
+            success:addAuthProviders,
+            statusCode: {
+                403: function(e,o) {
+                    $.ajax({
+                        url: "svc/auth/providers",
+                        type: "GET",
+                        context: this,
+                        success: function(json) {
+                            addAuthProviders(json);
+                            this.$signInModal.modal("show");
+                        }
+                    })
+                }
+              }
         });
     }
 });

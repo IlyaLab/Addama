@@ -4,8 +4,10 @@ import os
 import json
 import uuid
 import glob
+from auth_decorator import authenticated
 
 class StorageHandler(tornado.web.RequestHandler):
+    @authenticated
     def get(self, identity):
         ids = identity.split("/")
         if len(ids) == 1:
@@ -32,6 +34,7 @@ class StorageHandler(tornado.web.RequestHandler):
 
         self.set_status(404)
 
+    @authenticated
     def post(self, identity):
         ids = identity.split("/")
 
