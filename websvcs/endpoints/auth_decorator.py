@@ -11,7 +11,7 @@ def authenticated(method):
             if not whoami:
                 raise tornado.web.HTTPError(403)
 
-            if not whoami in options.authorized_users:
+            if not whoami.lower() in options.authorized_users:
                 raise tornado.web.HTTPError(403)
                     
         return method(self, *args, **kwargs)
