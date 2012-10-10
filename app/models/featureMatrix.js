@@ -1,42 +1,34 @@
-var Model = require('./model');
-var REQUIRED = null;
+var Collection = require('./collection');
+var FeatureData = require('./featureData');
 
-module.exports = Model.extend({
-    analysis_id : REQUIRED,
-    dataset_id: REQUIRED,
+module.exports = Collection.extend({
+	model: FeatureData,
 
-    defaults: {
-        ROWS: [],
-        COLUMNS: [],
-        DATA: [[]]
-    },
+	serviceRoot : 'svc',
+	serviceRead : '/data',
+	serviceDir :'/analysis/feature_matrices',
 
 	initialize: function(options) {
 		_.bindAll(this, 'getHeaders','url','parse','fetch');
-        _.extend(this, options);
+		this.analysis_id = options.analysis_id;
+		this.dataset_id  = options.dataset_id;
+		this.feature_ids = options.feature_ids;
+	},
+
+	getHeaders: function() {
+			return _.keys(this.at(0).toJSON());
 	},
 
 	url : function() {
-		return "svc/data/analysis/" + this.analysis_id + "/" + this.dataset_id;
+		return this.serviceRoot + this.serviceRead + this.serviceDir + '/' + this.dataset_id;
 	},
 
-	parse : function(tsv_text) {
-        var tsv_rows = tsv_text.split("\n");
-
-        this.COLUMNS = _.rest(_.first(tsv_rows).split("\t"), 1);
-
-        _.each(_.rest(tsv_rows, 1), function(tsv_row) {
-            var data_values = tsv_row.split("\t");
-            this.ROWS.push(_.first(data_values));
-            this.DATA.push(_.rest(data_values, 1));
-        }, this);
-
-		// return d3.tsv.parseRows(response);
-        return this.DATA;
+	parse : function(response) {
+		return d3.tsv.parse(response);
 	},
 
 	fetch : function(options) {
-        return Model.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
+		return Collection.prototype.fetch.call(this,_.extend({},options,{dataType:'text'}));
 	}
 
 });
