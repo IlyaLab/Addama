@@ -1,7 +1,15 @@
 {
-	"proxy": {
-		"url": "/svc",
+	"proxy": [
+			
+	{	"url": "/svc",
 	        "host": "glados1",
 	        "port": 8000
-	}
+	 },
+
+	 {	"url": "/graph_layout",
+	        "host": "glados1",
+	        "port": 8010
+	 }
+	        ]
+	
 }

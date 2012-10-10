@@ -2,8 +2,6 @@ var TreeChart = function(config) {
 	var width = config.width || 400,
 		height = config.height || 300,
 		scaleExtent = config.scaleExtent || [0.5,8],
-		padded_width = width,
-	 	padded_height = height,
 	 	node_list = config.nodes.data,
 		x = config.nodes.x || 'x',
 		y = config.nodes.y || 'y',
@@ -23,11 +21,10 @@ var TreeChart = function(config) {
 	 	xScale,
 	 	yScale,
 	 	scale = 1,
-	 	selection_list,
 	 	vis;
 
 	 var nodeClickListener = new Function(),
-	 	edgeClickListener = new Function();
+	 	 edgeClickListener = new Function();
 	
 	var	parseAdj = function(element) { 
 		return function(link) { 
@@ -67,15 +64,15 @@ var TreeChart = function(config) {
 	 		};
 	 
 			var svg = d3.select(this).append("svg")
-						     .attr("width", padded_width)
-						     .attr("height", padded_height);
+						     .attr("width", width)
+						     .attr("height", height);
 
 					 	 	svg.append('defs')
 					 	 		.append('clipPath')
 					 	 		.attr('id','boundary')
 					    	 	.append('rect')
-					    	 	.attr("width",padded_width)
-					    	 	.attr("height",padded_height);
+					    	 	.attr("width",width)
+					    	 	.attr("height",height);
 
 						vis = svg.append("g")
 						     .attr('clip-path','url(#boundary)')
@@ -85,8 +82,8 @@ var TreeChart = function(config) {
 						vis.append('rect')	
 							.attr('class','graph-border');
 
-							var overlay_width = padded_width*overlay_scale,
-							overlay_height = padded_height*overlay_scale;
+							var overlay_width = width*overlay_scale,
+							overlay_height = height*overlay_scale;
 
 					  vis.append('rect')
 					  		 .attr('class','overlay')
@@ -153,11 +150,11 @@ var TreeChart = function(config) {
 
 	 	xScale = d3.scale.linear()
 	 						.domain(d3.extent(_.pluck(node_list,x)))
-	 						.range([10,padded_height-10]);
+	 						.range([10,height-10]);
 
 		yScale = d3.scale.linear()
 	 						.domain(d3.extent(_.pluck(node_list,y)))
-	 						.range([[padded_width-40],10]);
+	 						.range([[width-40],10]);
 
 		updatePositionData();
 		updateEdgeData();
@@ -194,13 +191,13 @@ var TreeChart = function(config) {
 	}
 
 	function redrawNodes(selection) {
-	var nodes = d3.select(selection).select('g g').selectAll('g.node')
+		var nodes = d3.select(selection).select('g g').selectAll('g.node')
 	    .data(node_list,function(d) { return d[label];});
       			
 			var g = nodes.enter()
             		.append("g")
 	      			.attr("class", "node")
-			        .attr('cursor','pointer')
+			        .style('cursor','pointer')
 			        .style('stroke-opacity',nodeOpacity)
 			        .style('fill-opacity',nodeOpacity)
 			        .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";})
@@ -221,6 +218,14 @@ var TreeChart = function(config) {
 			       .text(function(d) { return d[label];});
 
 		     nodes.exit().remove();
+
+		     nodes
+		     .transition()
+		       .duration(1200)
+		       .style('stroke-opacity',nodeOpacity)
+			   .style('fill-opacity',nodeOpacity)
+			   .attr('transform',function(d) { return 'translate(' + d._pos.y+","+d._pos.x+")";});
+			        
 	}
 
 	function gatherConnectedPaths(node_index) {

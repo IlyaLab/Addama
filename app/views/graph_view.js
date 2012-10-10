@@ -10,6 +10,7 @@ module.exports = View.extend({
   template:template,
 
     events: {
+        "click .dig-cola": "digColaLayout",
         "click .graph-controls-reset": "resetControls",
         "click .toggle-labels .toggle-on": "showLabels",
         "click .toggle-labels .toggle-off": "hideLabels",
@@ -29,7 +30,7 @@ module.exports = View.extend({
   initialize : function() {
       _.bindAll(this, 'afterRender', 'renderGraph', 'redrawTree', 'resetControls',
                   'showLabels', 'hideLabels', 'showLines', 'hideLines',
-                  'toggleActive', 'toggleDynLayout',
+                  'toggleActive', 'toggleDynLayout', "digColaLayout",
                   'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
                   'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
       this.redrawTree = _.throttle(this.redrawTree,300);
@@ -148,6 +149,31 @@ module.exports = View.extend({
         Backbone.Mediator.publish('edge:select', new Edge(edge));
       }
   },
+
+    digColaLayout: function(e) {
+      var _this = this;
+        var vis_options = this.model.defaultParameters();
+     
+      var graph = {
+        nodes: _.map(_this.model.getNodesArray(), function(node) {
+        return [node[vis_options.x],node[vis_options.y]];})
+      , edges: _.map(_this.model.getEdgesArray(), function(link) {
+        return [link.source, link.target,link.weight];})
+      };
+      $.ajax({
+        type:'POST',
+        url:'/graph_layout/layout',
+        dataType:'json',
+        contentType:  'application/json',
+        data: JSON.stringify(graph),
+        success:function(json,status,xhr) {
+
+            // this.treeChart.nodes()
+            console.log(JSON.stringify(json));
+        },
+        context:_this
+      })
+    },
     
     showLabels: function(ev) {
         console.log("showLabels");
