@@ -11,7 +11,7 @@ module.exports = View.extend({
         this.loadSessionById(localStorage.getItem("session_id"));
 
         $.ajax({
-            url: "/svc/storage/sessions",
+            url: "svc/storage/sessions",
             type: "GET",
             dataType: "json",
             context: this,
@@ -55,7 +55,7 @@ module.exports = View.extend({
         if (sessionId) {
             console.log("loading session " + sessionId);
             $.ajax({
-                url: "/svc/storage/sessions/" + sessionId,
+                url: "svc/storage/sessions/" + sessionId,
                 type: "GET",
                 dataType: "json",
                 success: function(json) {
@@ -88,7 +88,7 @@ module.exports = View.extend({
         // TODO : Capture session label...
 
         var sessionId = localStorage.getItem("session_id");
-        var url = (sessionId) ? "/svc/storage/sessions/" + sessionId : "/svc/storage/sessions";
+        var url = (sessionId) ? "svc/storage/sessions/" + sessionId : "svc/storage/sessions";
 
         $.ajax({
             url: url,

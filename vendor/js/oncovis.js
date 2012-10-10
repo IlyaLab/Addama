@@ -84,9 +84,14 @@
             this.rows.append("text")
                 .attr("class", "row-label")
                 .text(function (d) {
+                    if (d.length > 8) return d.substring(0,8) + "...";
                     return d;
                 })
-                .attr("font-size", this.label_fontsize + "px");
+                .style("font-size", this.label_fontsize + "px")
+                .append("svg:title")
+                .text(function (d) {
+                     return d;
+                });
 
             this.cluster_columns = this.cluster_g.selectAll("g.cluster-column")
                 .data(function (cluster_info) {
@@ -114,7 +119,7 @@
             this.sample_bars.enter()
                 .append("rect")
                 .attr("class", "sample")
-                .attr("fill", this.color_fn)
+                .style("fill", this.color_fn)
                 .attr("x", 0)
                 .attr("width", this.bar_width)
                 .attr("height", this.bar_height)
@@ -138,11 +143,11 @@
                 .enter()
                 .append("rect")
                 .attr("class", "highlight")
-                .attr("fill", this.highlight_fill)
+                .style("fill", this.highlight_fill)
                 .attr("width", this.bar_width)
                 .attr("x", 0)
                 .attr("height", this.highlight_bar_height)
-                .attr("stroke-width", 0.0);
+                .style("stroke-width", 0.0);
 
             this._updateVerticalScales();
             this._updateHorizontalScales();
@@ -174,7 +179,7 @@
             }
 
             if (_.has(options, 'label_fontsize')) {
-                this.rows.selectAll("text.row-label").attr("font-size", this.label_fontsize + "px");
+                this.rows.selectAll("text.row-label").style("font-size", this.label_fontsize + "px");
             }
 
             if (_.has(options, "color_fn")) {
@@ -320,7 +325,7 @@
         },
 
         _updateColorFn:function () {
-            this.sample_bars.attr("fill", this.color_fn);
+            this.sample_bars.style("fill", this.color_fn);
         }
 
     };

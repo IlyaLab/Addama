@@ -12,7 +12,7 @@ module.exports = Model.extend({
     },
 
 	initialize: function(options) {
-		_.bindAll(this, 'getHeaders','url','parse','fetch');
+		_.bindAll(this,'url','parse','fetch');
         _.extend(this, options);
 	},
 
@@ -25,10 +25,10 @@ module.exports = Model.extend({
 
         this.COLUMNS = _.rest(_.first(tsv_rows).split("\t"), 1);
 
-        _.each(_.rest(tsv_rows, 1), function(tsv_row) {
+        _.each(_.rest(tsv_rows, 1), function(tsv_row, tsv_row_idx) {
             var data_values = tsv_row.split("\t");
             this.ROWS.push(_.first(data_values));
-            this.DATA.push(_.rest(data_values, 1));
+            this.DATA[tsv_row_idx] = _.rest(data_values, 1);
         }, this);
 
 		// return d3.tsv.parseRows(response);

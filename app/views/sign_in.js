@@ -34,7 +34,7 @@ module.exports = View.extend({
 
     signout: function() {
         $.ajax({
-            url:"/svc/auth/signout/" + this.provider.id,
+            url:"svc/auth/signout/" + this.provider.id,
             method:"GET",
             context: this,
             success:function () {

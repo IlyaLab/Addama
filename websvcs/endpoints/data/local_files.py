@@ -2,8 +2,10 @@ from tornado.options import options
 import tornado.web
 import os
 import sys
+from auth_decorator import authenticated
 
 class LocalFileHandler(tornado.web.RequestHandler):
+    @authenticated
     def get(self,filepath):
         self.content_type = "text/plain"
         try:
