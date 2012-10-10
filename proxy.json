@@ -3,7 +3,7 @@
 			
 	{	"url": "/svc",
 	        "host": "glados1",
-	        "port": 8000
+	        "port": 8006
 	 },
 
 	 {	"url": "/graph_layout",

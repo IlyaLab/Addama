@@ -108,6 +108,7 @@ Controller = {
                     OncovisDims = require('../models/oncovis_dims');
                     oncovisDims = new OncovisDims({dataset_id : dataset_id });
 
+                     oncovisDims.fetch({success: function(model,resp){model.trigger('load');}});
 					 Model = require('../models/featureMatrix2');
 					 model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
 				}
@@ -122,10 +123,10 @@ Controller = {
 					success:
 				function(model,resp) {
 					var original_model;
-					if (Model.prototype.add) {
+					if (Model.prototype.add) {  //is this a Collection?
 						original_model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
 						original_model.add(model.toJSON(),{silent:true});
-					} else {
+					} else { //nope its a model
 						original_model = new Model(model.toJSON());
 					}
 					model.original(original_model);

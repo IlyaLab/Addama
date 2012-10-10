@@ -17,12 +17,16 @@ module.exports = View.extend({
 
     initialize:function () {
         _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
+
+        var _this = this;
+        this.renderGraph = _.after(2,_this.renderGraph);
+        this.model.on('load', _this.renderGraph);
+        this.model.dims.on('load', _this.renderGraph);
     },
 
     afterRender:function () {
-        this.initControls();
-        this.model.on('load', this.renderGraph);
 
+        this.initControls();
         this.$el.find("#genelist-modal .modal-body").append(this.genelistView.render().el);
         this.genelistView.on("genelist-selected", this.onNewRows);
     },
@@ -59,13 +63,13 @@ module.exports = View.extend({
     getColumnModel: function() {
         var _this = this;
         var unsorted_columns = [];
-        _.each(this.model.COLUMNS, function(column_name, col_idx) {
-            var cluster_idx = _this.model.ROWS.indexOf(_this.model.dims.getClusterProperty());
-            var cluster_value = _this.model.DATA[cluster_idx][col_idx].trim();
+        _.each(this.model.get("COLUMNS"), function(column_name, col_idx) {
+            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.getClusterProperty());
+            var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
             var column = { "name": column_name.trim(), "cluster": cluster_value, "values": [cluster_value] };
             _.each(_this.rowLabels, function(row_label) {
-                var row_idx = _this.model.ROWS.indexOf(row_label);
-                column.values.push(_this.model.DATA[row_idx][col_idx].trim().toLowerCase());
+                var row_idx = _this.model.get("ROWS").indexOf(row_label);
+                column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
             });
             unsorted_columns.push(column);
         });
@@ -94,8 +98,8 @@ module.exports = View.extend({
         var data = {};
         var _this = this;
         _.each(this.rowLabels, function(rowLabel) {
-            var row_idx = _this.model.ROWS.indexOf(rowLabel);
-            var categories = _.uniq(_this.model.DATA[row_idx]);
+            var row_idx = _this.model.get("ROWS").indexOf(rowLabel);
+            var categories = _.uniq(_this.model.get("DATA")[row_idx]);
             var numberOfCategories = (categories.length < 3) ? 3 : categories.length;
 
             var colorscales = function(cell) {
@@ -112,9 +116,9 @@ module.exports = View.extend({
                 }
             }
 
-            _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
+            _.each(_this.model.get("DATA")[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
-                var columnLabel = _this.model.COLUMNS[cellIdx].trim();
+                var columnLabel = _this.model.get("COLUMNS")[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
                 data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "colorscale": colorscales(cell), "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
@@ -148,7 +152,7 @@ module.exports = View.extend({
     onNewRows: function(genelist) {
         this.$el.find("#genelist-modal").modal("hide");
 
-        var all_rows = this.model.ROWS;
+        var all_rows = this.model.get("ROWS");
         this.rowLabels = _.flatten(_.compact(_.map(genelist.values, function(gene) {
             return _.flatten(_.compact(_.map(all_rows, function(row) {
                 if (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0) return row;
