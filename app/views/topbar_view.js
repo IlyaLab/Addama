@@ -88,24 +88,25 @@ module.exports = View.extend({
                 });
             });
         };
-        $.ajax({
-            url:"svc/auth/whoami",
-            method:"GET",
-            context:this,
-            success:addAuthProviders,
-            statusCode: {
-                403: function(e,o) {
-                    $.ajax({
-                        url: "svc/auth/providers",
-                        type: "GET",
-                        context: this,
-                        success: function(json) {
-                            addAuthProviders(json);
-                            this.$signInModal.modal("show");
-                        }
-                    })
+
+        // prepare sign in process in case of 403 (Forbidden)
+        var signInProcessStart = _.once(function() {
+            $.ajax({
+                url: "svc/auth/providers",
+                type: "GET",
+                dataType: "json",
+                success: function(json) {
+                    addAuthProviders(json);
+                    _this.$signInModal.modal("show");
+                    _this.$signInModal.find(".signout-all").click();
                 }
-              }
+            });
         });
+
+        this.$el.ajaxError(function(event, request) {
+            if (request.status == 403) signInProcessStart();
+        });
+
+        $.ajax({ url:"svc/auth/whoami", method:"GET", context:this, success:addAuthProviders });
     }
 });
