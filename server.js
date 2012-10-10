@@ -28,12 +28,19 @@ exports.startServer = function(port, path) {
   var default_proxy =  { host: 'localhost', port: proxiedPort };
 
   httpProxy.createServer(function (req, res, proxy) {
-      var target = {host:'localhost', port:proxiedPort};
+    var target = {host:'localhost', port:proxiedPort};
+    var i = proxy_config.length,
+    config = {};
 
-    if (req.url.match(new RegExp('^'+proxy_config.url,'i'))) {
-      target = { host:proxy_config.host, port:proxy_config.port};
-      req.url = req.url.slice('/svc'.length);
-    }  
+    while(i--){
+        config = proxy_config[i];
+        if (req.url.match(new RegExp('^'+config.url,'i'))) {
+          target = { host:config.host, port:config.port};
+          req.url = req.url.slice(config.url.length);
+          console.log(req.url);
+          break;
+        }
+    }
 
       proxy.proxyRequest(req, res, target);
   }).listen(port);
