@@ -40,7 +40,6 @@ module.exports = View.extend({
         var oncovis_container = this.$el.find(".oncovis-container");
         var visrangeFn = function (property) {
             return function (event, value) {
-                console.log("visrangeFn(" + property + "=" + value + ")");
                 var dim = {};
                 dim[property] = value;
                 oncovis_container.update(dim);
@@ -66,7 +65,7 @@ module.exports = View.extend({
             var column = { "name": column_name.trim(), "cluster": cluster_value, "values": [cluster_value] };
             _.each(_this.rowLabels, function(row_label) {
                 var row_idx = _this.model.ROWS.indexOf(row_label);
-                column.values.push(_this.model.DATA[row_idx][col_idx].trim());
+                column.values.push(_this.model.DATA[row_idx][col_idx].trim().toLowerCase());
             });
             unsorted_columns.push(column);
         });
@@ -90,19 +89,34 @@ module.exports = View.extend({
 
         console.log("renderGraph:start");
 
+        var dynamic_color_scales = [];
         var columns_by_cluster = this.getColumnModel();
         var data = {};
         var _this = this;
         _.each(this.rowLabels, function(rowLabel) {
             var row_idx = _this.model.ROWS.indexOf(rowLabel);
             var categories = _.uniq(_this.model.DATA[row_idx]);
+            var numberOfCategories = (categories.length < 3) ? 3 : categories.length;
 
-            var colorscales = colorbrewer.YlOrBr[(categories.length < 3) ? 3 : categories.length];
+            var colorscales = function(cell) {
+                return colorbrewer.YlOrBr[numberOfCategories][categories.indexOf(cell)];
+            };
+            if (numberOfCategories > 7) {
+                var colorscaleFn = d3.scale.ordinal().domain(categories)
+                    .range(d3.range(categories.length)
+                    .map(d3.scale.linear().domain([0, categories.length - 1])
+                    .range(["yellow", "green"])
+                    .interpolate(d3.interpolateLab)));
+                colorscales = function(cell) {
+                    return colorscaleFn(categories.indexOf(cell));
+                }
+            }
+
             _.each(_this.model.DATA[row_idx], function(cell, cellIdx) {
                 cell = cell.trim();
                 var columnLabel = _this.model.COLUMNS[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
-                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "colorscale": colorscales[cell], "label":columnLabel + "\n" + rowLabel + "\n" + cell };
+                data[columnLabel][rowLabel] = { "value":cell, "row": rowLabel, "colorscale": colorscales(cell), "label":columnLabel + "\n" + rowLabel + "\n" + cell };
             });
         });
 
