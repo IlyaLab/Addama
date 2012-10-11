@@ -11,12 +11,10 @@ module.exports = View.extend({
     events:{
         "click .gene-list-view .save-list":"saveGL",
         "click .gene-list-view .new-list":"newGL",
-        "click .gene-list-view .genelist-edit":"editGL",
-        "click .gene-list-view .genelist-view":"viewGL",
-        "click .gene-lists li a":function(e) {
-            //e.preventDefault();
-            this.trigger("genelist-selected", this.genelists[$(e.target).data("id")]);
-            return false;
+        "click .gene-list-view .edit-list":"editGL",
+        "click .gene-list-view .view-list":"viewGL",
+        "click .gene-list-view .select-list": function(e) {
+            this.trigger("genelist-selected", $(e.target).data("id"));
         },
         "click .gene-list-view .item-remover": function(e) {
             $(e.target.parentNode).remove();
@@ -25,23 +23,30 @@ module.exports = View.extend({
 
     initialize:function () {
         console.log("initialize:gene_list_view");
-        _.bindAll(this, "initTypeahead", "initGenelists", "saveGL", "newGL", "viewGL", "editGL");
+        _.bindAll(this, "initTypeahead", "saveGL", "newGL", "viewGL", "editGL");
 
         $.ajax({ url: "svc/data/lookups/genes", type: "GET", dataType: "text", context: this, success: this.initTypeahead });
-        $.ajax({ url: "svc/data/lookups/genelists", type: "GET", dataType: "json", context: "this", success: this.initGenelists(false) });
-        $.ajax({ url: "svc/storage/genelists", type: "GET", dataType: "json", context: "this", success: this.initGenelists(true) });
     },
 
     afterRender: function() {
         console.log("gene_list_view.afterRender");
+
+        var _this = this;
+        var genelistUL = this.$el.find(".gene-lists");
+        var fn = function(items) {
+            _.each(items, function(item) {
+                genelistUL.append(GeneListItem(_.extend(item, {"iCls": 'icon-list', "aCls": 'view-list'})));
+            });
+            _this.trigger("load-genelists", items);
+        };
+        $.ajax({ url: "svc/data/lookups/genelists/CATALOG", type: "GET", dataType: "text", success: this.initCatalog(this.genelists, fn) });
+
         this.$el.find(".sortable_list ul, li").disableSelection();
         this.$el.find(".gene-list-members").sortable({ revert:true });
         this.setEditsDisabled(true);
     },
 
     initTypeahead: function(txt) {
-        console.log("gene_list_view.initTypeahead:" + txt);
-
         this.genelist = txt.trim().split("\n");
 
         var _this = this;
@@ -61,50 +66,28 @@ module.exports = View.extend({
         });
     },
 
-    initGenelists: function(writable) {
-        var _this = this;
-        return function(json) {
-            var genelistUL = _this.$el.find(".gene-lists");
-            if (json) {
-                if (json.files) {
-                    _.each(json.files, function(gene_list) {
-                        if (writable) {
-                            genelistUL.append(GeneListItem(_.extend(gene_list, {"cls": 'icon-pencil genelist-edit'})));
-                        } else {
-                            genelistUL.append(GeneListItem(_.extend(gene_list, {"cls": 'icon-list genelist-view'})));
-                        }
-                        $.ajax({
-                            url: "svc/data" + gene_list.uri,
-                            type: "GET",
-                            dataType: "text",
-                            context: _this,
-                            success: function(text) {
-                                _this.genelists[gene_list.uri] = _.extend(gene_list, { values: text.trim().split("\n") });
-                            }
-                        });
-                    });
-                }
-                if (json.items) {
-                    _.each(json.items, function(item) {
-                        var uri = item.uri;
-                        $.ajax({
-                            url: "svc" + uri,
-                            type: "GET",
-                            dataType: "json",
-                            context: _this,
-                            success: function(json) {
-                                if (writable) {
-                                    genelistUL.append(GeneListItem(_.extend(json, {"uri": uri, "cls": 'icon-pencil genelist-edit'})));
-                                } else {
-                                    genelistUL.append(GeneListItem(_.extend(json, {"uri": uri, "cls": 'icon-list genelist-view'})));
-                                }
+    initCatalog: function(genelists, callback) {
+        return function(txt) {
+            var rows = d3.tsv.parseRows(txt);
+            var idxs = _.map(_.first(rows), function(cell) { return cell.toLowerCase(); });
+            var items = _.map(_.rest(rows, 1), function(cells) {
+                var item = {};
+                _.each(cells, function(cell, cellIdx) {
+                    var key = idxs[cellIdx];
+                    item[key] = cell;
+                });
+                item["uri"] = "/lookups/genelists/" + item["id"];
+                return item;
+            });
 
-                                _this.genelists[uri] = json;
-                            }
-                        });
-                    })
-                }
-            }
+            _.each(items, function(item) {
+                $.ajax({ url: "svc/data" + item.uri, type: "GET", dataType: "text", success: function(txt) {
+                        genelists[item.uri] = _.extend(item, { values: txt.trim().split("\n") });
+                    }
+                });
+            });
+
+            if (callback) callback(items);
         }
     },
 
@@ -132,7 +115,7 @@ module.exports = View.extend({
             context: this,
             success: function(json) {
                 this.genelists[json.uri] = gene_list;
-                this.$el.find(".gene-lists").append(GeneListItem(_.extend(json, {"label":gene_list_label, "cls": 'icon-pencil genelist-edit'})));
+                this.$el.find(".gene-lists").append(GeneListItem(_.extend(json, {"label":gene_list_label, "iCls": 'icon-pencil', "aCls": 'edit-list'})));
             }
         });
     },
@@ -142,12 +125,7 @@ module.exports = View.extend({
         console.log("gene_list_view.viewGL");
 
         var gene_list_id = $(e.target).data("id");
-
         var gene_list = this.genelists[gene_list_id];
-
-        this.$el.find(".gene-lists li span").css("font-weight", "normal");
-        $(e.target).css("font-weight", "bolder");
-
         var gene_ids = [];
 
         var geneListEl = this.$el.find(".gene-list-members");
@@ -158,6 +136,8 @@ module.exports = View.extend({
         });
 
         this.setEditsDisabled(true);
+
+        this.$el.find(".select-list").data("id", gene_list_id);
     },
 
     editGL: function(e) {
@@ -166,9 +146,6 @@ module.exports = View.extend({
         var gene_list_id = $(e.target).data("id");
 
         var gene_list = this.genelists[gene_list_id];
-
-        this.$el.find(".gene-lists li span").css("font-weight", "normal");
-        $(e.target).css("font-weight", "bolder");
 
         var gene_ids = [];
 
