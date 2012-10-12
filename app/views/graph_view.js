@@ -106,24 +106,25 @@ module.exports = View.extend({
           return edge_scale(edge.weight);
       };
 
-  		this.treeChart = new TreeChart({
-                          			width:w, 
-                          			height:h,   			
-                          			nodes:{
+      this.treeChart = new TreeChart({
+                                width:w, 
+                                height:h,         
+                                nodes:{
                                     data : this.model.getNodesArray(),
-                          					y: y,
-                          					x: x
-                          			},
+                                    y: y,
+                                    x: x,
+                id:'feature_id'
+                                },
                                 edges: {
                                     data: this.model.getEdgesArray()
                                 }
-                		  })
+                      })
                     .edgeOpacity(edgeO)
                     .edgeRoute(edgeRouting)
                     .on('node',nodeClicked)
                     .on('edge',edgeClicked);
 
-  		d3.select('.graph-container')
+      d3.select('.graph-container')
               .call(this.treeChart);
 
 
@@ -158,18 +159,21 @@ module.exports = View.extend({
         nodes: _.map(_this.model.getNodesArray(), function(node) {
         return [node[vis_options.x],node[vis_options.y]];})
       , edges: _.map(_this.model.getEdgesArray(), function(link) {
-        return [link.source, link.target,link.weight];})
+        return [link.target, link.source,link.weight];})
       };
       $.ajax({
         type:'POST',
-        url:'/graph_layout/layout',
+        url:'graph_layout/layout',
         dataType:'json',
         contentType:  'application/json',
         data: JSON.stringify(graph),
         success:function(json,status,xhr) {
-
-            // this.treeChart.nodes()
-            console.log(JSON.stringify(json));
+     if(json.nodes){
+      this.treeChart.nodes(_this.model.getNodesArray().map(function(n,index) { return _.extend(n,{_x:json.nodes[index][0],_y:json.nodes[index][1]});}));
+      this.treeChart.nodeConfig({"x":"_x","y":"_y"});
+      d3.select('.graph-container')
+          .call(this.treeChart.redraw);
+     }
         },
         context:_this
       })

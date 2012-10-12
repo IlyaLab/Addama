@@ -3,9 +3,12 @@ var TreeChart = function(config) {
 		height = config.height || 300,
 		scaleExtent = config.scaleExtent || [0.5,8],
 	 	node_list = config.nodes.data,
-		x = config.nodes.x || 'x',
-		y = config.nodes.y || 'y',
-		label=config.nodes.label || 'label',
+		nodeConfig = {
+		id : config.nodes.id || 'feature_id',
+		x : config.nodes.x || 'x',
+		y : config.nodes.y || 'y',
+		label:config.nodes.label || 'label'
+		},
 	 	links = config.edges.data,
 	 	overlay_scale = 4,
 	 	dx = 8,
@@ -100,7 +103,7 @@ var TreeChart = function(config) {
 					       .on('click',edgeClickListener);
 				 
 			   nodes = vis.selectAll("g.node")
-					       .data(node_list,function(d) { return d[label];})
+					       .data(node_list,function(d) { return d[nodeConfig.id];})
 					     .enter().append("g")
 					       .attr("class", "node")
 					       .attr('cursor','pointer')
@@ -119,7 +122,7 @@ var TreeChart = function(config) {
 					       .attr("dx", function(d,i) { return dx; })
 					       .attr("dy", 3)
 					       .attr("text-anchor","start")
-					       .text(function(d) { return d[label];});
+					       .text(function(d) { return d[nodeConfig.label];});
 		});
 
 		circle.stroke_width = d3.selectAll('.node circle').style('stroke-width').slice(0,-2);
@@ -149,11 +152,11 @@ var TreeChart = function(config) {
 	function setupData() {
 
 	 	xScale = d3.scale.linear()
-	 						.domain(d3.extent(_.pluck(node_list,x)))
+	 						.domain(d3.extent(_.pluck(node_list,nodeConfig.x)))
 	 						.range([10,height-10]);
 
 		yScale = d3.scale.linear()
-	 						.domain(d3.extent(_.pluck(node_list,y)))
+	 						.domain(d3.extent(_.pluck(node_list,nodeConfig.y)))
 	 						.range([[width-40],10]);
 
 		updatePositionData();
@@ -163,15 +166,15 @@ var TreeChart = function(config) {
 	 function updatePositionData() {
 	 	 	_.each(node_list,function(node) {
 	 		node._pos = {
-	 				x:xScale(node[x]),
-	 				y:yScale(node[y])
+	 				x:xScale(node[nodeConfig.x]),
+	 				y:yScale(node[nodeConfig.y])
 	 		};
 	 	});
 	 }
 
  	function updateEdgeData() {
 		_.each(links, function(l) { 
-			l.edge_id = node_list[l.source].feature_id + '_' + node_list[l.target].feature_id; 
+			l.edge_id = node_list[l.source][nodeConfig.id] + '_' + node_list[l.target][nodeConfig.id]; 
 	});
 	}
 
@@ -187,12 +190,16 @@ var TreeChart = function(config) {
 		    	   .attr("d", edgeRoute)
 		       	  .on('click',edgeClickListener);       
 
+		    edges.transition()
+			.duration(1200)
+		    	   .attr("d", edgeRoute);
+
 		    edges.exit().remove();
 	}
 
 	function redrawNodes(selection) {
 		var nodes = d3.select(selection).select('g g').selectAll('g.node')
-	    .data(node_list,function(d) { return d[label];});
+	    .data(node_list,function(d) { return d[nodeConfig.id];});
       			
 			var g = nodes.enter()
             		.append("g")
@@ -215,7 +222,7 @@ var TreeChart = function(config) {
 			       		.attr('dy', dy / scale)
 	 					.style('font-size',12 / scale + 'px')
 			       .attr("text-anchor","start")
-			       .text(function(d) { return d[label];});
+			       .text(function(d) { return d[nodeConfig.label];});
 
 		     nodes.exit().remove();
 
@@ -281,6 +288,15 @@ var TreeChart = function(config) {
 	    node_list = value;
 	    updatePositionData();
 	    return this;
+	};
+
+	treeChart.nodeConfig = function(config) {
+		if (!arguments.length) return nodeConfig;
+		
+		nodeConfig = _.extend(nodeConfig,config);
+		console.log(JSON.stringify(nodeConfig))	;
+		setupData();		
+		return this;
 	};
 
 	treeChart.edges = function(value) {
