@@ -25,7 +25,8 @@
   },
   "scripts": {
     "test": "testacular test/testacular.config.js",
-    "start": "brunch watch -c config.coffee -s"
+        "start": "brunch watch -c config.coffee -s",
+      "watch": "brunch watch -f watch_config.coffee"
   },
   "repository": "",
   "author": "",
