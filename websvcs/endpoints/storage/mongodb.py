@@ -1,4 +1,4 @@
-from tornado.options import options
+from tornado.options import options, define
 import tornado.web
 from auth_decorator import authenticated
 import pymongo
@@ -68,6 +68,6 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
         return json_item
 
     def mongodb_collection(self, collection_name):
-        connection = pymongo.Connection()
+        connection = pymongo.Connection(options.mongo_uri)
         qed_db = connection["qed_store"]
         return qed_db[collection_name]

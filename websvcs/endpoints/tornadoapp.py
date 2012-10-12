@@ -39,6 +39,7 @@ define("client_id", help="Client ID for Google OAuth2")
 define("client_secret", help="Client Secrets for Google OAuth2")
 define("config_file", help="Path to config file")
 define("authorized_users", default=[], help="List of authorized user emails")
+define("mongo_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
 
 settings = {
     "debug": True,
@@ -104,6 +105,8 @@ def main():
     logging.info("--data_path=%s" % options.data_path)
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
+    logging.info("--mongo_uri=%s" % options.mongo_uri)
+
     if not options.config_file is None:
         logging.info("--config_file=%s" % options.config_file)
 
