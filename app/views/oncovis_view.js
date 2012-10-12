@@ -33,7 +33,7 @@ module.exports = View.extend({
             gene_list_modal.modal("hide");
             var genelist = _this.genelistView.genelists[id];
             if (genelist && genelist.values && genelist.values.length) {
-                _this.genelistView.onNewRows(genelist);
+                _this.onNewRows(genelist);
             }
         });
 
