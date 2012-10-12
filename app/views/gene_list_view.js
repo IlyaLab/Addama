@@ -1,6 +1,7 @@
 var View = require('./view');
 var template = require("./templates/gene_list");
 var GeneListItem = require("./templates/gene_list_item");
+var GeneListItemRemover = require("./templates/gene_list_item_remover");
 
 module.exports = View.extend({
     template:template,
@@ -17,7 +18,7 @@ module.exports = View.extend({
             this.trigger("genelist-selected", $(e.target).data("id"));
         },
         "click .gene-list-view .item-remover": function(e) {
-            $(e.target.parentNode).remove();
+            $(e.target).parent().remove();
         }
     },
 
@@ -35,7 +36,7 @@ module.exports = View.extend({
         var genelistUL = this.$el.find(".gene-lists");
         var fn = function(items) {
             _.each(items, function(item) {
-                genelistUL.append(GeneListItem(_.extend(item, {"iCls": 'icon-list', "aCls": 'view-list'})));
+                genelistUL.append(GeneListItem(_.extend(item, {"aCls": 'view-list'})));
             });
             _this.trigger("load-genelists", items);
         };
@@ -59,9 +60,9 @@ module.exports = View.extend({
                 }))));
             },
 
-            updater: function(a) {
-                _this.addGene(a);
-                return a;
+            updater: function(gene) {
+                _this.$el.find(".gene-list-members").append(GeneListItemRemover({"gene":gene}));
+                return gene;
             }
         });
     },
@@ -104,7 +105,7 @@ module.exports = View.extend({
         e.preventDefault();
 
         var gene_list_label = this.$el.find(".genelist-label").val();
-        var gene_list = _.compact(_.map(this.$el.find(".gene-list-members li span"), function(item) { return $(item).data("id") }));
+        var gene_list = _.uniq(_.compact(_.map(this.$el.find(".gene-list-members li span"), function(item) { return $(item).data("id") })));
         $.ajax({
             url: "svc/storage/genelists",
             type: "POST",
@@ -115,7 +116,7 @@ module.exports = View.extend({
             context: this,
             success: function(json) {
                 this.genelists[json.uri] = gene_list;
-                this.$el.find(".gene-lists").append(GeneListItem(_.extend(json, {"label":gene_list_label, "iCls": 'icon-pencil', "aCls": 'edit-list'})));
+                this.$el.find(".gene-lists").append(GeneListItem(_.extend(json, {"label":gene_list_label, "aCls": 'edit-list'})));
             }
         });
     },
@@ -132,7 +133,7 @@ module.exports = View.extend({
         geneListEl.empty();
         this.$el.find(".genelist-label").val(gene_list.label);
         _.each(gene_list.values, function(gene) {
-            geneListEl.append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span></li>");
+            geneListEl.append("<li>" + gene + "</li>");
         });
 
         this.setEditsDisabled(true);
@@ -154,14 +155,10 @@ module.exports = View.extend({
 
         this.$el.find(".genelist-label").val(gene_list.label);
         _.each(gene_list.values, function(gene) {
-            geneListEl.append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span>&nbsp;<i class='icon-trash item-remover' data-gene='" + gene + "'></i></li>");
+            geneListEl.append(GeneListItemRemover({"gene":gene}));
         });
 
         this.setEditsDisabled(false);
-    },
-
-    addGene: function(gene) {
-        this.$el.find(".gene-list-members").append("<li><span class='gene-item' data-id='" + gene + "'>" + gene + "</span>&nbsp;<i class='icon-trash item-remover' data-gene='" + gene + "'></i></li>");
     },
 
     setEditsDisabled: function(disableFlag) {
