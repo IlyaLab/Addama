@@ -29,7 +29,7 @@ import uuid
 
 from auth_decorator import authenticated
 from data import LocalFileHandler
-from storage import StorageHandler
+from storage import MongoDbStorageHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -115,7 +115,7 @@ def main():
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
-        (r"/storage/(.*)", StorageHandler)
+        (r"/storage/(.*)", MongoDbStorageHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
