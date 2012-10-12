@@ -1,6 +1,6 @@
 import functools
 import tornado.web
-from tornado.options import define, options, logging
+from tornado.options import options
 
 def authenticated(method):
     """Decorate methods with this to require that the user be logged in."""

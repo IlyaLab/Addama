@@ -1,4 +1,4 @@
-from tornado.options import options, define
+from tornado.options import options
 import tornado.web
 from auth_decorator import authenticated
 import pymongo
