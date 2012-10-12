@@ -1,4 +1,5 @@
 .gene-list-members {
     overflow-y: auto;
-    height: 80px;
+    height: 100px;
+    width: 180px;
 }

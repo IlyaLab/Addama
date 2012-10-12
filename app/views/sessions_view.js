@@ -1,7 +1,14 @@
 var View = require('./view');
+var template = require("./templates/sessions_menu");
+var SessionsLineItem = require("./templates/sessions_list_item");
 
 module.exports = View.extend({
-    id:'sessions-view',
+    template: template,
+    events: {
+        "click .new-session": "newSession",
+        "click .open-session": "openSession",
+        "click .save-session": "saveSession"
+    },
 
     initialize:function () {
         _.bindAll(this, 'loadSessionById', 'loadSession', 'newSession', 'openSession', 'saveSession');
@@ -19,9 +26,8 @@ module.exports = View.extend({
                 console.log("success loading sessions");
                 if (json && json.items) {
                     _.each(json.items, function(item) {
-                        var id = item.id;
-                        var label = item.label ? item.label : "Untitled";
-                        this.$el.append("<a href='#' class='load-session' data-id='" + item.id + "'>" + label + "</a>");
+                        if (!item.label) item.label = "Untitled";
+                        this.$el.append(SessionsLineItem( item ));
                     }, this);
                     
                     this.$el.find(".load-session").click(this.loadSession);

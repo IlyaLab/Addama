@@ -11,13 +11,10 @@ module.exports = View.extend({
     sessionsView: new SessionsView(),
 
     events:{
-        "click .signin": function(e) {
-            e.preventDefault();
+        "click .signin": function() {
             this.$signInModal.modal("toggle");
-        },
-        "click .new-session": function(e) { this.sessionsView.newSession(e); },
-        "click .open-session": function(e) { this.sessionsView.openSession(e); },
-        "click .save-session": function(e) { this.sessionsView.saveSession(e); }
+            return false;
+        }
     },
 
     initialize:function () {
@@ -28,7 +25,7 @@ module.exports = View.extend({
         this.initSearchAutocomplete();
         this.initSignIn();
 
-        this.$el.find(".sessions-container").append(this.sessionsView.render().el);
+        this.$el.find(".sessions-container").html(this.sessionsView.render().el);
     },
 
     initSearchAutocomplete:function () {
