@@ -71,11 +71,11 @@ class WhoamiHandler(tornado.web.RequestHandler):
         if not user is None:
             google_provider["active"] = True
             google_provider["user"] = {
-                "pic": user["picture"],
                 "fullname": user["name"],
-                "email": user["email"],
-                "profileLink": user["link"]
+                "email": user["email"]
             }
+            if "picture" in user: google_provider["user"]["pic"] = user["picture"]
+            if "link" in user: google_provider["user"]["profileLink"] = user["link"]
 
         providers.append(google_provider)
         providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "img/facebook_logo.jpg" })
