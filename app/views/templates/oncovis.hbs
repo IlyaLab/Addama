@@ -1,6 +1,15 @@
 <ul class="nav nav-pills">
-  <li><a href="#oncovis-modal" role="button" data-toggle="modal">Controls</a></li>
-  <li><a href="#genelist-modal" role="button" data-toggle="modal">Gene Lists</a></li>
+    <li class="dropdown">
+        <a href="#oncovis-modal" onclick="return false;" role="button" data-toggle="modal">Controls</a>
+    </li>
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene List<b class="caret"></b></a>
+        <ul class="dropdown-menu genelist-canned">
+            <li><a href="#genelist-modal" onclick="return false;" role="button" data-toggle="modal">Manage...</a></li>
+            <li class="divider"></li>
+            <li class="nav-header">Recent...</li>
+        </ul>
+    </li>
 </ul>
 
 <div class="oncovis-container"></div>

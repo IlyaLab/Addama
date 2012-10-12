@@ -1,1 +1,2 @@
 from local import StorageHandler
+from mongodb import MongoDbStorageHandler
