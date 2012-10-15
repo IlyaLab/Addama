@@ -46,7 +46,7 @@ Controller = {
             var TwoD = require('../views/2D_Distribution_view');
             var FL = require('../models/featureList');
             var fl = new FL({
-                websvc: '/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons.fm&IDs=',
+                websvc: '/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
                 feature_list : [label1, label2]
             });
             var twoDView = new TwoD({collection: fl});
