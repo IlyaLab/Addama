@@ -29,27 +29,6 @@ module.exports = View.extend({
 
         var gene_list_modal = this.$el.find("#genelist-modal");
         gene_list_modal.find(".modal-body").append(this.genelistView.render().el);
-        this.genelistView.on("genelist-selected", function(id) {
-            gene_list_modal.modal("hide");
-            var genelist = _this.genelistView.genelists[id];
-            if (genelist && genelist.values && genelist.values.length) {
-                _this.onNewRows(genelist);
-            }
-        });
-
-        var _this = this;
-        this.genelistView.on("load-genelists", function(items) {
-            var cannedEl = _this.$el.find(".genelist-canned");
-            _.each(items, function(item) {
-                cannedEl.append(GeneListItem(_.extend(item, {"aCls": 'genelist-view'})))
-            });
-
-            $(".genelist-canned .genelist-view").click(function(e) {
-                $(".genelist-canned .genelist-view i").removeClass("icon-ok");
-                $(e.target).find("i").addClass("icon-ok");
-                _this.genelistView.trigger("genelist-selected", $(e.target).data("id"));
-            });
-        });
     },
 
     initControls:function () {

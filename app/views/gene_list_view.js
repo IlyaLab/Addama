@@ -40,7 +40,6 @@ module.exports = View.extend({
             });
             _this.trigger("load-genelists", items);
         };
-        $.ajax({ url: "svc/data/lookups/genelists/CATALOG", type: "GET", dataType: "text", success: this.initCatalog(this.genelists, fn) });
 
         this.$el.find(".sortable_list ul, li").disableSelection();
         this.$el.find(".gene-list-members").sortable({ revert:true });
@@ -65,31 +64,6 @@ module.exports = View.extend({
                 return gene;
             }
         });
-    },
-
-    initCatalog: function(genelists, callback) {
-        return function(txt) {
-            var rows = d3.tsv.parseRows(txt);
-            var idxs = _.map(_.first(rows), function(cell) { return cell.toLowerCase(); });
-            var items = _.map(_.rest(rows, 1), function(cells) {
-                var item = {};
-                _.each(cells, function(cell, cellIdx) {
-                    var key = idxs[cellIdx];
-                    item[key] = cell;
-                });
-                item["uri"] = "/lookups/genelists/" + item["id"];
-                return item;
-            });
-
-            _.each(items, function(item) {
-                $.ajax({ url: "svc/data" + item.uri, type: "GET", dataType: "text", success: function(txt) {
-                        genelists[item.uri] = _.extend(item, { values: txt.trim().split("\n") });
-                    }
-                });
-            });
-
-            if (callback) callback(items);
-        }
     },
 
     newGL: function(e) {

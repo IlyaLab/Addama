@@ -117,7 +117,13 @@ Controller = {
 
             Model = require('../models/featureMatrix2');
             model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
-            return Controller.ViewModel(view_name || 'grid', model);
+
+            var view = Controller.ViewModel(view_name || 'grid', model);
+            var geneListsViews = Controller.GetGeneListViews(view);
+            _.each(geneListsViews, function(geneListsView) {
+                geneListsView.on("genelist-selected", view.onNewRows);
+            });
+            return view;
         }
 
         Model = require('../models/featureMatrix');
@@ -130,7 +136,7 @@ Controller = {
             "graph": "graph_view",
             "grid": "grid_view",
             "circ": "circ_view",
-            "heat": "oncovis"
+            "heat": "oncovis_view"
         };
         var expected = ["twoD", "kde", "parcoords"];
 
@@ -156,6 +162,29 @@ Controller = {
                 model.trigger('load');
             }
         });
+
+        return view;
+    },
+
+    GetGeneListViews: function(view) {
+        this._loadGeneListViewFn = _.once(function() {
+            console.log("TODO: make sure (_loadGeneListViewFn) is only called once");
+            var GLMenuItemsView = require("../views/genelist_menuitems");
+            var Model = require("../models/genelist_profiled");
+
+            var model = new Model();
+            model.fetch({
+                success: function(model) {
+                    model.trigger('load');
+                }
+            });
+            return new GLMenuItemsView({ model: model });
+        });
+
+        var geneListViews = [];
+        geneListViews.push(this._loadGeneListViewFn());
+        // TODO : Attach gene lists Owned and Shared
+        return geneListViews;
     }
 };
 
