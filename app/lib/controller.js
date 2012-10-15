@@ -182,35 +182,35 @@ Controller = {
     },
 
     GetGeneListViews: function(view) {
-        var _loadGeneListViewFn = _.once(function() {
-            var View = require("../views/genelist_menuitems");
-            var Model = require("../models/genelist_profiled");
+        var MenuItemView = require("../views/genelist_menuitems");
 
-            var model = new Model();
-            model.fetch({
-                success: function(model) {
-                    model.trigger('load');
-                }
-            });
-            return new View({ model: model, header: "Profiled..." });
-        });
-
-        var View = require("../views/genelist_menuitems");
-        var Model = require("../models/genelist_owned");
-        var model = new Model();
-        model.fetch({
+        var ProfiledModel = require("../models/genelist_profiled");
+        var profiledModel = new ProfiledModel();
+        profiledModel.fetch({
             success: function(m) {
                 m.trigger('load');
             }
         });
 
-        var ownedItems = new View({ model: model, header: "Custom..." });
+        var CustomModel = require("../models/genelist_custom");
+        var customModel = new CustomModel();
+        customModel.fetch({
+            success: function(m) {
+                m.trigger('load');
+            }
+        });
 
-        var ModalView = require("../views/genelist_manage");
-        var manageModal = new ModalView({ model: model });
-        $('.genelist-modal').html(manageModal.render().el);
+        var profiledView = new MenuItemView({ model: profiledModel });
+        $(".genelist-profiled").html(profiledView.render().el);
 
-        return [_loadGeneListViewFn(), ownedItems, manageModal];
+        var customView = new MenuItemView({ model: customModel });
+        $(".genelist-custom").html(customView.render().el);
+
+        var ManageGLView = require("../views/genelist_manage");
+        var manageGLView = new ManageGLView({ model: customModel });
+        $('.genelist-modal').html(manageGLView.render().el);
+
+        return [profiledView, customView, manageGLView];
     }
 };
 
