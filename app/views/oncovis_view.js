@@ -58,7 +58,7 @@ module.exports = View.extend({
         var _this = this;
         var unsorted_columns = [];
         _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.getClusterProperty());
+            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.get("clusterProperty"));
             var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
             var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
             _.each(_this.rowLabels, function (row_label) {
@@ -84,7 +84,7 @@ module.exports = View.extend({
         console.log("renderGraph:start");
         if (!this.rowLabels || !this.rowLabels.length) {
             // reset to original
-            this.rowLabels = this.model.dims.getRowLabels();
+            this.rowLabels = this.model.dims.get("rowLabels");
         }
 
         var columns_by_cluster = this.getColumnModel();
