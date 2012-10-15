@@ -21,6 +21,21 @@ Controller = {
             var TopNavBar = require('../views/topbar_view');
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
+
+            var DataMenuModel = require("../models/data_menu");
+            var dmModel = new DataMenuModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
+            dmModel.fetch({
+                success: function(m) {
+                    m.trigger('load');
+                }
+            });
+
+            var DataMenuView = require("../views/data_menu");
+            var gridItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "grid", "model": dmModel });
+            var heatItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "heat", "model": dmModel });
+
+            $(".open-in-grid").html(gridItems.render().el);
+            $(".open-in-heat").html(heatItems.render().el);
         }
     },
 
