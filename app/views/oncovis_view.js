@@ -1,13 +1,10 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
-var Genelist = require('./gene_list_view');
-var GeneListItem = require("./templates/gene_list_item");
 
 module.exports = View.extend({
     model:FeatureMatrix2,
     template:template,
-    genelistView:new Genelist(),
     label:"Oncovis",
     className:"row-fluid",
     rowLabels:[],
@@ -26,30 +23,6 @@ module.exports = View.extend({
 
     afterRender:function () {
         this.initControls();
-
-        var gene_list_modal = this.$el.find("#genelist-modal");
-        gene_list_modal.find(".modal-body").append(this.genelistView.render().el);
-        this.genelistView.on("genelist-selected", function(id) {
-            gene_list_modal.modal("hide");
-            var genelist = _this.genelistView.genelists[id];
-            if (genelist && genelist.values && genelist.values.length) {
-                _this.onNewRows(genelist);
-            }
-        });
-
-        var _this = this;
-        this.genelistView.on("load-genelists", function(items) {
-            var cannedEl = _this.$el.find(".genelist-canned");
-            _.each(items, function(item) {
-                cannedEl.append(GeneListItem(_.extend(item, {"aCls": 'genelist-view'})))
-            });
-
-            $(".genelist-canned .genelist-view").click(function(e) {
-                $(".genelist-canned .genelist-view i").removeClass("icon-ok");
-                $(e.target).find("i").addClass("icon-ok");
-                _this.genelistView.trigger("genelist-selected", $(e.target).data("id"));
-            });
-        });
     },
 
     initControls:function () {
@@ -85,7 +58,7 @@ module.exports = View.extend({
         var _this = this;
         var unsorted_columns = [];
         _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.getClusterProperty());
+            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.get("clusterProperty"));
             var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
             var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
             _.each(_this.rowLabels, function (row_label) {
@@ -111,7 +84,7 @@ module.exports = View.extend({
         console.log("renderGraph:start");
         if (!this.rowLabels || !this.rowLabels.length) {
             // reset to original
-            this.rowLabels = this.model.dims.getRowLabels();
+            this.rowLabels = this.model.dims.get("rowLabels");
         }
 
         var columns_by_cluster = this.getColumnModel();
@@ -170,16 +143,18 @@ module.exports = View.extend({
     },
 
     onNewRows:function (genelist) {
-        var _this = this;
-        _.defer(function () {
-            _this.rowLabels = _.filter(_this.model.get("ROWS"), function (row) {
-                return _.any(genelist.values, function (gene) {
-                    return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
+        if (genelist && genelist.values) {
+            var _this = this;
+            _.defer(function () {
+                _this.rowLabels = _.filter(_this.model.get("ROWS"), function (row) {
+                    return _.any(genelist.values, function (gene) {
+                        return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
+                    });
                 });
+                console.log("reload-model");
+                _this.model.trigger('load');
             });
-            console.log("reload-model");
-            _this.model.trigger('load');
-        });
+        }
     },
 
     resetSliders:function () {

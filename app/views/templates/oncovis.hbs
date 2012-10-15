@@ -4,26 +4,21 @@
     </li>
     <li class="dropdown">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene List<b class="caret"></b></a>
-        <ul class="dropdown-menu genelist-canned">
-            <li><a href="#genelist-modal" onclick="return false;" role="button" data-toggle="modal">Manage...</a></li>
+        <ul class="dropdown-menu genelist-items">
+            <li><a href="#" onclick="return false;" role="button" data-toggle="modal" data-target=".genelist-modal">Manage...</a></li>
             <li class="divider"></li>
-            <li class="nav-header">Recent...</li>
+            <li class="nav-header">Profiled...</li>
+            <div class="genelist-profiled"></div>
+            <li class="divider"></li>
+            <li class="nav-header">Custom...</li>
+            <div class="genelist-custom"></div>
         </ul>
     </li>
 </ul>
 
 <div class="oncovis-container"></div>
 
-<div id="genelist-modal" class="modal hide fade">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-        <h3>Gene Lists</h3>
-    </div>
-    <div class="modal-body">
-    </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    </div>
+<div class="genelist-modal modal hide fade">
 </div>
 
 <div id="oncovis-modal" class="modal hide fade">
