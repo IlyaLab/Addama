@@ -2,7 +2,6 @@ var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
 var Genelist = require('./gene_list_view');
-var GeneListItem = require("./templates/gene_list_item");
 
 module.exports = View.extend({
     model:FeatureMatrix2,

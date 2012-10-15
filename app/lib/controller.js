@@ -167,7 +167,7 @@ Controller = {
     },
 
     GetGeneListViews: function(view) {
-        this._loadGeneListViewFn = _.once(function() {
+        var _loadGeneListViewFn = _.once(function() {
             console.log("TODO: make sure (_loadGeneListViewFn) is only called once");
             var GLMenuItemsView = require("../views/genelist_menuitems");
             var Model = require("../models/genelist_profiled");
@@ -182,7 +182,7 @@ Controller = {
         });
 
         var geneListViews = [];
-        geneListViews.push(this._loadGeneListViewFn());
+        geneListViews.push(_loadGeneListViewFn());
         // TODO : Attach gene lists Owned and Shared
         return geneListViews;
     }
