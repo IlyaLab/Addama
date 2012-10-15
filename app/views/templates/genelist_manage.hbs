@@ -1,0 +1,39 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+    <h3>Manage Gene Lists</h3>
+</div>
+
+<div class="modal-body">
+    <div class="row-fluid">
+        <ul class="genelists unstyled well span3"></ul>
+
+        <form class="form-horizontal span6">
+            <label class="control-label">Label</label>
+
+            <div class="controls">
+                <input class="genelist-label" type="text" placeholder="Name for this list...">
+            </div>
+            <br/>
+
+            <label class="control-label">Genes in List</label>
+
+            <div class="controls">
+                <ul class="genelist-members sortable_list well nav navlist"></ul>
+            </div>
+
+            <label class="control-label" for="inputTypeahead">Add Gene</label>
+
+            <div class="controls">
+                <input id="inputTypeahead" class="genes-typeahead" type="text" placeholder="Type a gene name...">
+            </div>
+
+            <br/>
+        </form>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button class="btn new-list">New List</button>
+    <button class="btn save-list">Save</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+</div>

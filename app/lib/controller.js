@@ -168,8 +168,7 @@ Controller = {
 
     GetGeneListViews: function(view) {
         var _loadGeneListViewFn = _.once(function() {
-            console.log("TODO: make sure (_loadGeneListViewFn) is only called once");
-            var GLMenuItemsView = require("../views/genelist_menuitems");
+            var View = require("../views/genelist_menuitems");
             var Model = require("../models/genelist_profiled");
 
             var model = new Model();
@@ -178,13 +177,25 @@ Controller = {
                     model.trigger('load');
                 }
             });
-            return new GLMenuItemsView({ model: model });
+            return new View({ model: model, header: "Profiled..." });
         });
 
-        var geneListViews = [];
-        geneListViews.push(_loadGeneListViewFn());
-        // TODO : Attach gene lists Owned and Shared
-        return geneListViews;
+        var View = require("../views/genelist_menuitems");
+        var Model = require("../models/genelist_owned");
+        var model = new Model();
+        model.fetch({
+            success: function(m) {
+                m.trigger('load');
+            }
+        });
+
+        var ownedItems = new View({ model: model, header: "Custom..." });
+
+        var ModalView = require("../views/genelist_manage");
+        var manageModal = new ModalView({ model: model });
+        $('.genelist-modal').html(manageModal.render().el);
+
+        return [_loadGeneListViewFn(), ownedItems, manageModal];
     }
 };
 

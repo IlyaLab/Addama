@@ -12,19 +12,26 @@ module.exports = View.extend({
     },
 
     renderMenuItems: function() {
-        $(".genelist-profiled").append(ListHeaderTemplate({"header": "Profiled..."}));
+        if (this.model) {
+            var items = this.model.get("items");
+            if (items && items.length) {
+                if (this.header) {
+                    $(".genelist-items").append(ListHeaderTemplate({"header": this.header}));
+                }
 
-        var profiledLists = {};
-        _.each(this.model.get("profiledLists"), function(profiledList) {
-            $(".genelist-profiled").append(LineItemTemplate(_.extend(profiledList, { "a_class": "select-item" })));
-            profiledLists[profiledList["ID"]] = profiledList;
-        });
+                var itemsById = {};
+                _.each(items, function(list) {
+                    $(".genelist-items").append(LineItemTemplate(_.extend(list, { "a_class":"select-item" })));
+                    itemsById[list.id] = list;
+                });
 
-        var _this = this;
-        $(".genelist-profiled li a.select-item").click(function(e) {
-            $(".genelist-profiled i.icon-ok").removeClass("icon-ok");
-            $(e.target).find("i").addClass("icon-ok");
-            _this.trigger("genelist-selected", profiledLists[$(e.target).data("id")]);
-        });
+                var _this = this;
+                $(".genelist-items li a.select-item").click(function(e) {
+                    $(".genelist-items i.icon-ok").removeClass("icon-ok");
+                    $(e.target).find("i").addClass("icon-ok");
+                    _this.trigger("genelist-selected", itemsById[$(e.target).data("id")]);
+                });
+            }
+        }
     }
 });

@@ -1,12 +1,10 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
-var Genelist = require('./gene_list_view');
 
 module.exports = View.extend({
     model:FeatureMatrix2,
     template:template,
-    genelistView:new Genelist(),
     label:"Oncovis",
     className:"row-fluid",
     rowLabels:[],
@@ -25,9 +23,6 @@ module.exports = View.extend({
 
     afterRender:function () {
         this.initControls();
-
-        var gene_list_modal = this.$el.find("#genelist-modal");
-        gene_list_modal.find(".modal-body").append(this.genelistView.render().el);
     },
 
     initControls:function () {
@@ -148,16 +143,18 @@ module.exports = View.extend({
     },
 
     onNewRows:function (genelist) {
-        var _this = this;
-        _.defer(function () {
-            _this.rowLabels = _.filter(_this.model.get("ROWS"), function (row) {
-                return _.any(genelist.values, function (gene) {
-                    return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
+        if (genelist && genelist.values) {
+            var _this = this;
+            _.defer(function () {
+                _this.rowLabels = _.filter(_this.model.get("ROWS"), function (row) {
+                    return _.any(genelist.values, function (gene) {
+                        return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
+                    });
                 });
+                console.log("reload-model");
+                _this.model.trigger('load');
             });
-            console.log("reload-model");
-            _this.model.trigger('load');
-        });
+        }
     },
 
     resetSliders:function () {

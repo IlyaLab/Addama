@@ -13,7 +13,7 @@ module.exports = Model.extend({
     },
 
     parse: function(txt) {
-        return { "profiledLists": _.compact(_.map(d3.tsv.parse(txt), function(row) { return row["ID"] ? row : null; })) };
+        return { "items": _.compact(_.map(d3.tsv.parse(txt), function(row) { return row["ID"] ? row : null; })) };
     },
 
     fetch : function(options) {
@@ -21,12 +21,14 @@ module.exports = Model.extend({
     },
 
     loadGeneListValues: function() {
-        _.each(this.get("profiledLists"), function(profiledList) {
+        _.each(this.get("items"), function(item) {
+            _.each(_.keys(item), function(k) { item[k.toLowerCase()] = item[k]; });
+
             $.ajax({
-                url: "svc/data/lookups/genelists/" + profiledList["ID"],
+                url: "svc/data/lookups/genelists/" + item.id,
                 type: "GET", dataType: "text",
                 success: function(txt){
-                    profiledList.values = txt.trim().split("\n");
+                    item.values = txt.trim().split("\n");
                 }
             })
         });
