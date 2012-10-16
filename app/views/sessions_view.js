@@ -23,7 +23,6 @@ module.exports = View.extend({
             dataType: "json",
             context: this,
             success: function(json) {
-                console.log("success loading sessions");
                 if (json && json.items) {
                     _.each(json.items, function(item) {
                         if (!item.label) item.label = "Untitled";
@@ -32,9 +31,6 @@ module.exports = View.extend({
                     
                     this.$el.find(".load-session").click(this.loadSession);
                 }
-            },
-            error: function(e,o) {
-                console.log("failure loading session");
             }
         });
     },
@@ -59,22 +55,17 @@ module.exports = View.extend({
 
     loadSessionById: function(sessionId) {
         if (sessionId) {
-            console.log("loading session " + sessionId);
             $.ajax({
                 url: "svc/storage/sessions/" + sessionId,
                 type: "GET",
                 dataType: "json",
                 success: function(json) {
-                    console.log("success loading " + sessionId);
                     localStorage.setItem("session_id", sessionId);
                     if (json) {
                         _.each(_.without(_.without(_.keys(json), "id"), "label"), function(key) {
                             localStorage.setItem(key, json[key]);
                         });
                     }
-                },
-                error: function(e,o) {
-                    console.log("failure loading " + sessionId);
                 }
             });
         }
@@ -102,11 +93,7 @@ module.exports = View.extend({
             data: data,
             dataType: "json",
             success: function(json) {
-                console.log("success saving session: " + json.id);
                 localStorage.setItem("session_id", json.id);
-            },
-            error: function() {
-                console.log("failure saving session");
             }
         });
     }

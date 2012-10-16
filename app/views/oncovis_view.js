@@ -30,8 +30,6 @@ module.exports = View.extend({
     },
 
     initControls:function () {
-        console.log("initControls:start");
-
         this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
         this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:10, max:50, initialStep:10 });
         this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:3 });
@@ -54,8 +52,6 @@ module.exports = View.extend({
         this.$el.find(".slider_barspacing").bind("slide-to", visrangeFn("column_spacing"));
         this.$el.find(".slider_clusterspacing").bind("slide-to", visrangeFn("cluster_spacing"));
         this.$el.find(".slider_fontsize").bind("slide-to", visrangeFn("label_fontsize"));
-
-        console.log("initControls:end");
     },
 
     initClusterProperty: function() {
@@ -83,7 +79,6 @@ module.exports = View.extend({
 
         var _this = this;
         osrview.on("selected-rows", function(rows) {
-            console.log("selected-rows=" + rows);
             _this.rowLabels = rows;
             _this.$el.find('.select-rows-modal').modal("hide");
             _this.model.trigger("load");
@@ -130,7 +125,6 @@ module.exports = View.extend({
     },
 
     renderGraph:function () {
-        console.log("renderGraph:start");
         if (!this.rowLabels || !this.rowLabels.length) {
             // reset to original
             this.rowLabels = this.model.dims.get("rowLabels");
@@ -187,8 +181,6 @@ module.exports = View.extend({
         };
 
         this.$el.find(".oncovis-container").oncovis(data, optns);
-
-        console.log("renderGraph:end");
     },
 
     onNewRows:function (genelist) {
@@ -200,7 +192,6 @@ module.exports = View.extend({
                         return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
                     });
                 });
-                console.log("reload-model");
                 _this.model.trigger('load');
             });
         }
