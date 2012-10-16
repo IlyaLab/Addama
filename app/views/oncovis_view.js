@@ -44,7 +44,7 @@ module.exports = View.extend({
             return function (event, value) {
                 var dim = {};
                 dim[property] = value;
-                oncovis_container.update(dim);
+                oncovis_container.oncovis("update", dim);
             }
         };
 
