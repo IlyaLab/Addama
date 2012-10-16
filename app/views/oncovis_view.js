@@ -1,6 +1,7 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
+var ALL_COLUMNS = "ALL_COLUMNS";
 
 module.exports = View.extend({
     model:FeatureMatrix2,
@@ -64,8 +65,12 @@ module.exports = View.extend({
 
         var _this = this;
         ocpview.on("selected-cluster", function(cluster) {
-            console.log("selected-cluster=" + cluster);
             _this.clusterProperty = cluster;
+            _this.$el.find('.cluster-property-modal').modal("hide");
+            _this.model.trigger("load");
+        });
+        ocpview.on("no-cluster", function() {
+            _this.clusterProperty = ALL_COLUMNS;
             _this.$el.find('.cluster-property-modal').modal("hide");
             _this.model.trigger("load");
         });
@@ -89,16 +94,28 @@ module.exports = View.extend({
         var _this = this;
         var unsorted_columns = [];
         var cluster_property = (this.clusterProperty || this.model.dims.get("clusterProperty"));
-        _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var cluster_idx = _this.model.get("ROWS").indexOf(cluster_property);
-            var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
-            var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
-            _.each(_this.rowLabels, function (row_label) {
-                var row_idx = _this.model.get("ROWS").indexOf(row_label);
-                column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+        if (cluster_property == ALL_COLUMNS) {
+            _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
+                var column = { "name":column_name.trim(), "cluster":"All Columns", "values":[] };
+                _.each(_this.rowLabels, function (row_label) {
+                    var row_idx = _this.model.get("ROWS").indexOf(row_label);
+                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                });
+                unsorted_columns.push(column);
             });
-            unsorted_columns.push(column);
-        });
+        } else {
+            _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
+                var cluster_idx = _this.model.get("ROWS").indexOf(cluster_property);
+                var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
+                var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
+                _.each(_this.rowLabels, function (row_label) {
+                    var row_idx = _this.model.get("ROWS").indexOf(row_label);
+                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                });
+                unsorted_columns.push(column);
+            });
+        }
+
         var sorted_columns = _.sortBy(unsorted_columns, "values");
         var grouped_columns = _.groupBy(sorted_columns, "cluster");
 

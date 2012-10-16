@@ -12,6 +12,9 @@ module.exports = View.extend({
             if (selected_cluster) {
                 this.trigger("selected-cluster", selected_cluster);
             }
+        },
+        "click .no-cluster": function() {
+            this.trigger("no-cluster");
         }
     },
 
