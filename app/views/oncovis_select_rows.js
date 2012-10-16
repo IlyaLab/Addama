@@ -24,6 +24,11 @@ module.exports = View.extend({
         this.model.on('load', this.initTypeahead);
     },
 
+    afterRender: function() {
+        this.$el.find(".selected-rows ul, li").disableSelection();
+        this.$el.find(".selected-rows").sortable({ revert:true });
+    },
+
     initTypeahead:function () {
         var UL = this.$el.find(".selected-rows");
         UL.find("a.row-remover").live("click", function (e) {
