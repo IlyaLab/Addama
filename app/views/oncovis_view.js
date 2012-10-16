@@ -25,6 +25,7 @@ module.exports = View.extend({
     afterRender:function () {
         this.initControls();
         this.initClusterProperty();
+        this.initRowSelector();
     },
 
     initControls:function () {
@@ -66,6 +67,20 @@ module.exports = View.extend({
             console.log("selected-cluster=" + cluster);
             _this.clusterProperty = cluster;
             _this.$el.find('.cluster-property-modal').modal("hide");
+            _this.model.trigger("load");
+        });
+    },
+
+    initRowSelector: function() {
+        var OSRView = require("../views/oncovis_select_rows");
+        var osrview = new OSRView({ model: model });
+        this.$el.find('.select-rows-modal').html(osrview.render().el);
+
+        var _this = this;
+        osrview.on("selected-rows", function(rows) {
+            console.log("selected-rows=" + rows);
+            _this.rowLabels = rows;
+            _this.$el.find('.select-rows-modal').modal("hide");
             _this.model.trigger("load");
         });
     },
