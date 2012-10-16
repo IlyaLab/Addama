@@ -7,6 +7,7 @@ module.exports = View.extend({
     template:template,
     label:"Oncovis",
     className:"row-fluid",
+    clusterProperty: null,
     rowLabels:[],
 
     events:{
@@ -23,6 +24,7 @@ module.exports = View.extend({
 
     afterRender:function () {
         this.initControls();
+        this.initClusterProperty();
     },
 
     initControls:function () {
@@ -54,11 +56,26 @@ module.exports = View.extend({
         console.log("initControls:end");
     },
 
+    initClusterProperty: function() {
+        var OCPView = require("../views/oncovis_cluster_property");
+        var ocpview = new OCPView({ model: model });
+        this.$el.find('.cluster-property-modal').html(ocpview.render().el);
+
+        var _this = this;
+        ocpview.on("selected-cluster", function(cluster) {
+            console.log("selected-cluster=" + cluster);
+            _this.clusterProperty = cluster;
+            _this.$el.find('.cluster-property-modal').modal("hide");
+            _this.model.trigger("load");
+        });
+    },
+
     getColumnModel:function () {
         var _this = this;
         var unsorted_columns = [];
+        var cluster_property = (this.clusterProperty || this.model.dims.get("clusterProperty"));
         _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.get("clusterProperty"));
+            var cluster_idx = _this.model.get("ROWS").indexOf(cluster_property);
             var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
             var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
             _.each(_this.rowLabels, function (row_label) {
