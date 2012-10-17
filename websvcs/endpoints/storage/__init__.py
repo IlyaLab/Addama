@@ -1,2 +1,1 @@
-from local import StorageHandler
-from mongodb import MongoDbStorageHandler
+from mongodb import MongoDbStorageHandler, GetUserinfo, SaveUserinfo

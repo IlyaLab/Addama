@@ -29,7 +29,7 @@ import uuid
 
 from auth_decorator import authenticated
 from data import LocalFileHandler
-from storage import MongoDbStorageHandler
+from storage import MongoDbStorageHandler, GetUserinfo
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -62,22 +62,21 @@ class WhoamiHandler(tornado.web.RequestHandler):
     @authenticated
     def get(self):
         userkey = self.get_secure_cookie("whoami")
-        user = None
-        if not userkey is None:
-            user = json.load(open('userinfo-%s.dat' % (userkey)))
-
-        providers = []
 
         google_provider = { "id": "google", "label": "Google+", "active": False, "logo": "https://www.google.com/images/icons/ui/gprofile_button-64.png" }
-        if not user is None:
-            google_provider["active"] = True
-            google_provider["user"] = {
-                "fullname": user["name"],
-                "email": user["email"]
-            }
-            if "picture" in user: google_provider["user"]["pic"] = user["picture"]
-            if "link" in user: google_provider["user"]["profileLink"] = user["link"]
+        if not userkey is None:
+            user = GetUserinfo(userkey)
+            if not user is None:
+                google_provider["active"] = True
+                google_provider["user"] = {}
+                if "id_token" in user and "email" in user["id_token"]: google_provider["user"]["email"] = user["id_token"]["email"]
+                if "profile" in user:
+                    user_profile = user["profile"]
+                    if "name" in user_profile: google_provider["user"]["fullname"] = user_profile["name"]
+                    if "picture" in user_profile: google_provider["user"]["pic"] = user_profile["picture"]
+                    if "link" in user_profile: google_provider["user"]["profileLink"] = user_profile["link"]
 
+        providers = []
         providers.append(google_provider)
         providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "img/facebook_logo.jpg" })
         providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
