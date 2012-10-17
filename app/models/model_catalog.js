@@ -1,29 +1,33 @@
 var Model = require('./model');
 
 module.exports = Model.extend({
-    initialize: function(options) {
+    initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, "loadDataMenu");
-
-        this.on("load", this.loadDataMenu)
     },
 
-    url: function() {
+    url:function () {
         return this.url;
     },
 
-    parse: function(txt) {
-        return { "items": _.compact(_.map(d3.tsv.parse(txt), function(row) { return row["ID"] ? row : null; })) };
+    parse:function (txt) {
+        var itemsById = {};
+        var items = _.compact(_.map(d3.tsv.parse(txt), function (row) {
+            if (row["ID"]) {
+                var item = {};
+                _.each(_.keys(row), function (k) {
+                    item[k.toLowerCase()] = row[k];
+                });
+
+                itemsById[item.id] = item;
+                return item;
+            }
+            return null;
+        }));
+
+        return { "items": items, "itemsById": itemsById};
     },
 
-    fetch : function(options) {
+    fetch:function (options) {
         return Model.prototype.fetch.call(this, _.extend({}, options, {dataType:'text'}));
-    },
-
-    loadDataMenu: function() {
-        _.each(this.get("items"), function(item) {
-            _.each(_.keys(item), function(k) { item[k.toLowerCase()] = item[k]; });
-        });
     }
-
 });
