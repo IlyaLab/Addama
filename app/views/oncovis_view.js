@@ -1,6 +1,8 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
+var OCPView = require("../views/oncovis_cluster_property");
+var OSRView = require("../views/oncovis_select_rows");
 var ALL_COLUMNS = "ALL_COLUMNS";
 
 module.exports = View.extend({
@@ -18,9 +20,7 @@ module.exports = View.extend({
     initialize:function () {
         _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
 
-        this.renderGraph = _.after(2, this.renderGraph);
-        this.model.on('load', this.renderGraph);
-        this.model.dims.on('load', this.renderGraph);
+        this.multiLoad([this.model, this.model.dims], this.renderGraph);
     },
 
     afterRender:function () {
@@ -55,8 +55,7 @@ module.exports = View.extend({
     },
 
     initClusterProperty: function() {
-        var OCPView = require("../views/oncovis_cluster_property");
-        var ocpview = new OCPView({ model: model });
+        var ocpview = new OCPView({ model: this.model });
         this.$el.find('.cluster-property-modal').html(ocpview.render().el);
 
         var _this = this;
@@ -73,8 +72,7 @@ module.exports = View.extend({
     },
 
     initRowSelector: function() {
-        var OSRView = require("../views/oncovis_select_rows");
-        var osrview = new OSRView({ model: model });
+        var osrview = new OSRView({ model: this.model });
         this.$el.find('.select-rows-modal').html(osrview.render().el);
 
         var _this = this;
