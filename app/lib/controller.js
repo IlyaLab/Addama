@@ -124,21 +124,19 @@ Controller = {
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            OncovisDims = require('../models/oncovis_dims');
-            oncovisDims = new OncovisDims({dataset_id : dataset_id });
-            oncovisDims.fetch({success: function(model) {
-                model.trigger('load');
-            }});
+            try {
+                OncovisDims = require('../models/oncovis_dims');
+                oncovisDims = new OncovisDims({dataset_id : dataset_id });
+                oncovisDims.fetch({success: function(model) {
+                    model.trigger('load');
+                }});
 
-            Model = require('../models/featureMatrix2');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
-
-            var view = Controller.ViewModel(view_name || 'grid', model);
-            var geneListsViews = Controller.GetGeneListViews(view);
-            _.each(geneListsViews, function(geneListsView) {
-                geneListsView.on("genelist-selected", view.onNewRows);
-            });
-            return view;
+                Model = require('../models/featureMatrix2');
+                model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
+                return Controller.ViewModel(view_name || 'grid', model);
+            } finally {
+                Controller.InitGeneListViews();
+            }
         }
 
         Model = require('../models/featureMatrix');
@@ -181,8 +179,8 @@ Controller = {
         return view;
     },
 
-    GetGeneListViews: function(view) {
-        var MenuItemView = require("../views/genelist_menuitems");
+    InitGeneListViews: function() {
+        var MenuItemsView = require("../views/menu_items");
 
         var ProfiledModel = require("../models/genelist_profiled");
         var profiledModel = new ProfiledModel();
@@ -200,17 +198,19 @@ Controller = {
             }
         });
 
-        var profiledView = new MenuItemView({ model: profiledModel });
+        var profiledView = new MenuItemsView({ model: profiledModel, selectEvent: "genelist-selected" });
         $(".genelist-profiled").html(profiledView.render().el);
 
-        var customView = new MenuItemView({ model: customModel });
+        var customView = new MenuItemsView({ model: customModel, selectEvent: "genelist-selected" });
         $(".genelist-custom").html(customView.render().el);
 
         var ManageGLView = require("../views/genelist_manage");
         var manageGLView = new ManageGLView({ model: customModel });
         $('.genelist-modal').html(manageGLView.render().el);
 
-        return [profiledView, customView, manageGLView];
+        return _.map([profiledView, customView, manageGLView], function(v) {
+            v.on("genelist-selected", v.onNewRows);
+        });
     }
 };
 
