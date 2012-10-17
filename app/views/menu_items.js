@@ -26,7 +26,7 @@ module.exports = View.extend({
                 // TODO: Put checkmarks next to selected item in list?
                 // UL.find("i.icon-ok").removeClass("icon-ok");
                 // $(e.target).find("i").addClass("icon-ok");
-                _this.trigger(this.selectEvent, itemsById[$(e.target).data("id")]);
+                _this.trigger(_this.selectEvent, itemsById[$(e.target).data("id")]);
             });
         }
     }

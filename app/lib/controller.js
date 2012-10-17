@@ -10,32 +10,33 @@ var FeatureMatrixModel = require('../models/featureMatrix');
 
 var QEDView = require("../views/qed_configuration");
 var DataMenuView = require("../views/data_menu");
+var MenuItemsView = require("../views/menu_items");
 
 Controller = {
-    loadQED: function() {
+    loadQED:function () {
         console.log("loadQED");
 
-        var qedConfigModel = new JSONModel({ url: "svc/data/lookups/qed_configuration.json" });
-        var featureLabelModel = new TableModel({ url: "svc/data/lookups/feature_labels" });
-        var chromInfoModel = new TableModel({ url: "svc/data/lookups/chromosomes" });
+        var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
+        var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
+        var chromInfoModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
 
-        new QEDView({ model: qedConfigModel, featureLabels: featureLabelModel, chromInfo: chromInfoModel });
+        new QEDView({ model:qedConfigModel, featureLabels:featureLabelModel, chromInfo:chromInfoModel });
 
-        _.each([qedConfigModel, featureLabelModel, chromInfoModel], function(m) {
+        _.each([qedConfigModel, featureLabelModel, chromInfoModel], function (m) {
             m.standard_fetch();
         });
     },
 
-    testwindow : {
-        view : function() {
+    testwindow:{
+        view:function () {
             var WinView = require('../views/window_view');
             var winView = new WinView();
             $('#mainDiv').html(winView.render().el);
         }
     },
 
-    grid : {
-        view : function() {
+    grid:{
+        view:function () {
             var GridView = require('../views/grid_view');
             var gridView = new GridView();
             $('#mainDiv').html(gridView.render().el);
@@ -43,38 +44,38 @@ Controller = {
         }
     },
 
-    app : {
-        layout : function() {
+    app:{
+        layout:function () {
             var TopNavBar = require('../views/topbar_view');
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
             var CloudStorageView = require("../views/cloud_storage_view");
-            var csview = new CloudStorageView({ $navbar: $('#navigation-container') });
+            var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
             $(document.body).append(csview.render().el);
-            
-            var dmModel = new TableModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
 
-            var gridItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "grid", "model": dmModel });
-            var heatItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "heat", "model": dmModel });
+            var dmModel = new TableModel({ url:"svc/data/analysis/feature_matrices/CATALOG" });
+
+            var gridItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"grid", "model":dmModel });
+            var heatItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"heat", "model":dmModel });
 
             $(".open-in-grid").html(gridItems.render().el);
             $(".open-in-heat").html(heatItems.render().el);
-            
+
             dmModel.standard_fetch();
         }
     },
 
-    graph : {
-        view : function() {
+    graph:{
+        view:function () {
             var GraphView = require('../views/graph_view');
             var graphView = new GraphView();
             $('#mainDiv').html(graphView.render().el);
         }
     },
 
-    pwpv :  {
-        view : function() {
+    pwpv:{
+        view:function () {
             var PwPvView = require('../views/pwpv_view');
             var pwpvView = new PwPvView();
             $('#mainDiv').html(pwpvView.render().el);
@@ -82,37 +83,37 @@ Controller = {
         }
     },
 
-    twod : {
-        view : function(label1, label2) {
+    twod:{
+        view:function (label1, label2) {
             var TwoD = require('../views/2D_Distribution_view');
             var FL = require('../models/featureList');
             var fl = new FL({
-                websvc: '/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
-                feature_list : [label1, label2]
+                websvc:'/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
+                feature_list:[label1, label2]
             });
-            var twoDView = new TwoD({collection: fl});
+            var twoDView = new TwoD({collection:fl});
             fl.fetch();
             $('#mainDiv').html(twoDView.render().el);
         }
     },
 
-    oncovis : {
-        view : function() {
+    oncovis:{
+        view:function () {
             var Oncovis = require('../views/oncovis_view');
             var oncovisView = new Oncovis();
             $('#mainDiv').html(oncovisView.render().el);
         }
     },
 
-    home : {
-        view : function() {
+    home:{
+        view:function () {
             var HomeView = require('../views/home_view');
             var homeView = new HomeView();
             $('#mainDiv').html(homeView.render().el);
         }
     },
 
-    route_analysis: function(analysis_type, dataset_id, remainder) {
+    route_analysis:function (analysis_type, dataset_id, remainder) {
 
         var arg_array = remainder.length ? remainder.split('/') : [],
             len = arg_array.length,
@@ -124,50 +125,48 @@ Controller = {
         }
 
         //graph based analysis
-        if (_(['rf-ace','mds','pairwise']).contains(analysis_type)) {
+        if (_(['rf-ace', 'mds', 'pairwise']).contains(analysis_type)) {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
-                var graphModel = new GraphModel({analysis_id : analysis_type, dataset_id : dataset_id});
+                var graphModel = new GraphModel({analysis_id:analysis_type, dataset_id:dataset_id});
                 return Controller.ViewModel(view_name || 'graph', graphModel);
             }
 
-            var flModel = new FeatureListModel({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+            var flModel = new FeatureListModel({analysis_id:analysis_type, dataset_id:dataset_id, features:features});
             return Controller.ViewModel(view_name, flModel);
         }
 
         if (analysis_type === 'mutations') {
-            var mutationsModel = new MutationsModel({analysis_id : analysis_type, dataset_id : dataset_id });
+            var mutationsModel = new MutationsModel({analysis_id:analysis_type, dataset_id:dataset_id });
             return Controller.ViewModel(view_name, mutationsModel);
         }
 
         if (analysis_type === 'information_gain') {
-            var glfModel = new GenomicFeatureListModel({analysis_id : analysis_type, dataset_id : dataset_id });
+            var glfModel = new GenomicFeatureListModel({analysis_id:analysis_type, dataset_id:dataset_id });
             return Controller.ViewModel(view_name, glfModel);
         }
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            try {
-                OncovisDims = require('../models/oncovis_dims');
-                oncovisDims = new OncovisDims({dataset_id : dataset_id });
-                oncovisDims.standard_fetch();
-    
-                var fm2model = new FeatureMatrix2Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });                    
-                return Controller.ViewModel(view_name || 'grid', fm2model);                
-            } finally {
-                Controller.InitGeneListViews();
-            }
+            OncovisDims = require('../models/oncovis_dims');
+            oncovisDims = new OncovisDims({dataset_id:dataset_id });
+            oncovisDims.standard_fetch();
+
+            var fm2model = new FeatureMatrix2Model({analysis_id:analysis_type, dataset_id:dataset_id, dims:oncovisDims });
+            var oncovisView = Controller.ViewModel(view_name || 'grid', fm2model);
+            Controller.InitGeneListViews(oncovisView);
+            return oncovisView;
         }
 
-        var fmmodel = new FeatureMatrixModel({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+        var fmmodel = new FeatureMatrixModel({analysis_id:analysis_type, dataset_id:dataset_id, features:features});
         return Controller.ViewModel(view_name, fmmodel);
     },
 
-    ViewModel: function(view_name, model) {
+    ViewModel:function (view_name, model) {
         var supported = {
-            "graph": "graph_view",
-            "grid": "grid_view",
-            "circ": "circ_view",
-            "heat": "oncovis_view"
+            "graph":"graph_view",
+            "grid":"grid_view",
+            "circ":"circ_view",
+            "heat":"oncovis_view"
         };
         var expected = ["twoD", "kde", "parcoords"];
 
@@ -179,8 +178,8 @@ Controller = {
         var ViewClass = require('../views/' + supported[view_name]);
         var view = null;
         if (view_name == "circ") {
-            var chrModel = new TableModel({ url: "svc/data/lookups/chromosomes" });
-            view = new ViewClass({ "model":model, "chrModel": chrModel });
+            var chrModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
+            view = new ViewClass({ "model":model, "chrModel":chrModel });
             chrModel.standard_fetch();
         } else {
             view = new ViewClass({model:model});
@@ -188,10 +187,10 @@ Controller = {
         $('#mainDiv').html(view.render().el);
 
         model.fetch({
-            success: function(m, resp) {
+            success:function (m, resp) {
                 var original_model;
                 if (Model.prototype.add) {  //is this a Collection?
-                    original_model = new Model({analysis_id : model.analysis_type, dataset_id : model.dataset_id});
+                    original_model = new Model({analysis_id:model.analysis_type, dataset_id:model.dataset_id});
                     original_model.add(m.toJSON(), {silent:true});
                 } else { //nope its a model
                     original_model = new Model(m.toJSON());
@@ -204,9 +203,7 @@ Controller = {
         return view;
     },
 
-    InitGeneListViews: function() {
-        var MenuItemsView = require("../views/menu_items");
-        
+    InitGeneListViews:function (dataView) {
         var ProfiledModel = require("../models/genelist_profiled");
         var profiledModel = new ProfiledModel();
         profiledModel.standard_fetch();
@@ -215,18 +212,18 @@ Controller = {
         var customModel = new CustomModel();
         customModel.standard_fetch();
 
-        var profiledView = new MenuItemsView({ model: profiledModel, selectEvent: "genelist-selected" });
+        var profiledView = new MenuItemsView({ model:profiledModel, selectEvent:"genelist-selected" });
         $(".genelist-profiled").html(profiledView.render().el);
 
-        var customView = new MenuItemsView({ model: customModel, selectEvent: "genelist-selected" });
+        var customView = new MenuItemsView({ model:customModel, selectEvent:"genelist-selected" });
         $(".genelist-custom").html(customView.render().el);
 
         var ManageGLView = require("../views/genelist_manage");
-        var manageGLView = new ManageGLView({ model: customModel });
+        var manageGLView = new ManageGLView({ model:customModel });
         $('.genelist-modal').html(manageGLView.render().el);
 
-        return _.map([profiledView, customView, manageGLView], function(v) {
-            v.on("genelist-selected", v.onNewRows);
+        return _.map([profiledView, customView, manageGLView], function (v) {
+            if (dataView.onNewRows) v.on("genelist-selected", dataView.onNewRows);
         });
     }
 };
