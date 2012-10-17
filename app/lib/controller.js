@@ -22,6 +22,10 @@ Controller = {
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
+            var CloudStorageView = require("../views/cloud_storage_view");
+            var csview = new CloudStorageView({ $navbar: $('#navigation-container') });
+            $(document.body).append(csview.render().el);
+
             var DataMenuModel = require("../models/data_menu");
             var dmModel = new DataMenuModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
             dmModel.fetch({
