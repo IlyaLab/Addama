@@ -11,7 +11,6 @@ var FeatureMatrixModel = require('../models/featureMatrix');
 var QEDView = require("../views/qed_configuration");
 var DataMenuView = require("../views/data_menu");
 
-
 Controller = {
     loadQED: function() {
         console.log("loadQED");
@@ -50,6 +49,10 @@ Controller = {
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
+            var CloudStorageView = require("../views/cloud_storage_view");
+            var csview = new CloudStorageView({ $navbar: $('#navigation-container') });
+            $(document.body).append(csview.render().el);
+            
             var dmModel = new TableModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
 
             var gridItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "grid", "model": dmModel });
@@ -57,7 +60,7 @@ Controller = {
 
             $(".open-in-grid").html(gridItems.render().el);
             $(".open-in-heat").html(heatItems.render().el);
-
+            
             dmModel.standard_fetch();
         }
     },
@@ -143,18 +146,16 @@ Controller = {
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            OncovisDims = require('../models/oncovis_dims');
-            oncovisDims = new OncovisDims({dataset_id : dataset_id });
-            oncovisDims.standard_fetch();
-
-            var fm2model = new FeatureMatrix2Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
-
-            var view = Controller.ViewModel(view_name || 'grid', fm2model);
-            var geneListsViews = Controller.GetGeneListViews(view);
-            _.each(geneListsViews, function(geneListsView) {
-                geneListsView.on("genelist-selected", view.onNewRows);
-            });
-            return view;
+            try {
+                OncovisDims = require('../models/oncovis_dims');
+                oncovisDims = new OncovisDims({dataset_id : dataset_id });
+                oncovisDims.standard_fetch();
+    
+                var fm2model = new FeatureMatrix2Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });                    
+                return Controller.ViewModel(view_name || 'grid', fm2model);                
+            } finally {
+                Controller.InitGeneListViews();
+            }
         }
 
         var fmmodel = new FeatureMatrixModel({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
@@ -203,9 +204,9 @@ Controller = {
         return view;
     },
 
-    GetGeneListViews: function(view) {
-        var MenuItemView = require("../views/genelist_menuitems");
-
+    InitGeneListViews: function() {
+        var MenuItemsView = require("../views/menu_items");
+        
         var ProfiledModel = require("../models/genelist_profiled");
         var profiledModel = new ProfiledModel();
         profiledModel.standard_fetch();
@@ -214,17 +215,19 @@ Controller = {
         var customModel = new CustomModel();
         customModel.standard_fetch();
 
-        var profiledView = new MenuItemView({ model: profiledModel });
+        var profiledView = new MenuItemsView({ model: profiledModel, selectEvent: "genelist-selected" });
         $(".genelist-profiled").html(profiledView.render().el);
 
-        var customView = new MenuItemView({ model: customModel });
+        var customView = new MenuItemsView({ model: customModel, selectEvent: "genelist-selected" });
         $(".genelist-custom").html(customView.render().el);
 
         var ManageGLView = require("../views/genelist_manage");
         var manageGLView = new ManageGLView({ model: customModel });
         $('.genelist-modal').html(manageGLView.render().el);
 
-        return [profiledView, customView, manageGLView];
+        return _.map([profiledView, customView, manageGLView], function(v) {
+            v.on("genelist-selected", v.onNewRows);
+        });
     }
 };
 
