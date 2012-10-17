@@ -1,4 +1,32 @@
+var Model = require('../models/model');
+var JSONModel = require("../models/model_json");
+var TableModel = require("../models/model_catalog");
+var GraphModel = require('../models/graph');
+var FeatureListModel = require('../models/featureList');
+var MutationsModel = require('../models/mutations');
+var GenomicFeatureListModel = require('../models/genomic_featureList');
+var FeatureMatrix2Model = require('../models/featureMatrix2');
+var FeatureMatrixModel = require('../models/featureMatrix');
+
+var QEDView = require("../views/qed_configuration");
+var DataMenuView = require("../views/data_menu");
+
+
 Controller = {
+    loadQED: function() {
+        console.log("loadQED");
+
+        var qedConfigModel = new JSONModel({ url: "svc/data/lookups/qed_configuration.json" });
+        var featureLabelModel = new TableModel({ url: "svc/data/lookups/feature_labels" });
+        var chromInfoModel = new TableModel({ url: "svc/data/lookups/chromosomes" });
+
+        new QEDView({ model: qedConfigModel, featureLabels: featureLabelModel, chromInfo: chromInfoModel });
+
+        _.each([qedConfigModel, featureLabelModel, chromInfoModel], function(m) {
+            m.standard_fetch();
+        });
+    },
+
     testwindow : {
         view : function() {
             var WinView = require('../views/window_view');
@@ -22,20 +50,15 @@ Controller = {
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
-            var DataMenuModel = require("../models/data_menu");
-            var dmModel = new DataMenuModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
-            dmModel.fetch({
-                success: function(m) {
-                    m.trigger('load');
-                }
-            });
+            var dmModel = new TableModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
 
-            var DataMenuView = require("../views/data_menu");
             var gridItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "grid", "model": dmModel });
             var heatItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "heat", "model": dmModel });
 
             $(".open-in-grid").html(gridItems.render().el);
             $(".open-in-heat").html(heatItems.render().el);
+
+            dmModel.standard_fetch();
         }
     },
 
@@ -100,40 +123,33 @@ Controller = {
         //graph based analysis
         if (_(['rf-ace','mds','pairwise']).contains(analysis_type)) {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
-                Model = require('../models/graph');
-                model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
-                return Controller.ViewModel(view_name || 'graph', model);
+                var graphModel = new GraphModel({analysis_id : analysis_type, dataset_id : dataset_id});
+                return Controller.ViewModel(view_name || 'graph', graphModel);
             }
 
-            Model = require('../models/featureList');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
-            return Controller.ViewModel(view_name, model);
+            var flModel = new FeatureListModel({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+            return Controller.ViewModel(view_name, flModel);
         }
 
         if (analysis_type === 'mutations') {
-            Model = require('../models/mutations');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
-            return Controller.ViewModel(view_name, model);
+            var mutationsModel = new MutationsModel({analysis_id : analysis_type, dataset_id : dataset_id });
+            return Controller.ViewModel(view_name, mutationsModel);
         }
 
         if (analysis_type === 'information_gain') {
-            Model = require('../models/genomic_featureList');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
-            return Controller.ViewModel(view_name, model);
+            var glfModel = new GenomicFeatureListModel({analysis_id : analysis_type, dataset_id : dataset_id });
+            return Controller.ViewModel(view_name, glfModel);
         }
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
             OncovisDims = require('../models/oncovis_dims');
             oncovisDims = new OncovisDims({dataset_id : dataset_id });
-            oncovisDims.fetch({success: function(model) {
-                model.trigger('load');
-            }});
+            oncovisDims.standard_fetch();
 
-            Model = require('../models/featureMatrix2');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
+            var fm2model = new FeatureMatrix2Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
 
-            var view = Controller.ViewModel(view_name || 'grid', model);
+            var view = Controller.ViewModel(view_name || 'grid', fm2model);
             var geneListsViews = Controller.GetGeneListViews(view);
             _.each(geneListsViews, function(geneListsView) {
                 geneListsView.on("genelist-selected", view.onNewRows);
@@ -141,9 +157,8 @@ Controller = {
             return view;
         }
 
-        Model = require('../models/featureMatrix');
-        model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
-        return Controller.ViewModel(view_name, model);
+        var fmmodel = new FeatureMatrixModel({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
+        return Controller.ViewModel(view_name, fmmodel);
     },
 
     ViewModel: function(view_name, model) {
@@ -161,20 +176,27 @@ Controller = {
         }
 
         var ViewClass = require('../views/' + supported[view_name]);
-        var view = new ViewClass({model:model});
+        var view = null;
+        if (view_name == "circ") {
+            var chrModel = new TableModel({ url: "svc/data/lookups/chromosomes" });
+            view = new ViewClass({ "model":model, "chrModel": chrModel });
+            chrModel.standard_fetch();
+        } else {
+            view = new ViewClass({model:model});
+        }
         $('#mainDiv').html(view.render().el);
 
         model.fetch({
-            success: function(model, resp) {
+            success: function(m, resp) {
                 var original_model;
                 if (Model.prototype.add) {  //is this a Collection?
                     original_model = new Model({analysis_id : model.analysis_type, dataset_id : model.dataset_id});
-                    original_model.add(model.toJSON(), {silent:true});
+                    original_model.add(m.toJSON(), {silent:true});
                 } else { //nope its a model
-                    original_model = new Model(model.toJSON());
+                    original_model = new Model(m.toJSON());
                 }
-                model.original(original_model);
-                model.trigger('load');
+                m.original(original_model);
+                m.trigger('load');
             }
         });
 
@@ -186,19 +208,11 @@ Controller = {
 
         var ProfiledModel = require("../models/genelist_profiled");
         var profiledModel = new ProfiledModel();
-        profiledModel.fetch({
-            success: function(m) {
-                m.trigger('load');
-            }
-        });
+        profiledModel.standard_fetch();
 
         var CustomModel = require("../models/genelist_custom");
         var customModel = new CustomModel();
-        customModel.fetch({
-            success: function(m) {
-                m.trigger('load');
-            }
-        });
+        customModel.standard_fetch();
 
         var profiledView = new MenuItemView({ model: profiledModel });
         $(".genelist-profiled").html(profiledView.render().el);
@@ -215,3 +229,5 @@ Controller = {
 };
 
 module.exports = Controller;
+
+Controller.loadQED();
