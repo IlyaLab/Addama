@@ -1,12 +1,14 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
+var DimsModel = require('../models/oncovis_dims');
 var OCPView = require("../views/oncovis_cluster_property");
 var OSRView = require("../views/oncovis_select_rows");
 var ALL_COLUMNS = "ALL_COLUMNS";
 
 module.exports = View.extend({
     model:FeatureMatrix2,
+    dimsModel:DimsModel,
     template:template,
     label:"Oncovis",
     className:"row-fluid",
@@ -17,10 +19,13 @@ module.exports = View.extend({
         "click .reset-sliders":"resetSliders"
     },
 
-    initialize:function () {
+    initialize:function (options) {
+        _.extend(this, options);
         _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
 
-        this.multiLoad([this.model, this.model.dims], this.renderGraph);
+        this.dimsModel = new DimsModel({dataset_id:this.dataset_id });
+        this.multiLoad([this.model, this.dimsModel], this.renderGraph);
+        this.dimsModel.standard_fetch();
     },
 
     afterRender:function () {
@@ -86,7 +91,7 @@ module.exports = View.extend({
     getColumnModel:function () {
         var _this = this;
         var unsorted_columns = [];
-        var cluster_property = (this.clusterProperty || this.model.dims.get("clusterProperty"));
+        var cluster_property = (this.clusterProperty || this.dimsModel.get("clusterProperty"));
         if (cluster_property == ALL_COLUMNS) {
             _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
                 var column = { "name":column_name.trim(), "cluster":"All Columns", "values":[] };
@@ -125,7 +130,7 @@ module.exports = View.extend({
     renderGraph:function () {
         if (!this.rowLabels || !this.rowLabels.length) {
             // reset to original
-            this.rowLabels = this.model.dims.get("rowLabels");
+            this.rowLabels = this.dimsModel.get("rowLabels");
         }
 
         var columns_by_cluster = this.getColumnModel();

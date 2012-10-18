@@ -41,7 +41,7 @@ Controller = {
 
         Controller.ChromosomeModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
         Controller.ChromosomeModel.on("load", function() { Controller.ChromosomeModel.isReady = true; });
-        Controller.ChromosomeModel.standard_fetch()
+        Controller.ChromosomeModel.standard_fetch();
     },
 
     testwindow:{
@@ -146,7 +146,7 @@ Controller = {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
                 return Controller.ModelAndView(view_name || 'graph', GraphModel, {analysis_id:analysis_type, dataset_id:dataset_id});
             }
-            
+
             return Controller.ModelAndView(view_name, FeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
         }
 
@@ -160,11 +160,7 @@ Controller = {
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            OncovisDims = require('../models/oncovis_dims');
-            oncovisDims = new OncovisDims({dataset_id:dataset_id });
-            oncovisDims.standard_fetch();
-
-            var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id, dims:oncovisDims });
+            var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
             Controller.InitGeneListViews(oncovisView);
             return oncovisView;
         }
@@ -172,18 +168,18 @@ Controller = {
         return Controller.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
     },
 
-    ModelAndView:function (view_name, ModelClass, options) {
-        var model = new ModelClass(options);
+    ModelAndView:function (view_name, ModelClass, model_optns, view_optns) {
+        var model = new ModelClass(model_optns);
         try {
             var ViewClass = VisViewClasses[view_name];
-            var view = new ViewClass({ "model":model, "chromosomes": Controller.ChromosomeModel });
+            var view = new ViewClass(_.extend(view_optns || {}, { "model":model, "chromosomes": Controller.ChromosomeModel }));
             $('#mainDiv').html(view.render().el);
             return view;
         } finally {
             var loadModelChain = _.once(function() {
                 model.fetch({
                     success:function () {
-                        model.make_copy(ModelClass, options);
+                        model.make_copy(ModelClass, model_optns);
                         model.trigger('load');
                     }
                 });
