@@ -6,14 +6,14 @@ var PC = require('./parcoords_view');
 
 module.exports = View.extend({
   model : GFList,
-  chrModel: ChromInfoModel,
+  chromosomes: ChromInfoModel,
   template:template,
 
   initialize : function(options) {
       _.extend(this, options);
       _.bindAll(this,'afterRender','renderCirc','loadData');
       this.renderCirc = _.once(this.renderCirc);
-      this.multiLoad([this.model, this.chrModel], this.loadData);
+      this.multiLoad([this.model, this.chromosomes], this.loadData);
   },
   
   afterRender: function() {
@@ -53,8 +53,8 @@ module.exports = View.extend({
       var data = {
             GENOME: {
                 DATA:{
-                    key_order :_.keys(this.chrModel.get("itemsById")),
-                    key_length :_.map(_.values(this.chrModel.get("itemsById")), function(v) {return parseInt(v["chr_lengths"])})
+                    key_order :_.keys(this.chromosomes.get("itemsById")),
+                    key_length :_.map(_.values(this.chromosomes.get("itemsById")), function(v) {return parseInt(v["chr_lengths"])})
                 },
                 OPTIONS: {
                     label_layout_style : 'clock',

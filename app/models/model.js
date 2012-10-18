@@ -9,6 +9,18 @@ module.exports = Backbone.Model.extend({
         return this;
     },
 
+    make_copy: function(ModelClass, options) {
+        if (ModelClass.prototype.add) {
+            // is this a collection
+            var copy = new ModelClass(options);
+            copy.add(this.toJSON(), {silent:true});
+            this.original_collection = copy;
+        } else {
+            //nope its a model
+            this.original_collection = new ModelClass(this.toJSON());
+        }
+    },
+
     standard_fetch:function () {
         this.fetch({
             success:function (m) {

@@ -8,23 +8,40 @@ var GenomicFeatureListModel = require('../models/genomic_featureList');
 var FeatureMatrix2Model = require('../models/featureMatrix2');
 var FeatureMatrixModel = require('../models/featureMatrix');
 
-var QEDView = require("../views/qed_configuration");
 var DataMenuView = require("../views/data_menu");
 var MenuItemsView = require("../views/menu_items");
 
+var VisViewClasses = {
+    "graph": require("../views/graph_view"),
+    "grid": require("../views/grid_view"),
+    "circ": require("../views/circ_view"),
+    "heat": require("../views/oncovis_view"),
+    "twoD": null,
+    "kde": null,
+    "parcoords": require("../views/parcoords_view")
+};
+
 Controller = {
     loadQED:function () {
-        console.log("loadQED");
-
         var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
-        var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
-        var chromInfoModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
-
-        new QEDView({ model:qedConfigModel, featureLabels:featureLabelModel, chromInfo:chromInfoModel });
-
-        _.each([qedConfigModel, featureLabelModel, chromInfoModel], function (m) {
-            m.standard_fetch();
+        qedConfigModel.on("load", function() {
+            var title = qedConfigModel.get("title");
+            if (title) {
+                document.title = title;
+                $(".titled").html(title);
+            }
         });
+        qedConfigModel.standard_fetch();
+
+        var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
+        featureLabelModel.on("load", function() {
+            qed.labels = featureLabelModel.get("itemsById");
+        });
+        featureLabelModel.standard_fetch();
+
+        Controller.ChromosomeModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
+        Controller.ChromosomeModel.on("load", function() { Controller.ChromosomeModel.isReady = true; });
+        Controller.ChromosomeModel.standard_fetch()
     },
 
     testwindow:{
@@ -127,22 +144,18 @@ Controller = {
         //graph based analysis
         if (_(['rf-ace', 'mds', 'pairwise']).contains(analysis_type)) {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
-                var graphModel = new GraphModel({analysis_id:analysis_type, dataset_id:dataset_id});
-                return Controller.ViewModel(view_name || 'graph', graphModel);
+                return Controller.ModelAndView(view_name || 'graph', GraphModel, {analysis_id:analysis_type, dataset_id:dataset_id});
             }
-
-            var flModel = new FeatureListModel({analysis_id:analysis_type, dataset_id:dataset_id, features:features});
-            return Controller.ViewModel(view_name, flModel);
+            
+            return Controller.ModelAndView(view_name, FeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
         }
 
         if (analysis_type === 'mutations') {
-            var mutationsModel = new MutationsModel({analysis_id:analysis_type, dataset_id:dataset_id });
-            return Controller.ViewModel(view_name, mutationsModel);
+            return Controller.ModelAndView(view_name, MutationsModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
         if (analysis_type === 'information_gain') {
-            var glfModel = new GenomicFeatureListModel({analysis_id:analysis_type, dataset_id:dataset_id });
-            return Controller.ViewModel(view_name, glfModel);
+            return Controller.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
         //tabular data like /feature_matrices
@@ -151,56 +164,36 @@ Controller = {
             oncovisDims = new OncovisDims({dataset_id:dataset_id });
             oncovisDims.standard_fetch();
 
-            var fm2model = new FeatureMatrix2Model({analysis_id:analysis_type, dataset_id:dataset_id, dims:oncovisDims });
-            var oncovisView = Controller.ViewModel(view_name || 'grid', fm2model);
+            var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id, dims:oncovisDims });
             Controller.InitGeneListViews(oncovisView);
             return oncovisView;
         }
 
-        var fmmodel = new FeatureMatrixModel({analysis_id:analysis_type, dataset_id:dataset_id, features:features});
-        return Controller.ViewModel(view_name, fmmodel);
+        return Controller.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
     },
 
-    ViewModel:function (view_name, model) {
-        var supported = {
-            "graph":"graph_view",
-            "grid":"grid_view",
-            "circ":"circ_view",
-            "heat":"oncovis_view"
-        };
-        var expected = ["twoD", "kde", "parcoords"];
-
-        if (!_.contains(_.keys(supported), view_name)) {
-            console.log("View [" + view_name + "] not supported : expecting one of these [" + _.keys(supported).join(",") + "] :: soon to be supported [" + expected.join(",") + "]");
-            return;
-        }
-
-        var ViewClass = require('../views/' + supported[view_name]);
-        var view = null;
-        if (view_name == "circ") {
-            var chrModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
-            view = new ViewClass({ "model":model, "chrModel":chrModel });
-            chrModel.standard_fetch();
-        } else {
-            view = new ViewClass({model:model});
-        }
-        $('#mainDiv').html(view.render().el);
-
-        model.fetch({
-            success:function (m, resp) {
-                var original_model;
-                if (Model.prototype.add) {  //is this a Collection?
-                    original_model = new Model({analysis_id:model.analysis_type, dataset_id:model.dataset_id});
-                    original_model.add(m.toJSON(), {silent:true});
-                } else { //nope its a model
-                    original_model = new Model(m.toJSON());
-                }
-                m.original(original_model);
-                m.trigger('load');
+    ModelAndView:function (view_name, ModelClass, options) {
+        var model = new ModelClass(options);
+        try {
+            var ViewClass = VisViewClasses[view_name];
+            var view = new ViewClass({ "model":model, "chromosomes": Controller.ChromosomeModel });
+            $('#mainDiv').html(view.render().el);
+            return view;
+        } finally {
+            var loadModelChain = _.once(function() {
+                model.fetch({
+                    success:function () {
+                        model.make_copy(ModelClass, options);
+                        model.trigger('load');
+                    }
+                });
+            });
+            if (Controller.ChromosomeModel.isReady) {
+                loadModelChain();
+            } else {
+                Controller.ChromosomeModel.on("load", loadModelChain);
             }
-        });
-
-        return view;
+        }
     },
 
     InitGeneListViews:function (dataView) {
