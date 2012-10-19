@@ -10,7 +10,7 @@ module.exports = Model.extend({
     },
 
     url:function () {
-        return "svc/data/analysis/" + this.analysis_id + "/" + this.dataset_id;
+        return "svc/data/sources/" + this.analysis_id + "/" + this.dataset_id;
     },
 
     parse:function (tsv_text) {

@@ -71,7 +71,7 @@ Controller = {
             var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
             $(document.body).append(csview.render().el);
 
-            var dmModel = new TableModel({ url:"svc/data/analysis/feature_matrices/CATALOG" });
+            var dmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
 
             var gridItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"grid", "model":dmModel });
             var heatItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"heat", "model":dmModel });
