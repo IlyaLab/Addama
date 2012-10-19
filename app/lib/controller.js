@@ -30,6 +30,7 @@ Controller = {
                 document.title = title;
                 $(".titled").html(title);
             }
+            qed.viewMappings = qedConfigModel.get("viewMappings");
         });
         qedConfigModel.standard_fetch();
 
@@ -71,15 +72,9 @@ Controller = {
             var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
             $(document.body).append(csview.render().el);
 
-            var dmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
-
-            var gridItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"grid", "model":dmModel });
-            var heatItems = new DataMenuView({ "data_prefix":"#feature_matrices", "data_suffix":"heat", "model":dmModel });
-
-            $(".open-in-grid").html(gridItems.render().el);
-            $(".open-in-heat").html(heatItems.render().el);
-
-            dmModel.standard_fetch();
+            var fmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
+            $(".data-items").append(new DataMenuView({ "model":fmModel, "data_prefix":"feature_matrices" }).render().el);
+            fmModel.standard_fetch();
         }
     },
 

@@ -1,1 +1,5 @@
-<li class='{{li_class}}'><a href='{{a_href}}' class='{{a_class}}'>{{label}}</a></li>
+{{#if a_href}}
+<li class='{{li_class}}'><a href='{{a_href}}' class='{{a_class}}' onclick="return false;">{{label}}</a></li>
+{{else}}
+<li class='{{li_class}}'>{{label}}</li>
+{{/if}}
