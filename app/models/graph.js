@@ -120,7 +120,7 @@ module.exports = Model.extend({
 		var idx;
 		var edge={};
 		var node_map = {};
-		var lookup = qed.labels;
+		var lookup = labels_lookup;
 		_.each(rows, function(row) {
 			var feature1 = row[0],
 			    feature2 = row[1];
@@ -152,7 +152,7 @@ module.exports = Model.extend({
 			data_keys = new Array(),
 	              obj = new Object(),
 	                i = 0;
-           var lookup = qed.labels;
+           var lookup = labels_lookup;
  		    
 	    Object.keys(graphData).forEach(function(a) {  // strip out edges
 	        if (a === 'adj' || a ==='iByn')   return;

@@ -4,7 +4,7 @@ module.exports = Model.extend({
 
 	
 	parse : function(response){
-		response.label = qed.labels[response.feature_id] ? qed.labels[response.feature_id] : response.feature_id;
+		response.label = labels_lookup[response.feature_id] ? labels_lookup[response.feature_id] : response.feature_id;
 		return response;
 	}
 

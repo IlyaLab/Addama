@@ -10,7 +10,7 @@ module.exports = Node.extend({
 	},
 
 	parse: function(response) {
-		var lookup = qed.labels;
+		var lookup = labels_lookup;
 
 		var data = response.split(':');
 
