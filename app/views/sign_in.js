@@ -41,6 +41,7 @@ module.exports = View.extend({
                 this.provider.user = null;
                 this.provider.active = false;
                 this.refresh();
+                this.trigger("signout");
             }
         });
     }

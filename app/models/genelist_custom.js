@@ -11,7 +11,7 @@ module.exports = Model.extend({
 
     initialize: function(options) {
         _.extend(this, options);
-        _.bindAll(this, "save", "refresh");
+        _.bindAll(this, "save");
     },
 
     save:function (item) {
@@ -25,15 +25,7 @@ module.exports = Model.extend({
             type:"POST",
             data: saved_item,
             context:this,
-            success: this.refresh
-        });
-    },
-
-    refresh:function () {
-        this.fetch({
-            success:function (m) {
-                m.trigger('load');
-            }
+            success: this.standard_fetch
         });
     }
 });

@@ -84,13 +84,13 @@
             this.rows.append("text")
                 .attr("class", "row-label")
                 .text(function (d) {
-                    if (d.length > 8) return d.substring(0,8) + "...";
+                    if (d.length > 8) return d.substring(0, 8) + "...";
                     return d;
                 })
                 .style("font-size", this.label_fontsize + "px")
                 .append("svg:title")
                 .text(function (d) {
-                     return d;
+                    return d;
                 });
 
             this.cluster_columns = this.cluster_g.selectAll("g.cluster-column")
@@ -332,25 +332,15 @@
 
     // jQuery Plugin
     $.fn.oncovis = function (data, options) {
-        return this.each(function () {
-            var $this = $(this);
-            var vis = $this.data("OncoVis");
-            if (!vis) $this.data("OncoVis", (vis = new OncoVis(this, options)));
+        var $this = $(this);
+        var vis = $this.data("OncoVis");
+        if (!vis) $this.data("OncoVis", (vis = new OncoVis(this, options)));
+
+        if (typeof data == "string") {
+            if (data == "update") vis.update(options);
+            if (data == "cluster_columns") vis.updateClusterColumns(options["cluster"], options["columns"]);
+        } else {
             vis.draw(data, options);
-        });
-    };
-
-    $.fn.update = function (options) {
-        return this.each(function () {
-            var vis = $(this).data("OncoVis");
-            if (vis) vis.update(options);
-        });
-    };
-
-    $.fn.updateClusterColumns = function (cluster_id, sorted_columns) {
-        return this.each(function () {
-            var vis = $(this).data("OncoVis");
-            if (vis) vis.updateClusterColumns(cluster_id, sorted_columns);
-        });
+        }
     };
 }(window.jQuery);

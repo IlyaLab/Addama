@@ -23,10 +23,10 @@ module.exports = View.extend({
 
             var _this = this;
             UL.find("li a.select-item").click(function(e) {
-                // TODO: Put checkmarks next to selected gene list
+                // TODO: Put checkmarks next to selected item in list?
                 // UL.find("i.icon-ok").removeClass("icon-ok");
                 // $(e.target).find("i").addClass("icon-ok");
-                _this.trigger("genelist-selected", itemsById[$(e.target).data("id")]);
+                _this.trigger(_this.selectEvent, itemsById[$(e.target).data("id")]);
             });
         }
     }

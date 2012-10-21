@@ -1,23 +1,23 @@
 var View = require('./view');
 var template = require('./templates/circ');
 var GFList = require('../models/genomic_featureList');
+var ChromInfoModel = require("../models/model_catalog");
 var PC = require('./parcoords_view');
 
 module.exports = View.extend({
-
   model : GFList,
+  chromosomes: ChromInfoModel,
   template:template,
 
-  initialize : function() {
+  initialize : function(options) {
+      _.extend(this, options);
       _.bindAll(this,'afterRender','renderCirc','loadData');
       this.renderCirc = _.once(this.renderCirc);
+      this.multiLoad([this.model, this.chromosomes], this.loadData);
   },
   
   afterRender: function() {
-    var _this = this;
-    this.$el.addClass('row-fluid');
-    this.model.on('load',_this.loadData);
-    _.defer( function( view ){_this.renderCirc();},_this);
+      this.$el.addClass('row-fluid');
   },
 
   renderCirc: function(options) {
@@ -32,12 +32,11 @@ module.exports = View.extend({
          ring_radius = width / 10;
 
       //var vis_options = this.model.defaultParameters(),
-        var chrom_info = qed.vis.genome;
         var hovercard_config = {
           Feature: 'label',
           Location: function(feature) { 
             return 'Chr ' + feature.chr + ' ' + feature.start + (feature.end ? '-' + feature.end : '');
-          },
+          }
         };
 
         _.each(this.model.getAnnotationHeaders(), function(header) {
@@ -54,8 +53,8 @@ module.exports = View.extend({
       var data = {
             GENOME: {
                 DATA:{
-                    key_order : chrom_info.chr_labels,
-                    key_length : chrom_info.chr_lengths
+                    key_order :_.keys(this.chromosomes.get("itemsById")),
+                    key_length :_.map(_.values(this.chromosomes.get("itemsById")), function(v) {return parseInt(v["chr_lengths"])})
                 },
                 OPTIONS: {
                     label_layout_style : 'clock',

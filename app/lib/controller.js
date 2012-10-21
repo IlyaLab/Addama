@@ -1,14 +1,60 @@
+var Model = require('../models/model');
+var JSONModel = require("../models/model_json");
+var TableModel = require("../models/model_catalog");
+var GraphModel = require('../models/graph');
+var FeatureListModel = require('../models/featureList');
+var MutationsModel = require('../models/mutations');
+var GenomicFeatureListModel = require('../models/genomic_featureList');
+var FeatureMatrix2Model = require('../models/featureMatrix2');
+var FeatureMatrixModel = require('../models/featureMatrix');
+
+var DataMenuView = require("../views/data_menu");
+var MenuItemsView = require("../views/menu_items");
+
+var VisViewClasses = {
+    "graph": require("../views/graph_view"),
+    "grid": require("../views/grid_view"),
+    "circ": require("../views/circ_view"),
+    "heat": require("../views/oncovis_view"),
+    "twoD": null,
+    "kde": null,
+    "parcoords": require("../views/parcoords_view")
+};
+
 Controller = {
-    testwindow : {
-        view : function() {
+    loadQED:function () {
+        var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
+        qedConfigModel.on("load", function() {
+            var title = qedConfigModel.get("title");
+            if (title) {
+                document.title = title;
+                $(".titled").html(title);
+            }
+            qed.viewMappings = qedConfigModel.get("viewMappings");
+        });
+        qedConfigModel.standard_fetch();
+
+        var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
+        featureLabelModel.on("load", function() {
+            qed.labels = featureLabelModel.get("itemsById");
+        });
+        featureLabelModel.standard_fetch();
+
+        Controller.ChromosomeModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
+        Controller.ChromosomeModel.on("load", function() { Controller.ChromosomeModel.isReady = true; });
+        Controller.ChromosomeModel.standard_fetch();
+    },
+
+    testwindow:{
+        view:function () {
             var WinView = require('../views/window_view');
             var winView = new WinView();
             $('#mainDiv').html(winView.render().el);
         }
     },
 
-    grid : {
-        view : function() {
+    grid:{
+        view:function () {
             var GridView = require('../views/grid_view');
             var gridView = new GridView();
             $('#mainDiv').html(gridView.render().el);
@@ -16,39 +62,32 @@ Controller = {
         }
     },
 
-    app : {
-        layout : function() {
+    app:{
+        layout:function () {
             var TopNavBar = require('../views/topbar_view');
             var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
-            var DataMenuModel = require("../models/data_menu");
-            var dmModel = new DataMenuModel({ url: "svc/data/analysis/feature_matrices/CATALOG" });
-            dmModel.fetch({
-                success: function(m) {
-                    m.trigger('load');
-                }
-            });
+            var CloudStorageView = require("../views/cloud_storage_view");
+            var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
+            $(document.body).append(csview.render().el);
 
-            var DataMenuView = require("../views/data_menu");
-            var gridItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "grid", "model": dmModel });
-            var heatItems = new DataMenuView({ "data_prefix": "#feature_matrices", "data_suffix": "heat", "model": dmModel });
-
-            $(".open-in-grid").html(gridItems.render().el);
-            $(".open-in-heat").html(heatItems.render().el);
+            var fmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
+            $(".data-items").append(new DataMenuView({ "model":fmModel, "data_prefix":"feature_matrices" }).render().el);
+            fmModel.standard_fetch();
         }
     },
 
-    graph : {
-        view : function() {
+    graph:{
+        view:function () {
             var GraphView = require('../views/graph_view');
             var graphView = new GraphView();
             $('#mainDiv').html(graphView.render().el);
         }
     },
 
-    pwpv :  {
-        view : function() {
+    pwpv:{
+        view:function () {
             var PwPvView = require('../views/pwpv_view');
             var pwpvView = new PwPvView();
             $('#mainDiv').html(pwpvView.render().el);
@@ -56,37 +95,37 @@ Controller = {
         }
     },
 
-    twod : {
-        view : function(label1, label2) {
+    twod:{
+        view:function (label1, label2) {
             var TwoD = require('../views/2D_Distribution_view');
             var FL = require('../models/featureList');
             var fl = new FL({
-                websvc: '/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
-                feature_list : [label1, label2]
+                websvc:'/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
+                feature_list:[label1, label2]
             });
-            var twoDView = new TwoD({collection: fl});
+            var twoDView = new TwoD({collection:fl});
             fl.fetch();
             $('#mainDiv').html(twoDView.render().el);
         }
     },
 
-    oncovis : {
-        view : function() {
+    oncovis:{
+        view:function () {
             var Oncovis = require('../views/oncovis_view');
             var oncovisView = new Oncovis();
             $('#mainDiv').html(oncovisView.render().el);
         }
     },
 
-    home : {
-        view : function() {
+    home:{
+        view:function () {
             var HomeView = require('../views/home_view');
             var homeView = new HomeView();
             $('#mainDiv').html(homeView.render().el);
         }
     },
 
-    route_analysis: function(analysis_type, dataset_id, remainder) {
+    route_analysis:function (analysis_type, dataset_id, remainder) {
 
         var arg_array = remainder.length ? remainder.split('/') : [],
             len = arg_array.length,
@@ -98,120 +137,81 @@ Controller = {
         }
 
         //graph based analysis
-        if (_(['rf-ace','mds','pairwise']).contains(analysis_type)) {
+        if (_(['rf-ace', 'mds', 'pairwise']).contains(analysis_type)) {
             if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
-                Model = require('../models/graph');
-                model = new Model({analysis_id : analysis_type, dataset_id : dataset_id});
-                return Controller.ViewModel(view_name || 'graph', model);
+                return Controller.ModelAndView(view_name || 'graph', GraphModel, {analysis_id:analysis_type, dataset_id:dataset_id});
             }
 
-            Model = require('../models/featureList');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
-            return Controller.ViewModel(view_name, model);
+            return Controller.ModelAndView(view_name, FeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
         }
 
         if (analysis_type === 'mutations') {
-            Model = require('../models/mutations');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
-            return Controller.ViewModel(view_name, model);
+            return Controller.ModelAndView(view_name, MutationsModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
         if (analysis_type === 'information_gain') {
-            Model = require('../models/genomic_featureList');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id });
-            return Controller.ViewModel(view_name, model);
+            return Controller.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            OncovisDims = require('../models/oncovis_dims');
-            oncovisDims = new OncovisDims({dataset_id : dataset_id });
-            oncovisDims.fetch({success: function(model) {
-                model.trigger('load');
-            }});
+            var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
+            Controller.InitGeneListViews(oncovisView);
+            return oncovisView;
+        }
 
-            Model = require('../models/featureMatrix2');
-            model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, dims: oncovisDims });
+        return Controller.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
+    },
 
-            var view = Controller.ViewModel(view_name || 'grid', model);
-            var geneListsViews = Controller.GetGeneListViews(view);
-            _.each(geneListsViews, function(geneListsView) {
-                geneListsView.on("genelist-selected", view.onNewRows);
-            });
+    ModelAndView:function (view_name, ModelClass, model_optns, view_optns) {
+        var model = new ModelClass(model_optns);
+        try {
+            var ViewClass = VisViewClasses[view_name];
+            var view = new ViewClass(_.extend(view_optns || {}, { "model":model, "chromosomes": Controller.ChromosomeModel }));
+            $('#mainDiv').html(view.render().el);
             return view;
-        }
-
-        Model = require('../models/featureMatrix');
-        model = new Model({analysis_id : analysis_type, dataset_id : dataset_id, features: features});
-        return Controller.ViewModel(view_name, model);
-    },
-
-    ViewModel: function(view_name, model) {
-        var supported = {
-            "graph": "graph_view",
-            "grid": "grid_view",
-            "circ": "circ_view",
-            "heat": "oncovis_view"
-        };
-        var expected = ["twoD", "kde", "parcoords"];
-
-        if (!_.contains(_.keys(supported), view_name)) {
-            console.log("View [" + view_name + "] not supported : expecting one of these [" + _.keys(supported).join(",") + "] :: soon to be supported [" + expected.join(",") + "]");
-            return;
-        }
-
-        var ViewClass = require('../views/' + supported[view_name]);
-        var view = new ViewClass({model:model});
-        $('#mainDiv').html(view.render().el);
-
-        model.fetch({
-            success: function(model, resp) {
-                var original_model;
-                if (Model.prototype.add) {  //is this a Collection?
-                    original_model = new Model({analysis_id : model.analysis_type, dataset_id : model.dataset_id});
-                    original_model.add(model.toJSON(), {silent:true});
-                } else { //nope its a model
-                    original_model = new Model(model.toJSON());
-                }
-                model.original(original_model);
-                model.trigger('load');
+        } finally {
+            var loadModelChain = _.once(function() {
+                model.fetch({
+                    success:function () {
+                        model.make_copy(ModelClass, model_optns);
+                        model.trigger('load');
+                    }
+                });
+            });
+            if (Controller.ChromosomeModel.isReady) {
+                loadModelChain();
+            } else {
+                Controller.ChromosomeModel.on("load", loadModelChain);
             }
-        });
-
-        return view;
+        }
     },
 
-    GetGeneListViews: function(view) {
-        var MenuItemView = require("../views/genelist_menuitems");
-
+    InitGeneListViews:function (dataView) {
         var ProfiledModel = require("../models/genelist_profiled");
         var profiledModel = new ProfiledModel();
-        profiledModel.fetch({
-            success: function(m) {
-                m.trigger('load');
-            }
-        });
+        profiledModel.standard_fetch();
 
         var CustomModel = require("../models/genelist_custom");
         var customModel = new CustomModel();
-        customModel.fetch({
-            success: function(m) {
-                m.trigger('load');
-            }
-        });
+        customModel.standard_fetch();
 
-        var profiledView = new MenuItemView({ model: profiledModel });
+        var profiledView = new MenuItemsView({ model:profiledModel, selectEvent:"genelist-selected" });
         $(".genelist-profiled").html(profiledView.render().el);
 
-        var customView = new MenuItemView({ model: customModel });
+        var customView = new MenuItemsView({ model:customModel, selectEvent:"genelist-selected" });
         $(".genelist-custom").html(customView.render().el);
 
         var ManageGLView = require("../views/genelist_manage");
-        var manageGLView = new ManageGLView({ model: customModel });
+        var manageGLView = new ManageGLView({ model:customModel });
         $('.genelist-modal').html(manageGLView.render().el);
 
-        return [profiledView, customView, manageGLView];
+        return _.map([profiledView, customView, manageGLView], function (v) {
+            if (dataView.onNewRows) v.on("genelist-selected", dataView.onNewRows);
+        });
     }
 };
 
 module.exports = Controller;
+
+Controller.loadQED();

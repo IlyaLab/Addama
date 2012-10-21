@@ -1,46 +1,53 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
 var FeatureMatrix2 = require('../models/featureMatrix2');
+var DimsModel = require('../models/oncovis_dims');
+var OCPView = require("../views/oncovis_cluster_property");
+var OSRView = require("../views/oncovis_select_rows");
+var ALL_COLUMNS = "ALL_COLUMNS";
 
 module.exports = View.extend({
     model:FeatureMatrix2,
+    dimsModel:DimsModel,
     template:template,
     label:"Oncovis",
     className:"row-fluid",
+    clusterProperty: null,
     rowLabels:[],
 
     events:{
         "click .reset-sliders":"resetSliders"
     },
 
-    initialize:function () {
+    initialize:function (options) {
+        _.extend(this, options);
         _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
 
-        this.renderGraph = _.after(2, this.renderGraph);
-        this.model.on('load', this.renderGraph);
-        this.model.dims.on('load', this.renderGraph);
+        this.dimsModel = new DimsModel({dataset_id:this.dataset_id });
+        this.multiLoad([this.model, this.dimsModel], this.renderGraph);
+        this.dimsModel.standard_fetch();
     },
 
     afterRender:function () {
         this.initControls();
+        this.initClusterProperty();
+        this.initRowSelector();
     },
 
     initControls:function () {
-        console.log("initControls:start");
-
         this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
-        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:10, max:50, initialStep:20 });
-        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:5 });
-        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:2 });
+        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:10, max:50, initialStep:10 });
+        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:3 });
+        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:1 });
         this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
-        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:14 });
+        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:10 });
 
         var oncovis_container = this.$el.find(".oncovis-container");
         var visrangeFn = function (property) {
             return function (event, value) {
                 var dim = {};
                 dim[property] = value;
-                oncovis_container.update(dim);
+                oncovis_container.oncovis("update", dim);
             }
         };
 
@@ -50,23 +57,63 @@ module.exports = View.extend({
         this.$el.find(".slider_barspacing").bind("slide-to", visrangeFn("column_spacing"));
         this.$el.find(".slider_clusterspacing").bind("slide-to", visrangeFn("cluster_spacing"));
         this.$el.find(".slider_fontsize").bind("slide-to", visrangeFn("label_fontsize"));
+    },
 
-        console.log("initControls:end");
+    initClusterProperty: function() {
+        var ocpview = new OCPView({ model: this.model });
+        this.$el.find('.cluster-property-modal').html(ocpview.render().el);
+
+        var _this = this;
+        ocpview.on("selected-cluster", function(cluster) {
+            _this.clusterProperty = cluster;
+            _this.$el.find('.cluster-property-modal').modal("hide");
+            _this.model.trigger("load");
+        });
+        ocpview.on("no-cluster", function() {
+            _this.clusterProperty = ALL_COLUMNS;
+            _this.$el.find('.cluster-property-modal').modal("hide");
+            _this.model.trigger("load");
+        });
+    },
+
+    initRowSelector: function() {
+        var osrview = new OSRView({ model: this.model });
+        this.$el.find('.select-rows-modal').html(osrview.render().el);
+
+        var _this = this;
+        osrview.on("selected-rows", function(rows) {
+            _this.rowLabels = rows;
+            _this.$el.find('.select-rows-modal').modal("hide");
+            _this.model.trigger("load");
+        });
     },
 
     getColumnModel:function () {
         var _this = this;
         var unsorted_columns = [];
-        _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var cluster_idx = _this.model.get("ROWS").indexOf(_this.model.dims.get("clusterProperty"));
-            var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
-            var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
-            _.each(_this.rowLabels, function (row_label) {
-                var row_idx = _this.model.get("ROWS").indexOf(row_label);
-                column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+        var cluster_property = (this.clusterProperty || this.dimsModel.get("clusterProperty"));
+        if (cluster_property == ALL_COLUMNS) {
+            _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
+                var column = { "name":column_name.trim(), "cluster":"All Columns", "values":[] };
+                _.each(_this.rowLabels, function (row_label) {
+                    var row_idx = _this.model.get("ROWS").indexOf(row_label);
+                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                });
+                unsorted_columns.push(column);
             });
-            unsorted_columns.push(column);
-        });
+        } else {
+            _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
+                var cluster_idx = _this.model.get("ROWS").indexOf(cluster_property);
+                var cluster_value = _this.model.get("DATA")[cluster_idx][col_idx].trim();
+                var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
+                _.each(_this.rowLabels, function (row_label) {
+                    var row_idx = _this.model.get("ROWS").indexOf(row_label);
+                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                });
+                unsorted_columns.push(column);
+            });
+        }
+
         var sorted_columns = _.sortBy(unsorted_columns, "values");
         var grouped_columns = _.groupBy(sorted_columns, "cluster");
 
@@ -81,10 +128,9 @@ module.exports = View.extend({
     },
 
     renderGraph:function () {
-        console.log("renderGraph:start");
         if (!this.rowLabels || !this.rowLabels.length) {
             // reset to original
-            this.rowLabels = this.model.dims.get("rowLabels");
+            this.rowLabels = this.dimsModel.get("rowLabels");
         }
 
         var columns_by_cluster = this.getColumnModel();
@@ -138,8 +184,6 @@ module.exports = View.extend({
         };
 
         this.$el.find(".oncovis-container").oncovis(data, optns);
-
-        console.log("renderGraph:end");
     },
 
     onNewRows:function (genelist) {
@@ -151,7 +195,6 @@ module.exports = View.extend({
                         return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
                     });
                 });
-                console.log("reload-model");
                 _this.model.trigger('load');
             });
         }

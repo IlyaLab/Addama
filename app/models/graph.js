@@ -159,7 +159,17 @@ module.exports = Model.extend({
 	        node_data[a] = _.clone(graphData[a]);
 	      });
 
-	    node_data.label = node_data.nByi.map(function(f) { return lookup[f] || f.split(':')[2];});
+	    node_data.label = node_data.nByi.map(function(f) {
+            var lbl = lookup[f];
+            if (lbl) {
+                if (_.isString(lbl)) return lbl;
+                if (lbl.label) return lbl.label;
+            }
+
+            var splits = f.split(':');
+            if (splits.length) return _.last(splits);
+            return f;
+        });
 
 	    node_data.feature_id = node_data.nByi;
 

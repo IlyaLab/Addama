@@ -83,6 +83,12 @@ module.exports = View.extend({
                 _this.$signInModal.find(".signout-all").click(function() {
                     sign_in_view.signout();
                 });
+                if (provider.id == "google") {
+                    if (provider.active) _this.$el.find(".google-drive-menu").show();
+                    sign_in_view.on("signout", function() {
+                        _this.$el.find(".google-drive-menu").hide();
+                    });
+                }
             });
         };
 

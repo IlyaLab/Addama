@@ -6,7 +6,7 @@
             <span class="icon-bar"></span>
         </a>
         <a class="brand" href="#homePage" onclick="return false;" id="home">
-            <img src="img/isblogo.png" class="imgbrand" alt="QED"> <b>QED</b>
+            <img src="img/isblogo.png" class="imgbrand" alt="QED"> <b class="titled">QED</b>
         </a>
 
         <div class="nav-collapse">
@@ -16,37 +16,23 @@
                     <ul class="dropdown-menu">
                         <li><a href="#mds/fig1/graph">Pairwise - MDS</a></li>
                         <li><a href="#pairwise/continuous_pwpv_0.5/graph">Pairwise - Fiedler</a></li>
-                        <li><a href="#information_gain/sample_associations/circ">Information Gain - Markers</a></li>                       
+                        <li><a href="#information_gain/sample_associations/circ">Information Gain - Markers</a></li>
                         <li><a href="#rf-ace/cons_predictor_12800_cutoff_29.0/graph">RF-ACE - Predictor Trees</a></li>
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Data<b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li class="nav-header">Table</li>
-                        <div class="open-in-grid">
-                            <!--<li><a href="#feature_matrices/2012_09_18_0835__cons/grid">2012_09_18_0835__cons</a></li>-->
-                        </div>
-                        <li class="divider"></li>
-                        <li class="nav-header">Heatmap</li>
-                        <div class="open-in-heat">
-                            <!--<li><a href="#feature_matrices/2012_09_18_0835__cons/heat">2012_09_18_0835__cons</a></li>-->
-                            <!--<li><a href="#feature_matrices/GenomicFeatures_3bMother_Binary/heat">GenomicFeatures_3bMother_Binary</a></li>-->
-                        </div>
-                    </ul>
+                    <ul class="dropdown-menu data-items"></ul>
                 </li>
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Sessions <b class="caret"></b></a>
                     <ul class="dropdown-menu sessions-container"></ul>
                 </li>
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">About <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="" onclick="return false;">User Guide</a></li>
-                        <li><a href="" onclick="return false;">Code Project</a></li>
-                        <li><a href="" onclick="return false;">Funding</a></li>
-                    </ul>
-                </li>
+            </ul>
+            <form action="" class="pull-left navbar-form">
+                <input type="text" id="querySearchTerm" placeholder="Search..." class="search-query span3">
+            </form>
+            <ul class="nav nav-pills pull-right">
                 <li>
                     <a href="#" class="signin" onclick="return false;">
                         <img class="signin-pic" src="https://www.google.com/images/icons/ui/gprofile_button-64.png" alt="&nbsp;"/>
@@ -54,11 +40,31 @@
                         <img class="signin-pic" src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" alt="&nbsp;"/>
                     </a>
                 </li>
+                <li class="dropdown google-drive-menu hide">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <img class="signin-pic" src="https://developers.google.com/drive/images/drive_icon.png" alt="&nbsp;"/>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="return false;" class="gdrive-import">Import Data</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-snapshot">Save Snapshot</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-export">Export Data</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-session">Export Session</a></li>
+                        <li class="divider"></li>
+                        <li><a href="http://drive.google.com" target="_blank">Open Google Drive</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle active" href="#" data-toggle="dropdown" onclick="return false;">
+                        <i class="icon-chevron-left"></i> <i class="icon-chevron-down"></i> <i class="icon-chevron-right"></i>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="return false;">User Guide</a></li>
+                        <li><a href="http://github.com/rbkreisberg/QED" target="_blank">Open Source Project</a></li>
+                        <li><a href="http://www.cancerregulome.org/about.html#funding" target="_blank">Funding</a></li>
+                    </ul>
+                </li>
             </ul>
-            <form action="" class="pull-left navbar-form">
-                <input type="text" id="querySearchTerm" placeholder="Enter Search Term..." class="search-query span3">
-                <button class="btn btn-primary" id="queryBtn"><i class="icon-search icon-white"></i></button>
-            </form>
         </div>
     </div>
 </div>
