@@ -32,3 +32,14 @@
     margin-top: 10px;
     padding-top: 10px;
 }
+
+.hangout_link {
+    text-decoration:none;
+}
+
+.hangout_link img {
+    border: 0;
+    width: 86px;
+    height: 20px;
+    margin-top: -5px;
+}

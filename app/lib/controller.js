@@ -23,20 +23,9 @@ var VisViewClasses = {
 
 Controller = {
     loadQED:function () {
-        var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
-        qedConfigModel.on("load", function() {
-            var title = qedConfigModel.get("title");
-            if (title) {
-                document.title = title;
-                $(".titled").html(title);
-            }
-            qed.viewMappings = qedConfigModel.get("viewMappings");
-        });
-        qedConfigModel.standard_fetch();
-
         var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
         featureLabelModel.on("load", function() {
-            qed.labels = featureLabelModel.get("itemsById");
+            labels_lookup = featureLabelModel.get("itemsById");
         });
         featureLabelModel.standard_fetch();
 
@@ -64,16 +53,26 @@ Controller = {
 
     app:{
         layout:function () {
+            var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
+            qedConfigModel.on("load", function() {
+                var title = (qedConfigModel.get("title") || "QED");
+                document.title = title;
+                $(".titled").html(title);
+            });
+
+            var fmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
+
             var TopNavBar = require('../views/topbar_view');
-            var topnavbar = new TopNavBar();
+            var topnavbar = new TopNavBar({"qedModel": qedConfigModel});
             $('#navigation-container').append(topnavbar.render().el);
+
+            $(".data-items").append(new DataMenuView({ "model":fmModel, "qedModel": qedConfigModel, "data_prefix":"feature_matrices" }).render().el);
 
             var CloudStorageView = require("../views/cloud_storage_view");
             var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
             $(document.body).append(csview.render().el);
 
-            var fmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
-            $(".data-items").append(new DataMenuView({ "model":fmModel, "data_prefix":"feature_matrices" }).render().el);
+            qedConfigModel.standard_fetch();
             fmModel.standard_fetch();
         }
     },
