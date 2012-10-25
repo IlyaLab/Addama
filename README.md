@@ -14,6 +14,7 @@ Required Dependencies
       python setup.py build
       sudo python setup.py install
     On Python 2.6 and 2.7, it is also possible to simply add the tornado directory to your PYTHONPATH instead of building with setup.py, since the standard library includes epoll support.
+    [sudo] easy_install -U tornado
 
 * Google APIs
  - OAuth 2.0 :: https://developers.google.com/api-client-library/python/start/installation
