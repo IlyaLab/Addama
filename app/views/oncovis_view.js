@@ -41,6 +41,7 @@ module.exports = View.extend({
         this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:1 });
         this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
         this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:10 });
+        this.$el.find(".slider_label_width").oncovis_range({ storageId:"slider_label_width", min:20, max:200, initialStep:100 });
 
         var oncovis_container = this.$el.find(".oncovis-container");
         var visrangeFn = function (property) {
@@ -51,12 +52,39 @@ module.exports = View.extend({
             }
         };
 
-        this.$el.find(".slider_barheight").on("slide-to", visrangeFn("bar_height"));
-        this.$el.find(".slider_rowspacing").on("slide-to", visrangeFn("row_spacing"));
+        this.$el.find(".slider_barheight").bind("slide-to", visrangeFn("bar_height"));
+        this.$el.find(".slider_rowspacing").bind("slide-to", visrangeFn("row_spacing"));
         this.$el.find(".slider_barwidth").bind("slide-to", visrangeFn("bar_width"));
         this.$el.find(".slider_barspacing").bind("slide-to", visrangeFn("column_spacing"));
         this.$el.find(".slider_clusterspacing").bind("slide-to", visrangeFn("cluster_spacing"));
         this.$el.find(".slider_fontsize").bind("slide-to", visrangeFn("label_fontsize"));
+        this.$el.find(".slider_label_width").bind("slide-to", visrangeFn("label_width"));
+
+        var lastLabelWidth = 100;
+        this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
+            lastLabelWidth = value;
+        });
+
+        var showLabelsBtn = this.$el.find(".show-labels");
+        showLabelsBtn.click(function () {
+            if (_.isEqual("Display Row Labels", showLabelsBtn.html())) {
+                showLabelsBtn.html("Hide Row Labels");
+                oncovis_container.oncovis("update", { "row_labels_enabled":true, "label_width": lastLabelWidth });
+                localStorage.setItem("row_labels_enabled", true);
+            } else {
+                showLabelsBtn.html("Display Row Labels");
+                oncovis_container.oncovis("update", { "row_labels_enabled":false, "label_width": 0 });
+                localStorage.setItem("row_labels_enabled", false);
+            }
+        });
+
+        this.bind("post-render", function() {
+            var lastChecked = localStorage.getItem("row_labels_enabled");
+            if (!_.isUndefined(lastChecked) && lastChecked == "false") {
+                showLabelsBtn.html("Display Row Labels");
+                oncovis_container.oncovis("update", { "row_labels_enabled":false, "label_width": 0 });
+            }
+        });
     },
 
     initClusterProperty: function() {
@@ -166,7 +194,6 @@ module.exports = View.extend({
         var optns = {
             plot_width:3000,
             plot_height:3000,
-            label_width:70,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
                 return d ? d.colorscale : "white";
@@ -180,10 +207,12 @@ module.exports = View.extend({
             bar_width:this.$el.find(".slider_barwidth").oncovis_range("value"),
             column_spacing:this.$el.find(".slider_barspacing").oncovis_range("value"),
             cluster_spacing:this.$el.find(".slider_clusterspacing").oncovis_range("value"),
-            label_fontsize:this.$el.find(".slider_fontsize").oncovis_range("value")
+            label_fontsize:this.$el.find(".slider_fontsize").oncovis_range("value"),
+            label_width:this.$el.find(".slider_label_width").oncovis_range("value")
         };
 
         this.$el.find(".oncovis-container").oncovis(data, optns);
+        this.trigger("post-render");
     },
 
     onNewRows:function (genelist) {
@@ -207,5 +236,6 @@ module.exports = View.extend({
         this.$el.find(".slider_barspacing").oncovis_range("reset");
         this.$el.find(".slider_clusterspacing").oncovis_range("reset");
         this.$el.find(".slider_fontsize").oncovis_range("reset");
+        this.$el.find(".slider_label_width").oncovis_range("reset");
     }
 });

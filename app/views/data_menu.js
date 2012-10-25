@@ -8,7 +8,7 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, "renderMenuItems");
 
-        this.model.on('load', this.renderMenuItems);
+        this.multiLoad([this.model, this.qedModel], this.renderMenuItems);
     },
 
     renderMenuItems: function() {
@@ -17,7 +17,8 @@ module.exports = View.extend({
             if (items && items.length) {
                 this.$el.append(LineItemTemplate({ "label": this.data_prefix, "li_class": "nav-header"}));
 
-                var views = qed.viewMappings[this.data_prefix];
+                var viewMappings = (this.qedModel.get("viewMappings") || {});
+                var views = (viewMappings[this.data_prefix] || []);
                 var _this = this;
                 _.each(items, function(item) {
                     if (views.length > 1) {
@@ -27,6 +28,8 @@ module.exports = View.extend({
                         _this.$el.append(MultiChoiceTemplate({ "label": item.label, "lineitems": viewLinks }));
                     } else if (views.length == 1) {
                         _this.$el.append(LineItemTemplate(_.extend(item, { "a_href": "#" + _this.data_prefix + "/" + item.id + "/" + views[0] })));
+                    } else {
+                        _this.$el.append(LineItemTemplate(_.extend(item, { "a_href": "#" + _this.data_prefix + "/" + item.id + "/grid" })));
                     }
                 });
             }

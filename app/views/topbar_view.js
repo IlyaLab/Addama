@@ -3,6 +3,7 @@ var template = require('./templates/topbar');
 var SignInModal = require("./templates/sign_in_modal");
 var SignInView = require("./sign_in");
 var SessionsView = require("./sessions_view");
+var HangoutLink = require("./templates/hangout_link");
 
 module.exports = View.extend({
     id:'top-bar',
@@ -17,8 +18,18 @@ module.exports = View.extend({
         }
     },
 
-    initialize:function () {
-        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource');
+    initialize:function (options) {
+        _.extend(this, options);
+        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink');
+
+        this.qedModel.on("load", this.initHangoutLink)
+    },
+
+    initHangoutLink: function() {
+        var hangoutId = this.qedModel.get("hangoutId");
+        if (hangoutId) {
+            this.$el.find(".hangout-container").html(HangoutLink({ "hangoutId": hangoutId }));
+        }
     },
 
     afterRender:function () {
@@ -84,9 +95,9 @@ module.exports = View.extend({
                     sign_in_view.signout();
                 });
                 if (provider.id == "google") {
-                    if (provider.active) _this.$el.find(".google-drive-menu").show();
+                    if (provider.active) _this.$el.find(".requires-google-oauth").show();
                     sign_in_view.on("signout", function() {
-                        _this.$el.find(".google-drive-menu").hide();
+                        _this.$el.find(".requires-google-oauth").hide();
                     });
                 }
             });

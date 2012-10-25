@@ -84,7 +84,6 @@
             this.rows.append("text")
                 .attr("class", "row-label")
                 .text(function (d) {
-                    if (d.length > 8) return d.substring(0, 8) + "...";
                     return d;
                 })
                 .style("font-size", this.label_fontsize + "px")
@@ -188,6 +187,14 @@
 
             if (_.has(options, "cluster_labels")) {
                 this._updateClusterLabels();
+            }
+
+            if (_.has(options, "label_width")) {
+                this._updateRowLabelWidth();
+            }
+
+            if (_.has(options, "row_labels_enabled")) {
+                this._updateRowLabelVisibility();
             }
         },
 
@@ -326,8 +333,30 @@
 
         _updateColorFn:function () {
             this.sample_bars.style("fill", this.color_fn);
-        }
+        },
 
+        _updateRowLabelWidth:function() {
+            var that = this;
+
+            this.cluster_g
+                .attr("transform", function (d) {
+                    var position_info = that.cluster_position_by_label[d.label];
+                    return "translate(" + (that.label_width + position_info.spacing + position_info.sample_pos * (that.bar_width + that.column_spacing)) + ", -20)";
+                });
+        },
+
+        _updateRowLabelVisibility:function() {
+            var that = this;
+            this.rows
+                .style("display", function() {
+                    if (that.row_labels_enabled == true) {
+                        return "inline";
+                    }
+                    else {
+                        return "none";
+                    }
+                });
+        }
     };
 
     // jQuery Plugin
