@@ -1,19 +1,16 @@
 var View = require('./view');
 var template = require('./templates/circ');
 var GFList = require('../models/genomic_featureList');
-var ChromInfoModel = require("../models/model_catalog");
 var PC = require('./parcoords_view');
 
 module.exports = View.extend({
-  model : GFList,
-  chromosomes: ChromInfoModel,
   template:template,
 
   initialize : function(options) {
       _.extend(this, options);
       _.bindAll(this,'afterRender','renderCirc','loadData');
       this.renderCirc = _.once(this.renderCirc);
-      this.multiLoad([this.model, this.chromosomes], this.loadData);
+      this.model.on("load", this.loadData);
   },
   
   afterRender: function() {
@@ -53,8 +50,8 @@ module.exports = View.extend({
       var data = {
             GENOME: {
                 DATA:{
-                    key_order :_.keys(this.chromosomes.get("itemsById")),
-                    key_length :_.map(_.values(this.chromosomes.get("itemsById")), function(v) {return parseInt(v["chr_lengths"])})
+                    key_order :_.keys(qed.Lookups.Chromosomes.get("itemsById")),
+                    key_length :_.map(_.values(qed.Lookups.Chromosomes.get("itemsById")), function(v) {return parseInt(v["chr_lengths"])})
                 },
                 OPTIONS: {
                     label_layout_style : 'clock',

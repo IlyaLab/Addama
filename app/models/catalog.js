@@ -1,8 +1,11 @@
 var Model = require('./model');
 
 module.exports = Model.extend({
+    url: "",
+
     initialize:function (options) {
         _.extend(this, options);
+        if (this.url.indexOf("CATALOG") < 0) this.url += "/CATALOG";
     },
 
     url:function () {

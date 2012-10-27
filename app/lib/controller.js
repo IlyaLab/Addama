@@ -1,11 +1,7 @@
 var Model = require('../models/model');
-var JSONModel = require("../models/model_json");
-var TableModel = require("../models/model_catalog");
 var GraphModel = require('../models/graph');
 var FeatureListModel = require('../models/featureList');
-var MutationsModel = require('../models/mutations');
 var GenomicFeatureListModel = require('../models/genomic_featureList');
-var FeatureMatrix2Model = require('../models/featureMatrix2');
 var FeatureMatrixModel = require('../models/featureMatrix');
 
 var DataMenuView = require("../views/data_menu");
@@ -22,18 +18,6 @@ var VisViewClasses = {
 };
 
 Controller = {
-    loadQED:function () {
-        var featureLabelModel = new TableModel({ url:"svc/data/lookups/feature_labels" });
-        featureLabelModel.on("load", function() {
-            labels_lookup = featureLabelModel.get("itemsById");
-        });
-        featureLabelModel.standard_fetch();
-
-        Controller.ChromosomeModel = new TableModel({ url:"svc/data/lookups/chromosomes" });
-        Controller.ChromosomeModel.on("load", function() { Controller.ChromosomeModel.isReady = true; });
-        Controller.ChromosomeModel.standard_fetch();
-    },
-
     testwindow:{
         view:function () {
             var WinView = require('../views/window_view');
@@ -53,27 +37,18 @@ Controller = {
 
     app:{
         layout:function () {
-            var qedConfigModel = new JSONModel({ url:"svc/data/lookups/qed_configuration.json" });
-            qedConfigModel.on("load", function() {
-                var title = (qedConfigModel.get("title") || "QED");
-                document.title = title;
-                $(".titled").html(title);
-            });
-
-            var fmModel = new TableModel({ url:"svc/data/sources/feature_matrices/CATALOG" });
-
             var TopNavBar = require('../views/topbar_view');
-            var topnavbar = new TopNavBar({"qedModel": qedConfigModel});
+            var topnavbar = new TopNavBar();
             $('#navigation-container').append(topnavbar.render().el);
 
-            $(".data-items").append(new DataMenuView({ "model":fmModel, "qedModel": qedConfigModel, "data_prefix":"feature_matrices" }).render().el);
+            var model_keys = _.without(_.keys(qed.Datamodel.attributes), "url");
+            _.each(model_keys, function(model_key) {
+                $(".data-menu .navbar-inner").append(new DataMenuView({ "dataItems": qed.Datamodel.get(model_key) }).render().el);
+            });
 
             var CloudStorageView = require("../views/cloud_storage_view");
             var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
             $(document.body).append(csview.render().el);
-
-            qedConfigModel.standard_fetch();
-            fmModel.standard_fetch();
         }
     },
 
@@ -144,17 +119,13 @@ Controller = {
             return Controller.ModelAndView(view_name, FeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
         }
 
-        if (analysis_type === 'mutations') {
-            return Controller.ModelAndView(view_name, MutationsModel, {analysis_id:analysis_type, dataset_id:dataset_id });
-        }
-
         if (analysis_type === 'information_gain') {
             return Controller.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
+            var oncovisView = Controller.ModelAndView(view_name, qed.models.FeatureMatrix, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
             Controller.InitGeneListViews(oncovisView);
             return oncovisView;
         }
@@ -166,23 +137,16 @@ Controller = {
         var model = new ModelClass(model_optns);
         try {
             var ViewClass = VisViewClasses[view_name];
-            var view = new ViewClass(_.extend(view_optns || {}, { "model":model, "chromosomes": Controller.ChromosomeModel }));
+            var view = new ViewClass(_.extend(view_optns || {}, { "model":model }));
             $('#mainDiv').html(view.render().el);
             return view;
         } finally {
-            var loadModelChain = _.once(function() {
-                model.fetch({
-                    success:function () {
-                        model.make_copy(ModelClass, model_optns);
-                        model.trigger('load');
-                    }
-                });
+            model.fetch({
+                success:function () {
+                    model.make_copy(ModelClass, model_optns);
+                    model.trigger('load');
+                }
             });
-            if (Controller.ChromosomeModel.isReady) {
-                loadModelChain();
-            } else {
-                Controller.ChromosomeModel.on("load", loadModelChain);
-            }
         }
     },
 
@@ -212,5 +176,3 @@ Controller = {
 };
 
 module.exports = Controller;
-
-Controller.loadQED();

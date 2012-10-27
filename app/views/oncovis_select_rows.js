@@ -1,10 +1,8 @@
 var View = require('./view');
 var template = require('./templates/oncovis_select_rows');
-var FeatureMatrix2 = require('../models/featureMatrix2');
 var LineItem = require("./templates/line_item");
 
 module.exports = View.extend({
-    model:FeatureMatrix2,
     template:template,
 
     events:{
