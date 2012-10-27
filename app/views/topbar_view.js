@@ -15,18 +15,20 @@ module.exports = View.extend({
         "click .signin": function() {
             this.$signInModal.modal("toggle");
             return false;
+        },
+        "click .data-menu-link": function() {
+            console.log("click");
+            $('.data-menu').toggle(1000); 
         }
     },
 
     initialize:function (options) {
         _.extend(this, options);
         _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink');
-
-        this.qedModel.on("load", this.initHangoutLink)
     },
 
     initHangoutLink: function() {
-        var hangoutId = this.qedModel.get("hangoutId");
+        var hangoutId = qed.Display.get("hangoutId");
         if (hangoutId) {
             this.$el.find(".hangout-container").html(HangoutLink({ "hangoutId": hangoutId }));
         }

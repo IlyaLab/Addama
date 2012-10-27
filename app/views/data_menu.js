@@ -1,6 +1,5 @@
 var View = require('./view');
-var LineItemTemplate = require("./templates/data_menu_item");
-var MultiChoiceTemplate = require("./templates/data_menu_item_multichoice");
+var DropdownTemplate = require("./templates/data_dropdown_menu");
 
 module.exports = View.extend({
 
@@ -8,31 +7,40 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, "renderMenuItems");
 
-        this.multiLoad([this.model, this.qedModel], this.renderMenuItems);
+        this.renderMenuItems();
     },
 
     renderMenuItems: function() {
-        if (this.model) {
-            var items = this.model.get("items");
-            if (items && items.length) {
-                this.$el.append(LineItemTemplate({ "label": this.data_prefix, "li_class": "nav-header"}));
+        var viewMappings = (qed.Display.get("viewMappings") || {});
 
-                var viewMappings = (this.qedModel.get("viewMappings") || {});
-                var views = (viewMappings[this.data_prefix] || []);
-                var _this = this;
-                _.each(items, function(item) {
-                    if (views.length > 1) {
-                        var viewLinks = _.map(views, function(vMap) {
-                            return { "a_href": "#" + _this.data_prefix + "/" + item.id + "/" + vMap, "label": vMap.charAt(0).toUpperCase() + vMap.slice(1) };
-                        });
-                        _this.$el.append(MultiChoiceTemplate({ "label": item.label, "lineitems": viewLinks }));
-                    } else if (views.length == 1) {
-                        _this.$el.append(LineItemTemplate(_.extend(item, { "a_href": "#" + _this.data_prefix + "/" + item.id + "/" + views[0] })));
-                    } else {
-                        _this.$el.append(LineItemTemplate(_.extend(item, { "a_href": "#" + _this.data_prefix + "/" + item.id + "/grid" })));
-                    }
-                });
+        var menus = _.map(this.dataItems, function(data, data_id) {
+            var views = (viewMappings[data_id] || []);
+            views = (views.length) ? views : ["grid"];
+
+            if (data.catalog && !_.isEmpty(data.catalog)) {
+                return {
+                    "label": data.label,
+                    "items": _.map(data.catalog, function(item, item_id) {
+                        return {
+                            "label": item.label || item_id,
+                            "items": _.map(views, function(view) {
+                                var capitalLabel = view.charAt(0).toUpperCase() + view.substring(1).toLowerCase();
+                                return { "label": capitalLabel, "href": "#" + data_id + "/" + item_id + "/" + view };
+                            })
+                        };
+                    }),
+                    "multiItem": (views.length > 1)
+                };
             }
-        }
+        });
+
+        this.$el.append(DropdownTemplate({ "label": this.dataItems.label, "items": _.compact(menus) }))
+    },
+
+    afterRender: function() {
+        var dropdownLIs = this.$el.find("li.dropdown");
+        this.$el.find(".data-menu-toggle").click(function(e) {
+            dropdownLIs.toggle(1000);
+        });
     }
 });

@@ -1,18 +1,25 @@
-<ul id="{{id}}" class="nav domain-menu">
-    <li><a href="#" onclick="$('#{{id}} li.dropdown').toggle(1000); return false;">{{label}}<i class="icon-chevron-right"></i></a></li>
+<ul class="nav">
+    <li><a href="#" class="data-menu-toggle" onclick="return false;">{{label}} <i class="icon-chevron-right"></i> </a></li>
     {{#each items}}
     <li class="dropdown hide">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{label}} <b class="caret"></b></a>
         <ul class="dropdown-menu">
             {{#each items}}
-            <li class="dropdown-submenu">
-                <a tabindex="-1" href="#">{{label}}</a>
-                <ul class="dropdown-menu">
+                {{#if ../multiItem}}
+                <li class="dropdown-submenu">
+                    <a tabindex="-1" href="#">{{label}}</a>
+                    <ul class="dropdown-menu">
+                        {{#each items}}
+                        <li><a href="{{href}}">{{label}}</a></li>
+                        {{/each}}
+                    </ul>
+                </li>
+                {{/if}}
+                {{#unless ../multiItem}}
                     {{#each items}}
-                    <li><a href="{{href}}">{{label}}</a></li>
+                        <li><a href="{{href}}">{{../label}}</a></li>
                     {{/each}}
-                </ul>
-            </li>
+                {{/unless}}
             {{/each}}
         </ul>
     </li>
