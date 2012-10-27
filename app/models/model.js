@@ -24,7 +24,10 @@ module.exports = Backbone.Model.extend({
     standard_fetch:function () {
         this.fetch({
             success:function (m) {
-                m.trigger('load');
+                m.trigger("load");
+            },
+            error: function(m, resp) {
+                m.trigger("error", resp);
             }
         });
         return this;
