@@ -4,10 +4,6 @@ var GenomicFeature = require('./genomic_feature');
 module.exports = Collection.extend({
 	model:GenomicFeature,
 
-	serviceRoot : 'svc',
-	serviceRead : '/data',
-	serviceDir :'/analysis',
-
 	initialize: function(options) {
 		_.bindAll(this, 'getHeaders','url','parse','fetch');
 		this.analysis_id = options.analysis_id;
@@ -24,7 +20,8 @@ module.exports = Collection.extend({
 	},
 
 	url : function() {
-		return this.serviceRoot + this.serviceRead + this.serviceDir + '/' + this.analysis_id + '/' + this.dataset_id;
+        // TODO : Determine this from the corresponding entry in data model
+		return "svc/data/analysis/" + this.analysis_id + '/' + this.dataset_id;
 	},
 
 	parse : function(response) {

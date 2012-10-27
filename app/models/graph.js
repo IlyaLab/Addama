@@ -4,13 +4,9 @@ var EdgeList = require('./edgeList');
 
 module.exports = Model.extend({
 
-	serviceRoot : 'svc',
-	serviceRead : '/data',
-	serviceDir :'/analysis/layouts',
-
 	url : function() {
-		return this.serviceRoot + this.serviceRead + this.serviceDir  + '/'
-				+ this.get('analysis_id') + '/' + this.get('dataset_id');
+        // TODO : Determine this from the corresponding entry in data model
+		return "svc/data/analysis/" + this.get('analysis_id') + '/' + this.get('dataset_id');
 	},
 
 	defaults: {

@@ -4,10 +4,6 @@ var FeatureData = require('./featureData');
 module.exports = Collection.extend({
     model:FeatureData,
 
-    serviceRoot:'svc',
-    serviceRead:'/data',
-    serviceDir:'/sources/feature_matrices',
-
     initialize:function (options) {
         _.bindAll(this, 'getHeaders', 'url', 'parse', 'fetch');
         this.analysis_id = options.analysis_id;
@@ -20,7 +16,8 @@ module.exports = Collection.extend({
     },
 
     url:function () {
-        return this.serviceRoot + this.serviceRead + this.serviceDir + '/' + this.dataset_id;
+        // TODO : Determine this from the corresponding entry in data model
+        return 'svc/data/domains/feature_matrices/' + this.dataset_id;
     },
 
     parse:function (response) {
