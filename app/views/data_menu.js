@@ -13,19 +13,20 @@ module.exports = View.extend({
     renderMenuItems: function() {
         var viewMappings = (qed.Display.get("viewMappings") || {});
 
-        var menus = _.map(this.dataItems, function(data, data_id) {
-            var views = (viewMappings[data_id] || []);
+        var sectionId = this.sectionId;
+        var menus = _.map(this.section, function(unit, unit_id) {
+            var views = (viewMappings[unit_id] || []);
             views = (views.length) ? views : ["grid"];
 
-            if (data.catalog && !_.isEmpty(data.catalog)) {
+            if (unit.catalog && !_.isEmpty(unit.catalog)) {
                 return {
-                    "label": data.label,
-                    "items": _.map(data.catalog, function(item, item_id) {
+                    "label": unit.label,
+                    "items": _.map(unit.catalog, function(item, item_id) {
                         return {
                             "label": item.label || item_id,
                             "items": _.map(views, function(view) {
                                 var capitalLabel = view.charAt(0).toUpperCase() + view.substring(1).toLowerCase();
-                                return { "label": capitalLabel, "href": "#" + data_id + "/" + item_id + "/" + view };
+                                return { "label": capitalLabel, "href": "#" + sectionId + "/" + unit_id + "/" + item_id + "/" + view };
                             })
                         };
                     }),
@@ -34,7 +35,7 @@ module.exports = View.extend({
             }
         });
 
-        this.$el.append(DropdownTemplate({ "label": this.dataItems.label, "items": _.compact(menus) }))
+        this.$el.append(DropdownTemplate({ "label": this.section.label, "items": _.compact(menus) }))
     },
 
     afterRender: function() {
