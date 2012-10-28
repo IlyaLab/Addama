@@ -46,18 +46,20 @@ $(function () {
 
 var _loadCatalogs = function(data_id, callback) {
     return function(domain, domain_name) {
-        if (!domain.catalog) domain.catalog = {};
+        if (domain && domain_name != "label") {
+            if (!domain.catalog) domain.catalog = {};
 
-        var catalog = new qed.models.Catalogs({"url":"svc/data/" + data_id + "/" + domain_name});
-        catalog.on("load", function() {
-            _.each(catalog.get("itemsById"), function(item, item_id) {
-                if (!domain.catalog[item_id]) domain.catalog[item_id] = {};
-                _.extend(domain.catalog[item_id], item);
+            var catalog = new qed.models.Catalogs({"url":"svc/data/" + data_id + "/" + domain_name});
+            catalog.on("load", function() {
+                _.each(catalog.get("itemsById"), function(item, item_id) {
+                    if (!domain.catalog[item_id]) domain.catalog[item_id] = {};
+                    _.extend(domain.catalog[item_id], item);
+                });
+
+                callback();
             });
-
-            callback();
-        });
-        catalog.on("error", callback);
-        catalog.standard_fetch();
+            catalog.on("error", callback);
+            catalog.standard_fetch();
+        }
     };
 };
