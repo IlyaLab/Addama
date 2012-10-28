@@ -29,37 +29,38 @@ $(function () {
 
     qed.Datamodel = new qed.models.JSON({ url:"svc/data/qed_datamodel.json" });
     qed.Datamodel.on("load", function() {
-        var keys = _.without(_.keys(qed.Datamodel.attributes), "url");
-        var numItemsFn = function(key) { return _.keys(qed.Datamodel.get(key)).length; };
-        var sumFn = function(sum, next) { return sum + next; };
-        var expectedCatalogs = _.reduce(_.flatten(_.map(keys, numItemsFn )), sumFn);
-        var initLayoutFn = _.after(expectedCatalogs, application.initLayout);
+        var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
+        var catalog_counts = _.map(section_ids, function(section_id) {
+            var section = qed.Datamodel.get(section_id);
+            return _.without(_.keys(section), "label").length;
+        });
 
-        _.each(keys, function(key) {
-            _.each(qed.Datamodel.get(key), _loadCatalogs(key, initLayoutFn));
+        var allCatalogs = _.reduce(_.flatten(catalog_counts), function(sum, next) {
+            return sum + next;
+        });
+
+        var initLayoutFn = _.after(allCatalogs, application.initLayout);
+        _.each(section_ids, function(section_id) {
+            _.each(qed.Datamodel.get(section_id), function(unit, unit_id) {
+                if (unit_id != "label") {
+                    if (!unit.catalog) unit.catalog = {};
+
+                    var catalog = new qed.models.Catalogs({"url":"svc/data/" + section_id + "/" + unit_id});
+                    catalog.on("load", function() {
+                        _.each(catalog.get("itemsById"), function(item, item_id) {
+                            if (!unit.catalog[item_id]) unit.catalog[item_id] = {};
+                            _.extend(unit.catalog[item_id], item);
+                        });
+
+                        initLayoutFn();
+                    });
+                    catalog.on("error", initLayoutFn);
+                    catalog.standard_fetch();
+                }
+            });
         });
     });
 
     qed.Datamodel.standard_fetch();
     qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" }).standard_fetch();
 });
-
-var _loadCatalogs = function(data_id, callback) {
-    return function(domain, domain_name) {
-        if (domain && domain_name != "label") {
-            if (!domain.catalog) domain.catalog = {};
-
-            var catalog = new qed.models.Catalogs({"url":"svc/data/" + data_id + "/" + domain_name});
-            catalog.on("load", function() {
-                _.each(catalog.get("itemsById"), function(item, item_id) {
-                    if (!domain.catalog[item_id]) domain.catalog[item_id] = {};
-                    _.extend(domain.catalog[item_id], item);
-                });
-
-                callback();
-            });
-            catalog.on("error", callback);
-            catalog.standard_fetch();
-        }
-    };
-};
