@@ -120,7 +120,7 @@ module.exports = Model.extend({
 		_.each(rows, function(row) {
 			var feature1 = row[0],
 			    feature2 = row[1];
-			    var lookup = qed.app.labels;			
+			    var lookup = qed.Lookups.Labels;
 			var node1 = {feature_id: feature1, label: lookup[feature1]  || feature1.split(':')[2]}, 
 			    node2 = {feature_id: feature2, label: lookup[feature2] || feature2.split(':')[2]}, 
 			     edge = {};

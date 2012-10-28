@@ -1,8 +1,5 @@
-var application = require('application');
-
 $(function () {
     qed = {
-        app:application,
         models: {
             "JSON": require("models/model_json"),
             "Catalogs": require("models/catalog"),
@@ -11,13 +8,15 @@ $(function () {
             "FeatureMatrix": require("models/featureMatrix2"),
             "Adjacencies": require("models/featureMatrix2")
         },
-        Lookups: {},
+        Lookups: {
+            Labels: {}
+        },
         Display: {},
         Datamodel: {}
     };
 
-    application.initialize();
-    Backbone.history.start();
+    var QEDRouter = require('lib/router');
+    qed.Router = new QEDRouter();
 
     qed.Display = new qed.models.JSON({ url:"svc/data/qed_display.json" });
     qed.Display.on("load", function() {
@@ -39,7 +38,7 @@ $(function () {
             return sum + next;
         });
 
-        var initLayoutFn = _.after(allCatalogs, application.initLayout);
+        var initLayoutFn = _.after(allCatalogs, qed.Router.initTopNavBar);
         _.each(section_ids, function(section_id) {
             _.each(qed.Datamodel.get(section_id), function(unit, unit_id) {
                 if (unit_id != "label") {
@@ -59,6 +58,8 @@ $(function () {
                 }
             });
         });
+
+        Backbone.history.start();
     });
 
     qed.Datamodel.standard_fetch();
