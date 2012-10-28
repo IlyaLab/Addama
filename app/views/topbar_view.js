@@ -17,8 +17,7 @@ module.exports = View.extend({
             return false;
         },
         "click .data-menu-link": function() {
-            console.log("click");
-            $('.data-menu').toggle(1000); 
+            $('.data-menu').toggle(1000);
         }
     },
 
