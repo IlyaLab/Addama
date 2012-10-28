@@ -29,17 +29,14 @@ $(function () {
 
     qed.Datamodel = new qed.models.JSON({ url:"svc/data/qed_datamodel.json" });
     qed.Datamodel.on("load", function() {
-        var model_keys = _.without(_.keys(qed.Datamodel.attributes), "url");
+        var keys = _.without(_.keys(qed.Datamodel.attributes), "url");
+        var numItemsFn = function(key) { return _.keys(qed.Datamodel.get(key)).length; };
+        var sumFn = function(sum, next) { return sum + next; };
+        var expectedCatalogs = _.reduce(_.flatten(_.map(keys, numItemsFn )), sumFn);
+        var initLayoutFn = _.after(expectedCatalogs, application.initLayout);
 
-        var map = _.map(model_keys, function(model_key) {
-            return _.keys(qed.Datamodel.get(model_key)).length;
-        });
-        var numberOfCatalogs = _.reduce(_.flatten(map), function(memo, num){ return memo + num; });
-
-        var initLayoutFn = _.after(numberOfCatalogs, application.initLayout);
-
-        _.each(model_keys, function(model_key) {
-            _.each(qed.Datamodel.get(model_key), _loadCatalogs(model_key, initLayoutFn));
+        _.each(keys, function(key) {
+            _.each(qed.Datamodel.get(key), _loadCatalogs(key, initLayoutFn));
         });
     });
 
@@ -57,7 +54,7 @@ var _loadCatalogs = function(data_id, callback) {
                 if (!domain.catalog[item_id]) domain.catalog[item_id] = {};
                 _.extend(domain.catalog[item_id], item);
             });
-            
+
             callback();
         });
         catalog.on("error", callback);
