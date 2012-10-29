@@ -1,14 +1,10 @@
 var View = require('./view');
 var template = require('./templates/oncovis');
-var DimsModel = require('../models/oncovis_dims');
-var OCPView = require("../views/oncovis_cluster_property");
-var OSRView = require("../views/oncovis_select_rows");
-var ALL_COLUMNS = "ALL_COLUMNS";
+var SelectorsView = require("../views/oncovis_selectors");
+var ALL_COLUMNS = "All Columns";
 
 module.exports = View.extend({
-    dimsModel:DimsModel,
     template:template,
-    label:"Oncovis",
     className:"row-fluid",
     clusterProperty: null,
     rowLabels:[],
@@ -21,15 +17,17 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onNewRows');
 
-        this.dimsModel = new DimsModel({dataset_id:this.dataset_id });
-        this.multiLoad([this.model, this.dimsModel], this.renderGraph);
-        this.dimsModel.standard_fetch();
+        this.clusterProperty = localStorage.getItem("oncovis_view.cluster_property");
+
+        var localRows = localStorage.getItem("oncovis_view.row_labels");
+        if (localRows && localRows.length) this.rowLabels = localRows.split(",");
+
+        this.model.on("load", this.renderGraph);
     },
 
     afterRender:function () {
         this.initControls();
-        this.initClusterProperty();
-        this.initRowSelector();
+        this.initSelectors();
     },
 
     initControls:function () {
@@ -85,42 +83,43 @@ module.exports = View.extend({
         });
     },
 
-    initClusterProperty: function() {
-        var ocpview = new OCPView({ model: this.model });
-        this.$el.find('.cluster-property-modal').html(ocpview.render().el);
+    initSelectors: function() {
+        var cluster = this.clusterProperty;
+        if (cluster && cluster == ALL_COLUMNS) cluster = null;
+        this.$el.find('.selected-cluster').html(cluster);
+
+        var selectorView = new SelectorsView({
+            model: this.model,
+            cluster: cluster,
+            rows: this.rowLabels
+        });
+        this.$el.find('.selector-modal').html(selectorView.render().el);
 
         var _this = this;
-        ocpview.on("selected-cluster", function(cluster) {
-            _this.clusterProperty = cluster;
-            _this.$el.find('.cluster-property-modal').modal("hide");
-            _this.model.trigger("load");
-        });
-        ocpview.on("no-cluster", function() {
-            _this.clusterProperty = ALL_COLUMNS;
-            _this.$el.find('.cluster-property-modal').modal("hide");
-            _this.model.trigger("load");
-        });
-    },
+        selectorView.on("selected", function(data) {
+            _this.clusterProperty = data.cluster || ALL_COLUMNS;
+            _this.rowLabels = data.rows;
 
-    initRowSelector: function() {
-        var osrview = new OSRView({ model: this.model });
-        this.$el.find('.select-rows-modal').html(osrview.render().el);
+            localStorage.setItem("oncovis_view.cluster_property", _this.clusterProperty);
+            localStorage.setItem("oncovis_view.row_labels", _this.rowLabels.join(","));
 
-        var _this = this;
-        osrview.on("selected-rows", function(rows) {
-            _this.rowLabels = rows;
-            _this.$el.find('.select-rows-modal').modal("hide");
+            _this.$el.find('.selected-cluster').html(data.cluster);
+            _this.$el.find('.selector-modal').modal("hide");
             _this.model.trigger("load");
         });
+
+        if (_.isEmpty(this.rowLabels)) {
+            this.$el.find('.selector-modal').modal("show");
+        }
     },
 
     getColumnModel:function () {
         var _this = this;
         var unsorted_columns = [];
-        var cluster_property = (this.clusterProperty || this.dimsModel.get("clusterProperty"));
+        var cluster_property = this.clusterProperty || ALL_COLUMNS;
         if (cluster_property == ALL_COLUMNS) {
             _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-                var column = { "name":column_name.trim(), "cluster":"All Columns", "values":[] };
+                var column = { "name":column_name.trim(), "cluster":ALL_COLUMNS, "values":[] };
                 _.each(_this.rowLabels, function (row_label) {
                     var row_idx = _this.model.get("ROWS").indexOf(row_label);
                     column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
@@ -155,8 +154,7 @@ module.exports = View.extend({
 
     renderGraph:function () {
         if (!this.rowLabels || !this.rowLabels.length) {
-            // reset to original
-            this.rowLabels = this.dimsModel.get("rowLabels");
+            return;
         }
 
         var columns_by_cluster = this.getColumnModel();
