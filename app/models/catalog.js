@@ -15,7 +15,7 @@ module.exports = Model.extend({
     parse:function (txt) {
         var itemsById = {};
         var items = _.compact(_.map(d3.tsv.parse(txt), function (row) {
-            if (row["ID"]) {
+            if (_.has(row, "ID") && !_.isEmpty(row["ID"].trim())) {
                 var item = {};
                 _.each(_.keys(row), function (k) {
                     item[k.toLowerCase()] = row[k];
