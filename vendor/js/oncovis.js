@@ -92,6 +92,10 @@
                     return d;
                 });
 
+            this.rows.style("display", function() {
+                return (that.row_labels_enabled == true) ? "inline": "none";
+            });
+
             this.cluster_columns = this.cluster_g.selectAll("g.cluster-column")
                 .data(function (cluster_info) {
                     return _.map(that.columns_by_cluster[cluster_info.label], function (sample_label) {
