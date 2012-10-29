@@ -8,30 +8,28 @@ var DataMenuView = require("../views/data_menu");
 var MenuItemsView = require("../views/menu_items");
 
 module.exports = Backbone.Router.extend({
+    targetEl: "#mainDiv",
     routes:{
         '':'home_view',
-        'grid':'grid_view',
-        'graph':'graph_view',
-        'pwpv':'pwpv_view',
         'twoD/:f1/:f2':'twod_view',
         'v/*uri/:view_name':'viewsByUri'
     },
 
+    initialize: function(options) {
+        if (options) _.extend(this, options);
+
+        this.$el = $(this.targetEl);
+    },
+
     views: {
-        "graph": require("../views/graph_view"),
         "grid": require("../views/grid_view"),
         "circ": require("../views/circ_view"),
         "heat": require("../views/oncovis_view"),
-        "twoD": null,
+        "graph": require("../views/graph_view"),
+        "pwpv": require("../views/pwpv_view"),
+        "twoD": reqire("../views/2D_Distribution_view"),
         "kde": null,
         "parcoords": require("../views/parcoords_view")
-    },
-
-    grid_view:function () {
-        var GridView = require('../views/grid_view');
-        var gridView = new GridView();
-        $('#mainDiv').html(gridView.render().el);
-        gridView.renderGrid();
     },
 
     initTopNavBar:function() {
@@ -49,21 +47,8 @@ module.exports = Backbone.Router.extend({
         $(document.body).append(csview.render().el);
     },
 
-    graph_view:function () {
-        var GraphView = require('../views/graph_view');
-        var graphView = new GraphView();
-        $('#mainDiv').html(graphView.render().el);
-    },
-
-    pwpv_view:function () {
-        var PwPvView = require('../views/pwpv_view');
-        var pwpvView = new PwPvView();
-        $('#mainDiv').html(pwpvView.render().el);
-        pwpvView.renderGraph();
-    },
-
     twod_view:function (label1, label2) {
-        var TwoD = require('../views/2D_Distribution_view');
+        var TwoD = this.views.twoD;
         var FL = require('../models/featureList');
         var fl = new FL({
             websvc:'/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
@@ -71,19 +56,13 @@ module.exports = Backbone.Router.extend({
         });
         var twoDView = new TwoD({collection:fl});
         fl.fetch();
-        $('#mainDiv').html(twoDView.render().el);
-    },
-
-    oncovis_view:function () {
-        var Oncovis = require('../views/oncovis_view');
-        var oncovisView = new Oncovis();
-        $('#mainDiv').html(oncovisView.render().el);
+        this.$el.html(twoDView.render().el);
     },
 
     home_view:function () {
         var HomeView = require('../views/home_view');
         var homeView = new HomeView();
-        $('#mainDiv').html(homeView.render().el);
+        this.$el.html(homeView.render().el);
     },
 
     route_analysis:function (analysis_type, dataset_id, remainder) {
@@ -142,7 +121,7 @@ module.exports = Backbone.Router.extend({
 
         var ViewClass = this.views[view_name];
         var view = new ViewClass(_.extend(options || {}, { "model":model }));
-        $('#mainDiv').html(view.render().el);
+        this.$el.html(view.render().el);
         return view;
     },
 
@@ -151,7 +130,7 @@ module.exports = Backbone.Router.extend({
         try {
             var ViewClass = this.views[view_name];
             var view = new ViewClass(_.extend(view_optns || {}, { "model":model }));
-            $('#mainDiv').html(view.render().el);
+            this.$el.html(view.render().el);
             return view;
         } finally {
             model.fetch({
