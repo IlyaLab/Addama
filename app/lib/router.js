@@ -124,7 +124,8 @@ module.exports = Backbone.Router.extend({
         var splits = uri.split("/");
         var view_name = _.last(splits);
         var parts = _.without(splits, view_name);
-        var Model = eval(qed.Datamodel.get(parts[0])[parts[1]].catalog[parts[2]].model);
+        var modelName = qed.Datamodel.get(parts[0])[parts[1]].catalog[parts[2]].model;
+        var Model = qed.models[modelName];
 
         var model_optns = {
             "analysis_id": splits[1],
