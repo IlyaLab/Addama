@@ -14,7 +14,7 @@ module.exports = Backbone.Router.extend({
         'graph':'graph_view',
         'pwpv':'pwpv_view',
         'twoD/:f1/:f2':'twod_view',
-        '*uri':'byUri'
+        'v/*uri/:view_name':'viewsByUri'
     },
 
     views: {
@@ -120,16 +120,14 @@ module.exports = Backbone.Router.extend({
         return this.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
     },
 
-    byUri: function(uri, options) {
-        var splits = uri.split("/");
-        var view_name = _.last(splits);
-        var parts = _.without(splits, view_name);
+    viewsByUri: function(uri, view_name, options) {
+        var parts = uri.split("/");
         var modelName = qed.Datamodel.get(parts[0])[parts[1]].catalog[parts[2]].model;
         var Model = qed.models[modelName];
 
         var model_optns = {
-            "analysis_id": splits[1],
-            "dataset_id": splits[2]
+            "analysis_id": parts[1],
+            "dataset_id": parts[2]
         };
 
         var model = new Model(model_optns);

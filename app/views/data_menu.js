@@ -26,7 +26,7 @@ module.exports = View.extend({
                             "label": item.label || item_id,
                             "items": _.map(views, function(view) {
                                 var capitalLabel = view.charAt(0).toUpperCase() + view.substring(1).toLowerCase();
-                                return { "label": capitalLabel, "href": "#" + sectionId + "/" + unit_id + "/" + item_id + "/" + view };
+                                return { "label": capitalLabel, "href": "#v/" + sectionId + "/" + unit_id + "/" + item_id + "/" + view };
                             })
                         };
                     }),
