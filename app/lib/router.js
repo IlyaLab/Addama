@@ -27,7 +27,7 @@ module.exports = Backbone.Router.extend({
         "heat": require("../views/oncovis_view"),
         "graph": require("../views/graph_view"),
         "pwpv": require("../views/pwpv_view"),
-        "twoD": reqire("../views/2D_Distribution_view"),
+        "twoD": require("../views/2D_Distribution_view"),
         "kde": null,
         "parcoords": require("../views/parcoords_view")
     },
