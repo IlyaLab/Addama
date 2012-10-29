@@ -14,9 +14,14 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, 'renderGraph', 'initControls', 'onNewRows');
 
-        this.clusterProperty = localStorage.getItem("oncovis_view.cluster_property");
+        this.storageKeys = {
+            cluster: "oncovis_view." + this.model.get("dataset_id") + ".cluster_property",
+            rows: "oncovis_view." + this.model.get("dataset_id") + ".row_labels"
+        };
 
-        var localRows = localStorage.getItem("oncovis_view.row_labels");
+        this.clusterProperty = localStorage.getItem(this.storageKeys.cluster);
+
+        var localRows = localStorage.getItem(this.storageKeys.rows);
         if (localRows && localRows.length) this.rowLabels = localRows.split(",");
 
         this.model.on("load", this.renderGraph);
@@ -43,8 +48,8 @@ module.exports = View.extend({
             _this.clusterProperty = data.cluster || ALL_COLUMNS;
             _this.rowLabels = data.rows;
 
-            localStorage.setItem("oncovis_view.cluster_property", _this.clusterProperty);
-            localStorage.setItem("oncovis_view.row_labels", _this.rowLabels.join(","));
+            localStorage.setItem(_this.storageKeys.cluster, _this.clusterProperty);
+            localStorage.setItem(_this.storageKeys.rows, _this.rowLabels.join(","));
 
             _this.$el.find('.selected-cluster').html(data.cluster);
             _this.$el.find('.selector-modal').modal("hide");
