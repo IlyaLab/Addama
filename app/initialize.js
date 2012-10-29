@@ -15,9 +15,6 @@ $(function () {
         Datamodel: {}
     };
 
-    var QEDRouter = require('lib/router');
-    qed.Router = new QEDRouter();
-
     qed.Display = new qed.models.JSON({ url:"svc/data/qed_display.json" });
     qed.Display.on("load", function() {
         var title = (qed.Display.get("title") || "QED");
@@ -38,7 +35,12 @@ $(function () {
             return sum + next;
         });
 
-        var initLayoutFn = _.after(allCatalogs, qed.Router.initTopNavBar);
+        var initLayoutFn = _.after(allCatalogs, function() {
+            var QEDRouter = require('lib/router');
+            qed.Router = new QEDRouter();
+            qed.Router.initTopNavBar();
+            Backbone.history.start();
+        });
         _.each(section_ids, function(section_id) {
             _.each(qed.Datamodel.get(section_id), function(unit, unit_id) {
                 if (unit_id != "label") {
@@ -48,7 +50,7 @@ $(function () {
                     catalog.on("load", function() {
                         _.each(catalog.get("itemsById"), function(item, item_id) {
                             if (!unit.catalog[item_id]) unit.catalog[item_id] = {};
-                            _.extend(unit.catalog[item_id], item);
+                            _.extend(unit.catalog[item_id], (unit["catalog_defaults"] || {}), item);
                         });
 
                         initLayoutFn();
@@ -58,8 +60,6 @@ $(function () {
                 }
             });
         });
-
-        Backbone.history.start();
     });
 
     qed.Datamodel.standard_fetch();
