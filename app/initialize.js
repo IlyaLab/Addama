@@ -6,7 +6,7 @@ $(function () {
             "Annotations": require("models/model_catalog"),
             "Mappings": require("models/model_catalog"),
             "FeatureMatrix": require("models/featureMatrix2"),
-            "Adjacencies": require("models/featureMatrix2")
+            "Adjacencies": require("models/adjacencies")
         },
         Lookups: {
             Labels: {}

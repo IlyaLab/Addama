@@ -101,17 +101,23 @@ module.exports = Backbone.Router.extend({
 
     viewsByUri: function(uri, view_name, options) {
         var parts = uri.split("/");
-        var modelName = qed.Datamodel.get(parts[0])[parts[1]].catalog[parts[2]].model;
+        var model_unit = qed.Datamodel.get(parts[0])[parts[1]];
+        var catalog = model_unit.catalog;
+        var modelName = catalog[parts[2]].model;
         var Model = qed.models[modelName];
 
         var model_optns = {
+            "data_uri": "svc/data/" + uri,
             "analysis_id": parts[1],
-            "dataset_id": parts[2]
+            "dataset_id": parts[2],
+            "dataType": (catalog.dataType || "text"),
+            "column_headers": (model_unit.column_headers || [])
         };
 
         var model = new Model(model_optns);
         _.defer(function() {
             model.fetch({
+                dataType: (catalog.dataType || "text"),
                 success:function () {
                     model.make_copy(Model, model_optns);
                     model.trigger('load');
@@ -119,8 +125,10 @@ module.exports = Backbone.Router.extend({
             });
         });
 
+        var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
+
         var ViewClass = this.views[view_name];
-        var view = new ViewClass(_.extend(options || {}, { "model":model }));
+        var view = new ViewClass(view_options);
         this.$el.html(view.render().el);
         return view;
     },
