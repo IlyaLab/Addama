@@ -16,7 +16,7 @@ module.exports = View.extend({
 
     showData:function () {
         var nodes = this.model.get("nodes");
-        var keys = _.difference(_.keys(nodes[0]), ['label', 'type', 'source', 'feature_id', 'nByi']);
+        var keys = _.difference(_.keys(nodes[0]), ['label', 'type', 'source', 'feature_id', 'nByi', '_pos']);
 
         var pc = d3.parcoords()('#test');
 
