@@ -2,16 +2,20 @@
 <div class="span3">
     <div class="filter-container parcoords" style="height:300px"></div>
     <div class="graph-controls well" style="margin-top: 30px;">
-        <h5>Controls</h5>
-        <button class="btn btn-small graph-controls-reset pull-right">Reset</button>
+        <h4>Controls</h4>
+        <div class="pull-right">
+            <button class="btn btn-small btn-apply">Apply</button>
+            <button class="btn btn-small graph-controls-reset">Reset</button>
+        </div>
         <hr/>
 
+        <h6>Filter Edges</h6>
+        <div class="edgeslider"></div>
+
         <h6>Node Layout</h6>
-            <button class="btn btn-small dig-cola">Dig-Cola</button>
-           
+        <button class="btn btn-small dig-cola">Dig-Cola</button>
 
         <h6>Dynamic Edge Layout</h6>
-
         <div class="btn-group dynamic-layout" data-toggle="buttons-radio">
             <button id="dl-straight" data-toggle="button" class="btn btn-small active">Straight</button>
             <button id="dl-diagonal" data-toggle="button" class="btn btn-small">Diagonal</button>
@@ -19,14 +23,12 @@
         </div>
 
         <h6>Labels</h6>
-
         <div class="btn-group toggle-labels" data-toggle="buttons-radio">
             <button class="btn btn-small toggle-on active">On</button>
             <button class="btn btn-small toggle-off">Off</button>
         </div>
 
         <h6>Lines</h6>
-
         <div class="btn-group toggle-lines" data-toggle="buttons-radio">
             <button class="btn btn-small active toggle-on">On</button>
             <button class="btn btn-small toggle-off">Off</button>
@@ -97,11 +99,6 @@
                     <li><a href="#">another-column</a></li>
                 </ul>
             </div>
-        </div>
-        <div>
-            <h6>Filter Edges</h6>
-            <div class="edgeslider"></div><br/>
-            <button type="button" class="btn btn-apply">Apply</button>
         </div>
     </div>
 </div>
