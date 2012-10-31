@@ -110,16 +110,14 @@ module.exports = Backbone.Router.extend({
             "data_uri": "svc/data/" + uri,
             "analysis_id": parts[1],
             "dataset_id": parts[2],
-            "dataType": (catalog.dataType || "text"),
-            "column_headers": (model_unit.column_headers || [])
+            "model_unit": model_unit
         };
 
         var model = new Model(model_optns);
         _.defer(function() {
             model.fetch({
-                dataType: (catalog.dataType || "text"),
                 success:function () {
-                    model.make_copy(Model, model_optns);
+                    if (model.make_copy) model.make_copy(Model, model_optns);
                     model.trigger('load');
                 }
             });
@@ -143,7 +141,7 @@ module.exports = Backbone.Router.extend({
         } finally {
             model.fetch({
                 success:function () {
-                    model.make_copy(ModelClass, model_optns);
+                    if (model.make_copy) model.make_copy(ModelClass, model_optns);
                     model.trigger('load');
                 }
             });
