@@ -7,11 +7,12 @@ var PC = require('./parcoords_view');
 module.exports = View.extend({
     model:Graph,
     template:template,
+    selected_layout_index:0,
 
-    defaults: {
-        x: "r1",
-        y: "hodge",
-        edgeRouting: "straight"
+    defaults:{
+        x:"r1",
+        y:"hodge",
+        edgeRouting:"straight"
     },
 
     events:{
@@ -29,86 +30,66 @@ module.exports = View.extend({
         "click #dimensions-x a":"changeXAxis",
         "click #dimensions-y a":"changeYAxis",
         "click #colorby-nodes a":"colorByNodes",
-        "click #colorby-edges a":"colorByEdges"
+        "click #colorby-edges a":"colorByEdges",
+        "click .btn-apply":function () {
+            this.model.trigger("load");
+        }
     },
 
     initialize:function (options) {
         _.extend(this, options || {});
-        _.bindAll(this, 'afterRender', 'renderGraph', 'redrawTree', 'resetControls',
-            'showLabels', 'hideLabels', 'showLines', 'hideLines',
-            'toggleActive', 'toggleDynLayout', "digColaLayout",
-            'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected',
-            'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
+        _.bindAll(this, 'renderGraph', 'renderPCView', 'renderLayoutSelector');
+        _.bindAll(this, 'getNodesArray', 'getEdgesArray');
+        _.bindAll(this, 'redrawTree', 'resetControls', 'digColaLayout');
+        _.bindAll(this, 'showLabels', 'hideLabels', 'showLines', 'hideLines');
+        _.bindAll(this, 'toggleActive', 'toggleDynLayout', 'layoutStraight', 'layoutDiagonal', 'layoutDiagonalDirected');
+        _.bindAll(this, 'changeXAxis', 'changeYAxis', 'colorByNodes', 'colorByEdges');
         this.redrawTree = _.throttle(this.redrawTree, 300);
-    },
-
-    afterRender:function () {
-        var _this = this;
-
-        var filter = this.$el.find('.filter-container');
-        var pc_view = new PC({model:this.model});
-        filter.html(pc_view.render().el);
-
-        this.model.on('load', _this.renderGraph);
-
-        this.$el.addClass('row-fluid');
-        var analysisid = this.model.get('analysis_id');
-        var split_d_id = this.model.get('dataset_id').split("_");
-        var s_value = (split_d_id.length == 1 ? -1 : split_d_id[split_d_id.length - 1])
-
-        var slider_options = {};
-
-        switch (analysisid) {
-            case "rf-ace":
-                slider_options.max = 40;
-                slider_options.step = 1;
-                slider_options.value = s_value != -1 ? s_value : 16;
-                slider_options.change = function (event, ui) {
-                    qed.Router.navigate("/rf-ace/cons_predictor_12800_cutoff_" + ui.value + ".0/graph", {trigger:true, replace:false});
-                };
-                break;
-            case "pairwise":
-                slider_options.max = 1;
-                slider_options.step = .1;
-                slider_options.value = s_value != -1 ? s_value : .3;
-                slider_options.change = function (event, ui) {
-                    qed.Router.navigate("/pairwise/continuous_pwpv_" + ui.value + "/graph", {trigger:true, replace:false});
-                };
-                break;
-            case "mds":
-                slider_options.disabled = true;
-                this.$el.find(".subset-btn")
-                    .removeClass("disabled")
-                    .click(function () {
-                        qed.Router.navigate("/mds/fig3/graph", {trigger:true, replace:false});
-                    });
-                break;
-        }
-
-        this.$el.find(".edgeslider").slider(slider_options);
-
-
+        this.model.on("load", this.renderGraph);
+        this.model.on("load", this.renderPCView);
+        this.model.on("load", this.renderLayoutSelector);
     },
 
     redrawTree:function () {
-        this.treeChart.nodes(this.model.getNodesArray())
-            .edges(this.model.getEdgesArray());
+        this.treeChart.nodes(this.getNodesArray()).edges(this.getEdgesArray());
 
-        d3.select('.graph-container')
-            .call(this.treeChart.redraw);
+        d3.select('.graph-container').call(this.treeChart.redraw);
     },
 
-    renderGraph:function (options) {
+    renderLayoutSelector:function () {
+        var first_layouts = _.first(this.model.get("layouts")).get("layout");
         var _this = this;
-        var parentDiv = this.$el.find('.graph-container'),
-            w = parentDiv.width(),
-            h = parentDiv.height();
+
+        this.$el.find(".edgeslider").slider({
+            max:first_layouts.length,
+            step:1,
+            value:this.selected_layout_index,
+            change:function (event, ui) {
+                _this.selected_layout_index = ui.value;
+            }
+        });
+    },
+
+    renderPCView:function () {
+        var filter = this.$el.find('.filter-container');
+        var model = _.first(this.model.get("layouts")).get("layout")[this.selected_layout_index];
+        var pc_view = new PC({ model:model });
+        filter.html(pc_view.render().el);
+        model.trigger("load");
+    },
+
+    renderGraph:function () {
+        var _this = this;
+        var parentDiv = this.$el.find('.graph-container');
+        parentDiv.empty();
+        var w = parentDiv.width();
+        var h = parentDiv.height();
 
         var x = this.x;
         var y = this.y;
         var edgeRouting = this.edgeRouting || 'straight';
 
-        var edge_scale = d3.scale.log().domain(d3.extent(_this.model.getEdgesArray(), function (a) {
+        var edge_scale = d3.scale.log().domain(d3.extent(_this.getEdgesArray(), function (a) {
             return a[2];
         })).range([0.2, 1.0]);
         var edgeO = function (edge) {
@@ -119,13 +100,13 @@ module.exports = View.extend({
             width:w,
             height:h,
             nodes:{
-                data:this.model.getNodesArray(),
+                data:this.getNodesArray(),
                 y:y,
                 x:x,
                 id:'feature_id'
             },
             edges:{
-                data:this.model.getEdgesArray()
+                data:this.getEdgesArray()
             }
         })
             .edgeOpacity(edgeO)
@@ -139,11 +120,11 @@ module.exports = View.extend({
 
         Backbone.Mediator.subscribe('dimension:select', dimension_selected, this, false);
 
-        this.model.on('change', _this.redrawTree);
-        this.model.on('reset', _this.redrawTree);
+        this.model.on('change', this.redrawTree);
+        this.model.on('reset', this.redrawTree);
 
         function dimension_selected(dimension) {
-            var nodes = _this.model.getNodesArray();
+            var nodes = _this.getNodesArray();
             var scale = d3.scale.linear().domain(d3.extent(_.pluck(nodes, dimension))).range([0.1, 1.0]);
             _this.treeChart.nodeOpacity(function (node) {
                 return scale(node[dimension]);
@@ -161,13 +142,23 @@ module.exports = View.extend({
         }
     },
 
+    getNodesArray:function () {
+        var selected_layout = _.first(this.model.get("layouts")).get("layout")[this.selected_layout_index];
+        return selected_layout.get("nodes");
+    },
+
+    getEdgesArray:function () {
+        var selected_layout = _.first(this.model.get("layouts")).get("layout")[this.selected_layout_index];
+        return selected_layout.get("edges");
+    },
+
     digColaLayout:function (e) {
         var _this = this;
 
         var graph = {
             nodes:_.map(_this.model.getNodesArray(), function (node) {
                 return [node[_this.x], node[_this.y]];
-            }), edges:_.map(_this.model.getEdgesArray(), function (link) {
+            }), edges:_.map(_this.getEdgesArray(), function (link) {
                 return [link.target, link.source, link.weight];
             })
         };
