@@ -24,6 +24,7 @@ module.exports = View.extend({
     initialize:function (options) {
         _.extend(this, options);
         _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink');
+        _.defer(this.initHangoutLink);
     },
 
     initHangoutLink: function() {
