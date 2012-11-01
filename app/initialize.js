@@ -6,8 +6,24 @@ $(function () {
             "Annotations": require("models/model_catalog"),
             "Mappings": require("models/model_catalog"),
             "FeatureMatrix": require("models/featureMatrix2"),
-            "Adjacencies": require("models/adjacencies"),
+//            "Adjacencies": require("models/adjacencies"),
             "GraphLayouts": require("models/graph_layouts")
+        },
+        ViewMappings: {
+            "JSON": [],
+            "Catalogs": [],
+            "Annotations": [
+                { "id": "grid", label: "Grid" }
+            ],
+            "Mappings": [],
+            "FeatureMatrix": [
+                { "id": "grid", label: "Grid" },
+                { "id": "heat", label: "Heatmap" }
+            ],
+//            "Adjacencies": [],
+            "GraphLayouts": [
+                { "id": "graph", label: "Graph" }
+            ]
         },
         Lookups: {
             Labels: {}

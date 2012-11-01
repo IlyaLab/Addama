@@ -11,12 +11,11 @@ module.exports = View.extend({
     },
 
     renderMenuItems: function() {
-        var viewMappings = (qed.Display.get("viewMappings") || {});
-
         var sectionId = this.sectionId;
         var menus = _.map(this.section, function(unit, unit_id) {
-            var views = (viewMappings[unit_id] || []);
-            views = (views.length) ? views : ["grid"];
+            var views = _.compact(_.flatten(_.map(unit.models, function(unit_model) {
+                return qed.ViewMappings[unit_model];
+            })));
 
             if (unit.catalog && !_.isEmpty(unit.catalog)) {
                 return {
@@ -25,8 +24,7 @@ module.exports = View.extend({
                         return {
                             "label": item.label || item_id,
                             "items": _.map(views, function(view) {
-                                var capitalLabel = view.charAt(0).toUpperCase() + view.substring(1).toLowerCase();
-                                return { "label": capitalLabel, "href": "#v/" + sectionId + "/" + unit_id + "/" + item_id + "/" + view };
+                                return { "label": view.label, "href": "#v/" + sectionId + "/" + unit_id + "/" + item_id + "/" + view.id };
                             })
                         };
                     }),
