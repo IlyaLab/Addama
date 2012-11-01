@@ -38,6 +38,7 @@ module.exports = View.extend({
         this.initSearchAutocomplete();
         this.initSignIn();
 
+        this.$el.find(".titled").html(qed.Display.get("title") || "QED");
         this.$el.find(".sessions-container").html(this.sessionsView.render().el);
     },
 

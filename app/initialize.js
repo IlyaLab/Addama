@@ -34,9 +34,7 @@ $(function () {
 
     qed.Display = new qed.models.JSON({ url:"svc/data/qed_display.json" });
     qed.Display.on("load", function() {
-        var title = (qed.Display.get("title") || "QED");
-        document.title = title;
-        $(".titled").html(title);
+        document.title = (qed.Display.get("title") || "QED");
     });
     qed.Display.standard_fetch();
 
