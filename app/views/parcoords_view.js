@@ -20,6 +20,11 @@ module.exports = View.extend({
 
         var pc = d3.parcoords()('#test');
 
+        var _this = this;
+        var brushFn = function(nodes) {
+            _this.trigger("select-nodes", nodes);
+        };
+
         pc.dimensions(keys)
             .data(nodes)
             .render()
@@ -29,7 +34,7 @@ module.exports = View.extend({
             .render()
             .reorderable()
             .brushable()
-            .on('brush', this.model.filterNodes);
+            .on('brush', _.throttle(brushFn, 500));
 
         pc.svg.selectAll(".parcoords-dimension")
             .on("click", toggle_dimension);
