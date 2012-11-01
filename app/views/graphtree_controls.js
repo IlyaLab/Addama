@@ -1,5 +1,5 @@
 var View = require('./view');
-var template = require('./templates/graph_controls');
+var template = require('./templates/graphtree_controls');
 
 module.exports = View.extend({
     template:template,

@@ -25,7 +25,7 @@ module.exports = Backbone.Router.extend({
         "grid": require("../views/grid_view"),
         "circ": require("../views/circ_view"),
         "heat": require("../views/oncovis_view"),
-        "graph": require("../views/graph_layouts_view"),
+        "graph": require("../views/graphtree_view"),
         "pwpv": require("../views/pwpv_view"),
         "twoD": require("../views/2D_Distribution_view"),
         "kde": null,

@@ -1,8 +1,8 @@
 var View = require('./view');
-var template = require('./templates/graph_layouts');
+var template = require('./templates/graphtree');
 var ParcoordsView = require('./parcoords_view');
-var GraphTreeView = require('./graph_tree_view');
-var GraphControls = require('./graph_controls');
+var TreeChartView = require('./treechartvis_view');
+var GraphControls = require('./graphtree_controls');
 
 module.exports = View.extend({
     template:template,
@@ -41,16 +41,18 @@ module.exports = View.extend({
 
         this.drawGraphTree(selectedLayout, graphControls);
         selectedLayout.fetch({
-            success:function () { selectedLayout.trigger("load"); }
+            success:function () {
+                selectedLayout.trigger("load");
+            }
         });
     },
 
     drawGraphTree:function (model, graphControls) {
-        var graphTreeView = new GraphTreeView({ "model":model });
-        this.$el.find('.graph-container').html(graphTreeView.render().el);
+        var tcView = new TreeChartView({ "model":model });
+        this.$el.find('.graph-container').html(tcView.render().el);
 
         graphControls.on("dig-cola", function () {
-            graphTreeView.digColaLayout();
+            tcView.digColaLayout();
             model.trigger("load");
         });
     }

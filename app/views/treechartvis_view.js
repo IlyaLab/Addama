@@ -1,7 +1,7 @@
 var Feature = require('../models/feature');
 var Edge = require("../models/edge");
 var TreeChart = require('../vis/treeChart');
-var GraphLayout = require("../models/adjacencies");
+var GraphLayout = require("../models/graph_layouts");
 
 module.exports = Backbone.View.extend({
     model:GraphLayout,
