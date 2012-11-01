@@ -10,6 +10,7 @@ module.exports = Backbone.Router.extend({
         'twoD/:f1/:f2':'twod',
         'oncovis':'oncovis',
         'oncovis/p:p1':'oncovis',
+        'seqpeek':'seqpeek',
         ':analysis_id/:model_id/*remainder':'route_analysis'  //    url -> rf_ace/dataset_1/
     },
 
@@ -37,9 +38,13 @@ module.exports = Backbone.Router.extend({
       Controller.route_analysis(analysis_id,model_id,remainder);
   },
 
-  oncovis: function() {
-      Controller.oncovis.view();
-  },
+    oncovis: function() {
+        Controller.oncovis.view();
+    },
+
+    seqpeek: function() {
+        Controller.seqpeek.view();
+    },
 
   home: function() {
       Controller.home.view();

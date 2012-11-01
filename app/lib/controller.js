@@ -116,6 +116,14 @@ Controller = {
         }
     },
 
+    seqpeek:{
+        view:function () {
+            var SeqPeek = require('../views/seqpeek_view');
+            var seqpeekView = new SeqPeek();
+            $('#mainDiv').html(seqpeekView.render().el);
+        }
+    },
+
     home:{
         view:function () {
             var HomeView = require('../views/home_view');

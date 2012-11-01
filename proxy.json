@@ -1,15 +1,17 @@
 {
 	"proxy": [
-			
-	{	"url": "/svc",
-	        "host": "glados1",
-	        "port": 8006
-	 },
-
-	 {	"url": "/graph_layout",
-	        "host": "glados1",
-	        "port": 8010
-	 }
-	        ]
-	
+        {	"url": "/svc",
+	        "host": "eggplant",
+            "port": 8000
+        },
+        {	"url": "/graph_layout",
+            "host": "glados1",
+            "port": 8010
+        },
+        {	"url": "/genespot_svc",
+            "host": "eggplant",
+            "port": 8080,
+            "keep_url": true
+        }
+    ]
 }
