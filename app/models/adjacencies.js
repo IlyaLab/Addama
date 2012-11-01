@@ -5,7 +5,7 @@ var Layout = Backbone.Model.extend({
     },
 
     initialize: function() {
-        _.bindAll(this, "url", "parse", "filterNodes", "filterEdgesByNodes");
+        _.bindAll(this, "url", "parse", "filterNodes");
     },
 
     url:function () {
@@ -14,17 +14,13 @@ var Layout = Backbone.Model.extend({
 
     parse:function (graphData) {
         var node_data = {};
-        _.each(_.keys(graphData), function (a) {
-            if (a === "adj" || a === "iByn") return;
+        _.each(_.without(_.keys(graphData), "adj", "iByn"), function (a) {
             node_data[a] = _.clone(graphData[a]);
         });
 
         node_data.label = node_data.nByi.map(function (f) {
             var lbl = qed.Lookups.Labels[f];
-            if (lbl) {
-                if (_.isString(lbl)) return lbl;
-                if (lbl.label) return lbl.label;
-            }
+            if (lbl && _.isString(lbl)) return lbl;
             return f;
         });
 
@@ -50,58 +46,47 @@ var Layout = Backbone.Model.extend({
     },
 
     filterNodes:function (nodes) {
-        console.log("filterNodes");
-        if (!this.all_node_index) {
-            this.all_node_index = {};
-            this.all_nodes = this.get("nodes");
-            this.all_edges = this.get("edges");
+        var all_node_index = {};
 
-            var nodeIdx = this.all_node_index;
-            _.each(this.get("nodes"), function (node, idx) {
-                nodeIdx[node.feature_id] = {idx:idx, edge_arr:[]};
-            });
-            _.each(this.get("edges"), function (edge, idx) {
-                nodeIdx[nodes[edge['source']].feature_id].edge_arr.push(idx);
-                nodeIdx[nodes[edge['target']].feature_id].edge_arr.push(idx);
-            });
-        }
-
-
-        this.current_node_index = {};
-
-        var _this = this;
-        _.each(nodes, function (node, idx) {
-            _this.current_node_index[node.feature_id] = {idx:idx, edge_arr:[]};
+        var all_nodes = this.get("nodes");
+        var all_edges = this.get("edges");
+        _.each(all_nodes, function (node, idx) {
+            all_node_index[node.feature_id] = {idx:idx, edge_arr:[]};
         });
 
-        var edges = this.filterEdgesByNodes(nodes);
+        _.each(all_edges, function (edge, idx) {
+            all_node_index[all_nodes[edge['source']].feature_id].edge_arr.push(idx);
+            all_node_index[all_nodes[edge['target']].feature_id].edge_arr.push(idx);
+        });
 
-        this.set("nodes", nodes);
-        this.set("edges", edges);
-        this.trigger('reset');
-    },
+        //build index of current nodes
+        var current_node_index = {};
 
-    filterEdgesByNodes:function (nodes) {
-        var _this = this;
-
-        var edge_helper = _.map(_.range(this.all_edges.length), function () { return 0; });
+        _.each(nodes, function (node, idx) {
+            current_node_index[node.feature_id] = {idx:idx, edge_arr:[]};
+        });
 
         var keepers = [];
-        _.each(_.pluck(nodes, 'feature_id'), function (label) {    //for each node that we're keeping
-            _.each(_this.all_node_index[label].edge_arr, function (edge_idx) {  //find all of its edges
+        var node_labels = _.pluck(nodes, 'feature_id');
+        var edge_helper = _.map(_.range(all_edges.length), function () { return 0; });
+
+        _.each(node_labels, function (label) {
+            _.each(all_node_index[label].edge_arr, function (edge_idx) {
                 if (++edge_helper[edge_idx] === 2) {
-                    keepers.push(_this.all_edges[edge_idx]);
+                    keepers.push(all_edges[edge_idx]);
                 }
             });
         });
 
-        return keepers.map(function (edge) {
+        var edges = _.map(keepers, function (edge) {
             return {
-                source:_this.current_node_index[_this.all_nodes[edge.source].feature_id].idx,
-                target:_this.current_node_index[_this.all_nodes[edge.target].feature_id].idx,
+                source: current_node_index[all_nodes[edge.source].feature_id].idx,
+                target: current_node_index[all_nodes[edge.target].feature_id].idx,
                 weight:edge.weight
             };
         });
+
+        return new Layout({ "nodes":nodes, "edges":edges });
     }
 });
 
@@ -115,9 +100,7 @@ var Layouts = Backbone.Model.extend({
     parse:function (json) {
         var _this = this;
         var layouts = _.map(json.files, function (f) {
-            var l = new Layout(f, _this.options);
-            l.fetch({ async:false });
-            return l;
+            return new Layout(f, _this.options);
         });
         return { "layout":layouts };
     }
