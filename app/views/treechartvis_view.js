@@ -1,11 +1,8 @@
 var Feature = require('../models/feature');
 var Edge = require("../models/edge");
 var TreeChart = require('../vis/treeChart');
-var GraphLayout = qed.Models.GraphLayouts;
 
 module.exports = Backbone.View.extend({
-    model:GraphLayout,
-
     x:"r1",
     y:"r2",
     edgeRouting:"straight",

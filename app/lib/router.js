@@ -40,7 +40,7 @@ module.exports = Backbone.Router.extend({
     },
 
     twod_view:function (label1, label2) {
-        var TwoD = this.views.twoD;
+        var TwoD = qed.Views.twoD;
         var FL = require('../models/featureList');
         var fl = new FL({
             websvc:'/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
@@ -89,7 +89,7 @@ module.exports = Backbone.Router.extend({
 
         var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
 
-        var ViewClass = this.views[view_name];
+        var ViewClass = qed.Views[view_name];
         var view = new ViewClass(view_options);
         this.$el.html(view.render().el);
         return view;
