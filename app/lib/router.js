@@ -90,7 +90,7 @@ module.exports = Backbone.Router.extend({
 
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
-            var oncovisView = this.ModelAndView(view_name, qed.models.FeatureMatrix, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
+            var oncovisView = this.ModelAndView(view_name, qed.Models.FeatureMatrix, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
             this.InitGeneListViews(oncovisView);
             return oncovisView;
         }
@@ -107,7 +107,7 @@ module.exports = Backbone.Router.extend({
         var catalog = model_unit.catalog;
         var catalog_unit = catalog[dataset_id];
         var modelName = catalog_unit.model;
-        var Model = qed.models[modelName];
+        var Model = qed.Models[modelName];
 
         var model_optns = {
             "data_uri": "svc/data/" + uri,
@@ -122,12 +122,8 @@ module.exports = Backbone.Router.extend({
         _.defer(function() {
             model.fetch({
                 success:function () {
-                    console.log("fetch-model");
                     if (model.make_copy) model.make_copy(Model, model_optns);
                     model.trigger('load');
-                },
-                error: function(e,o) {
-                    console.log("fetch-model:" + model.url() + ":" + JSON.stringify(e));
                 }
             });
         });

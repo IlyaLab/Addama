@@ -22,16 +22,5 @@ module.exports = Backbone.View.extend({
     },
 
     afterRender:function () {
-    },
-
-    multiLoad:function (models, callback) {
-        if (models && models.length && callback) {
-            console.log("multiLoad [" + models.length + "]");
-            callback = _.after(models.length, callback);
-
-            _.each(models, function (model) {
-                model.on("load", callback);
-            });
-        }
     }
 });

@@ -104,7 +104,6 @@ var Layouts = Backbone.Model.extend({
 var Graph = Backbone.Model.extend({
 
     initialize: function(options) {
-        console.log("Graph.initialize");
         _.extend(this, options);
     },
 

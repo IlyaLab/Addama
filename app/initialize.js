@@ -1,10 +1,10 @@
 $(function () {
     qed = {
-        models: {
+        Models: {
             "JSON": require("models/model_json"),
             "Catalogs": require("models/catalog"),
             "Annotations": require("models/annotations"),
-            "Mappings": require("models/model_catalog"),
+            "Mappings": require("models/mappings"),
             "FeatureMatrix": require("models/featureMatrix2"),
             "GraphLayouts": require("models/graph_layouts")
         },
@@ -32,13 +32,13 @@ $(function () {
         Datamodel: {}
     };
 
-    qed.Display = new qed.models.JSON({ url:"svc/data/qed_display.json" });
+    qed.Display = new qed.Models.JSON({ url:"svc/data/qed_display.json" });
     qed.Display.on("load", function() {
         document.title = (qed.Display.get("title") || "QED");
     });
     qed.Display.standard_fetch();
 
-    qed.Datamodel = new qed.models.JSON({ url:"svc/data/qed_datamodel.json" });
+    qed.Datamodel = new qed.Models.JSON({ url:"svc/data/qed_datamodel.json" });
     qed.Datamodel.on("load", function() {
         var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
         var catalog_counts = _.map(section_ids, function(section_id) {
@@ -61,7 +61,7 @@ $(function () {
                 if (unit_id != "label") {
                     if (!unit.catalog) unit.catalog = {};
 
-                    var catalog = new qed.models.Catalogs({"url":"svc/data/" + section_id + "/" + unit_id});
+                    var catalog = new qed.Models.Catalogs({"url":"svc/data/" + section_id + "/" + unit_id});
                     catalog.on("load", function() {
                         _.each(catalog.get("itemsById"), function(item, item_id) {
                             if (!unit.catalog[item_id]) unit.catalog[item_id] = {};
@@ -78,13 +78,13 @@ $(function () {
     });
 
     qed.Datamodel.standard_fetch();
-    qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" });
+    qed.Lookups.Chromosomes = new qed.Models.Annotations({ url:"svc/data/lookups/chromosomes" });
     qed.Lookups.Chromosomes.fetch({"dataType": "text"});
 
     qed.Annotations = {};
     qed.FetchAnnotations = function(dataset_id) {
         if (_.isEmpty(qed.Annotations[dataset_id])) {
-            var annotations = new qed.models.Annotations({"url":"svc/data/annotations/" + dataset_id + ".json", "dataType": "json"});
+            var annotations = new qed.Models.Annotations({"url":"svc/data/annotations/" + dataset_id + ".json", "dataType": "json"});
             annotations.fetch({
                 "async": false,
                 "dataType": "json",
