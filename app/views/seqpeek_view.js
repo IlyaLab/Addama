@@ -21,7 +21,7 @@ module.exports = View.extend({
 
     initControls: function () {
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
-        this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 100 });
+        this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
 
         var seqpeek_container = this.$el.find(".seqpeek-container");
 
@@ -48,13 +48,18 @@ module.exports = View.extend({
             .initial()
             .each(function(subtype) {
                 subtype.layout = {
-                    protein_scale: {
-                        enabled: false
+                    protein_scale_line: {
+                        enabled: true,
+                        y: 0
+                    },
+                    protein_scale_ticks: {
+                        enabled: false,
+                        y: 0
                     },
                     protein_domains: {
                         enabled: false
                     }
-                }
+                };
             });
 
         var options = {

@@ -91,7 +91,11 @@
                     mutations: {
                         y: 0
                     },
-                    protein_scale: {
+                    protein_scale_line: {
+                        enabled: true,
+                        y: 0
+                    },
+                    protein_scale_ticks: {
                         enabled: true,
                         y: 0
                     },
@@ -140,35 +144,37 @@
 
             // Height of scale line if displayed
             var protein_scale_height = 0;
-            if (layout.protein_scale.enabled === true) {
+            if (layout.protein_scale_ticks.enabled === true) {
                 protein_scale_height = config.location_tick_height;
             }
 
             // Height of protein domains in total if displayed
             var domains_height = 0;
-            if (layout.protein_domains.enabled === true &&
-                layout.protein_scale.enabled === false) {
-                domains_height = that.vis.domain_scale.rangeExtent()[1] + config.signature_height;
-            }
-            else if (layout.protein_domains.enabled === true &&
-                layout.protein_scale.enabled === true) {
+
+            if (layout.protein_domains.enabled === true) {
                 domains_height = that.vis.domain_scale.rangeExtent()[1];
             }
 
             layout.mutations.y = mutations_height;
-            layout.protein_scale.y = layout.mutations.y + protein_scale_height;
-
+            layout.protein_scale_line.y = layout.mutations.y;
+            
             // If stems are not drawn, move the scale line down so that it will not overlap with the mutation shapes
             if (config.enable_mutation_stems === false) {
-                layout.protein_scale.y = layout.protein_scale.y + config.mutation_shape_width / 2.0;
+                layout.protein_scale_line.y += config.mutation_shape_width / 2.0;
             }
 
-            layout.protein_domains.y = layout.protein_scale.y + vert_pad + domains_height;
+            layout.protein_scale_ticks.y = layout.protein_scale_line.y + protein_scale_height;
+
+            layout.protein_domains.y = layout.protein_scale_ticks.y + vert_pad + domains_height;
 
             layout.height = mutations_height + protein_scale_height + domains_height;
 
             layout.background_ticks.y1 = -mutations_height;
-            layout.background_ticks.y2 = layout.protein_scale.enabled ? (config.location_tick_height / 2.0) : config.mutation_shape_width / 2.0;
+            layout.background_ticks.y2 = 0;
+
+            if (layout.protein_domains.enabled === false) {
+                layout.background_ticks.y2 = layout.protein_scale_ticks.enabled ? (config.location_tick_height / 2.0) : config.mutation_shape_width / 2.0;
+            }
 
             return layout;
         },
@@ -188,11 +194,11 @@
                 current_y = current_y + layout.height;
 
                 if (layout.protein_domains.enabled === true ||
-                    layout.protein_scale.enabled === true) {
+                    layout.protein_scale_ticks.enabled === true) {
                     current_y = current_y + that.config.protein_vertical_padding;
                 }
                 else if (layout.protein_domains.enabled === false ||
-                    layout.protein_scale.enabled === false) {
+                    layout.protein_scale_ticks.enabled === false) {
                     current_y = current_y + 5.0;
                 }
             });
@@ -214,7 +220,11 @@
                 mutations: {
                     y: 0
                 },
-                protein_scale: {
+                protein_scale_line: {
+                    enabled: true,
+                    y: 0
+                },
+                protein_scale_ticks: {
                     enabled: true,
                     y: 0
                 },
@@ -396,14 +406,15 @@
                         .style("opacity", 1.0);
                 });
 
-            this.vis.protein_scale_g = that.vis.cancer_types_g
+            this.vis.cancer_types_g
                 .each(function(subtype_data) {
                     var protein_scales = d3
                         .select(this)
                         .selectAll(".protein")
                         .selectAll("g.scale")
                             .data(function(d) {
-                                return d.layout.protein_scale.enabled === true ? [subtype_data] : [];
+                                return (d.layout.protein_scale_ticks.enabled ||
+                                    d.layout.protein_scale_line.enabled) === true ? [subtype_data] : [];
                             });
 
                     protein_scales
@@ -411,7 +422,7 @@
                         .append("g")
                             .attr("class", "scale")
                             .attr("transform", function() {
-                                return "translate(0," + (subtype_data.layout.protein_scale.y) + ")";
+                                return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
                             })
                             .style("opacity", 1e-6);
 
@@ -425,10 +436,9 @@
 
                     protein_scales
                         .attr("transform", function() {
-                            return "translate(0," + (subtype_data.layout.protein_scale.y) + ")";
+                            return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
                         })
                         .style("opacity", 1.0);
-
 
                     if (that.config.enable_transitions) {
                         protein_scales_exit = protein_scales_exit
@@ -441,7 +451,7 @@
                         .remove();
                 });
 
-            this.vis.protein_domains_g = that.vis.cancer_types_g
+            this.vis.cancer_types_g
                 .each(function(subtype_data) {
                     var domains = d3
                         .select(this)
@@ -597,12 +607,20 @@
                 .selectAll(".protein")
                 .selectAll(".scale")
                 .each(function(subtype_data) {
-                    d3.select(this)
+                    var scale_line = d3.select(this)
                         .selectAll(".protein-scale")
-                            .data([{
-                                y1: -that.config.location_tick_height,
-                                y2: -that.config.location_tick_height
-                            }])
+                            .data(function(d) {
+                                if (d.layout.protein_scale_line.enabled === true) {
+                                    return [{
+                                        y1: d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0,
+                                        y2: d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0
+                                    }];
+                                }
+
+                            return [];
+                        });
+
+                    scale_line
                         .enter()
                         .append("svg:line")
                             .attr("class", "protein-scale")
@@ -612,11 +630,21 @@
                             .attr("x2", that.config.protein_scale_width)
                             .style("stroke", "black");
 
-                    d3.select(this)
+                    scale_line
+                        .exit()
+                        .remove();
+
+                    var scale_ticks = d3.select(this)
                         .selectAll(".loc-tick")
-                            .data(function() {
+                        .data(function(d) {
+                            if (d.layout.protein_scale_ticks.enabled === true) {
                                 return that.vis.x_scale.ticks(20);
-                            }, String)
+                            }
+
+                            return [];
+                        }, String);
+
+                    scale_ticks
                         .enter()
                         .append("g")
                             .attr("class", "loc-tick")
@@ -631,6 +659,10 @@
                             .text(function(d) {
                                 return d;
                             });
+
+                    scale_ticks
+                        .exit()
+                        .remove();
             });
         },
 
