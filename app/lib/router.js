@@ -118,7 +118,7 @@ module.exports = Backbone.Router.extend({
         };
         if (_.has(model_unit, "annotations")) {
             _.extend(model_optns, {
-                "annotations": qed.GetAnnotations("svc/data/" + model_unit["annotations"] + "/" + dataset_id) || {}
+                "annotations": qed.GetAnnotations(dataset_id) || {}
             });
         }
 

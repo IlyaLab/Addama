@@ -84,16 +84,16 @@ $(function () {
     qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" }).fetch();
 
     qed.Annotations = {};
-    qed.GetAnnotations = function(url) {
-        if (_.isEmpty(qed.Annotations[url])) {
-            var annotations = new qed.models.Annotations({"url":url});
+    qed.GetAnnotations = function(dataset_id) {
+        if (_.isEmpty(qed.Annotations[dataset_id])) {
+            var annotations = new qed.models.Annotations({"url":"svc/data/annotations/" + dataset_id });
             annotations.fetch({
                 async: false,
                 success: function() {
-                    qed.Annotations[url] = annotations.get("itemsById");
+                    qed.Annotations[dataset_id] = annotations.get("itemsById");
                 }
             });
         }
-        return qed.Annotations[url];
+        return qed.Annotations[dataset_id];
     };
 });
