@@ -12,17 +12,14 @@ module.exports = View.extend({
     },
 
     loadData:function () {
-        var features = this.model.get("data");
+        var features = this.model.get("graph").get("nodes");
         var vis = this.getCirc();
         vis.addNodes(features);
     },
 
     getCirc:function () {
-        var _this = this;
         var parentDiv = this.$el.find('.circ-container');
         var div = parentDiv.get(0);
-
-//        $('.circ-container', this.$el).attr('id', this.model.dataset_id);
 
         var width = parentDiv.height();
         var height = parentDiv.height();
@@ -34,7 +31,9 @@ module.exports = View.extend({
             }
         };
 
-        _.each(this.model.headers(), function (header) {
+        var annotations = qed.Annotations[this.model.get("dataset_id")] || {};
+        var headers = _.keys(annotations[_.first(_.keys(annotations))]);
+        _.each(headers, function (header) {
             hovercard_config[header] = header;
         });
 

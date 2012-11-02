@@ -14,7 +14,7 @@ var Layout = Backbone.Model.extend({
             node_data[a] = _.clone(graphData[a]);
         });
 
-        var annotations = this.get("annotations") || {};
+        var annotations = qed.Annotations[this.get("dataset_id")] || {};
         node_data.label = node_data.nByi.map(function (f) {
             return (annotations[f] && annotations[f].label) ? annotations[f].label : f;
         });
@@ -93,16 +93,59 @@ var Layouts = Backbone.Model.extend({
     },
 
     parse:function (json) {
-        var annotations = {"annotations": this.get("annotations") };
+        var options = {"dataset_id": this.get("dataset_id") };
         var layouts = _.map(json.files, function (f) {
-            return new Layout(_.extend(f, annotations));
+            return new Layout(_.extend(f, options));
         });
         return { "layout":layouts };
     }
 });
 
+var Graph = Backbone.Model.extend({
+
+    initialize: function(options) {
+        console.log("Graph.initialize");
+        _.extend(this, options);
+    },
+
+    url:function () {
+        return this.data_uri;
+    },
+
+    parse:function (txt) {
+        var annotations = qed.Annotations[this.dataset_id];
+
+        var processedNodes = {};
+        var edges = [];
+        _.each(txt.split("\n"), function(row) {
+            var values = row.split("\t");
+
+            var feature_id_a = values[0];
+            var edge = { source: "", target: "" };
+            if (!processedNodes[feature_id_a]) {
+                processedNodes[feature_id_a] = annotations[feature_id_a];
+                edge.source = feature_id_a;
+            }
+
+            var feature_id_b = values[1];
+            if (!processedNodes[feature_id_b]) {
+                processedNodes[feature_id_b] = annotations[feature_id_b];
+                edge.target = feature_id_b;
+            }
+
+            if (!_.isEmpty(edge.source) && !_.isEmpty(edge.target)) {
+                edges.push(edge);
+            }
+        });
+        return { "nodes":_.values(processedNodes), "edges": edges };
+    },
+
+    fetch:function (options) {
+        return Backbone.Model.prototype.fetch.call(this, _.extend({dataType:'text'}, options));
+    }
+});
+
 module.exports = Backbone.Model.extend({
-    model:Layouts,
 
     url:function () {
         var dataset_id = this.get("dataset_id");
@@ -110,14 +153,18 @@ module.exports = Backbone.Model.extend({
     },
 
     parse:function (json) {
-        var annotations = { "annotations": this.get("annotations") };
+        var options = {"dataset_id": this.get("dataset_id") };
         var model_unit = this.get("model_unit");
         var layouts = _.map(json.directories, function (layoutDir) {
             var layout = model_unit.layouts[layoutDir.label];
-            var l = new Layouts(_.extend(annotations, layout, layoutDir));
+            var l = new Layouts(_.extend(options, layout, layoutDir));
             l.fetch({ async:false });
             return l;
         });
-        return { "layouts":layouts }
+
+        var graph = new Graph({"data_uri": this.get("data_uri"), "dataset_id": this.get("dataset_id")});
+        graph.fetch({ async:false });
+
+        return { "layouts":layouts, "graph": graph };
     }
 });
