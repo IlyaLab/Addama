@@ -116,11 +116,7 @@ module.exports = Backbone.Router.extend({
             "model_unit": model_unit,
             "catalog_unit": catalog_unit
         };
-        if (_.has(model_unit, "annotations")) {
-            _.extend(model_optns, {
-                "annotations": qed.GetAnnotations(dataset_id) || {}
-            });
-        }
+        qed.FetchAnnotations(dataset_id);
 
         var model = new Model(model_optns);
         _.defer(function() {

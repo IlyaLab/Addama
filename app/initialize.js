@@ -81,15 +81,17 @@ $(function () {
     });
 
     qed.Datamodel.standard_fetch();
-    qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" }).fetch();
+    qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" });
+    qed.Lookups.Chromosomes.fetch({"dataType": "text"});
 
     qed.Annotations = {};
-    qed.GetAnnotations = function(dataset_id) {
+    qed.FetchAnnotations = function(dataset_id) {
         if (_.isEmpty(qed.Annotations[dataset_id])) {
-            var annotations = new qed.models.Annotations({"url":"svc/data/annotations/" + dataset_id });
+            var annotations = new qed.models.Annotations({"url":"svc/data/annotations/" + dataset_id + ".json", "dataType": "json"});
             annotations.fetch({
-                async: false,
-                success: function() {
+                "async": false,
+                "dataType": "json",
+                "success": function() {
                     qed.Annotations[dataset_id] = annotations.get("itemsById");
                 }
             });

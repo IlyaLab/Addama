@@ -42,23 +42,30 @@ def feature_id_extract(feature):
     feature_parts = feature.split(":")
 
     if "chr" in feature:
+        start = feature_parts[5]
+        end = feature_parts[6]
+        if not start: start = -1
+        if not end: end = -1
+
         return {
-            "id": feature,
-            "measure_type": feature_parts[0],
-            "feature_category": feature_parts[1],
+            "feature_id": feature,
+            "type": feature_parts[0],
+            "source": feature_parts[1],
             "gene": feature_parts[2],
             "label": feature_parts[2],
-            "classification": feature_parts[3],
-            "chromosome": feature_parts[4],
-            "start": feature_parts[5],
-            "end": feature_parts[6]
+            "modifier": feature_parts[3],
+            "chr": feature_parts[4][3:],
+            "start": int(start),
+            "end": int(end),
+            "strand": feature_parts[7]
         }
+
     return {
-        "id": feature,
-        "measure_type": feature_parts[0],
-        "feature_category": feature_parts[1],
+        "feature_id": feature,
+        "type": feature_parts[0],
+        "source": feature_parts[1],
         "label": feature_parts[2],
-        "classification": feature_parts[3]
+        "modifier": feature_parts[3]
     }
 
 if __name__ == "__main__":
