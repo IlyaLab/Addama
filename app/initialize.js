@@ -6,7 +6,7 @@ $(function () {
             "Annotations": require("models/model_catalog"),
             "Mappings": require("models/model_catalog"),
             "FeatureMatrix": require("models/featureMatrix2"),
-//            "Adjacencies": require("models/adjacencies"),
+            "Adjacencies": require("models/adjacencies"),
             "GraphLayouts": require("models/graph_layouts")
         },
         ViewMappings: {
@@ -20,7 +20,10 @@ $(function () {
                 { "id": "grid", label: "Grid" },
                 { "id": "heat", label: "Heatmap" }
             ],
-//            "Adjacencies": [],
+            "Adjacencies": [
+                { "id": "circ", label: "CircVis" },
+                { "id": "grid", label: "Grid" }
+            ],
             "GraphLayouts": [
                 { "id": "graph", label: "Graph" }
             ]

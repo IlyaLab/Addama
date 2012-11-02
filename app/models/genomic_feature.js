@@ -2,36 +2,34 @@ var Model = require('./model')
 
 module.exports = Model.extend({
 
-  defaults:{
-  	chr:'',
-  	start:-1,
-  	stop:-1,
-  	strand:'',
+    defaults:{
+        chr:'',
+        start:-1,
+        stop:-1,
+        strand:'',
 
-	type: '',
-	source: '',
-	label: '',
-	modifier: '',
-	feature_id: ''
+        type:'',
+        source:'',
+        label:'',
+        modifier:'',
+        feature_id:''
 
-  },
+    },
 
-	parse: function(response) {
-		var lookup = labels_lookup;
+    parse:function (response) {
+        var feature = response.feature_id.split(':');
 
-		var feature = response.feature_id.split(':');		
-		
-		response.label = lookup[response.feature_id] || feature[2];
-		response.type = feature[0];
-		response.source = feature[1];
+        response.label = qed.Lookups.Labels[response.feature_id] || feature[2];
+        response.type = feature[0];
+        response.source = feature[1];
 
-		response.chr = feature[3].slice(3);
-		response.start = feature[4];
-		response.stop = feature[5];
-		response.strand=feature[6];
-		response.modifier=feature[8];
+        response.chr = feature[3].slice(3);
+        response.start = feature[4];
+        response.stop = feature[5];
+        response.strand = feature[6];
+        response.modifier = feature[8];
 
-		return response;
-	}
+        return response;
+    }
 
 });

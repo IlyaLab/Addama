@@ -1,4 +1,3 @@
-//var Model = require('../models/model');
 var GraphModel = require('../models/graph');
 var FeatureListModel = require('../models/featureList');
 var GenomicFeatureListModel = require('../models/genomic_featureList');
@@ -23,7 +22,7 @@ module.exports = Backbone.Router.extend({
 
     views: {
         "grid": require("../views/grid_view"),
-        "circ": require("../views/circ_view"),
+        "circ": require("../views/circvis_view"),
         "heat": require("../views/oncovis_view"),
         "graph": require("../views/graphtree_view"),
         "pwpv": require("../views/pwpv_view"),
@@ -103,22 +102,28 @@ module.exports = Backbone.Router.extend({
         var parts = uri.split("/");
         var model_unit = qed.Datamodel.get(parts[0])[parts[1]];
         var catalog = model_unit.catalog;
-        var modelName = catalog[parts[2]].model;
+        var catalog_unit = catalog[parts[2]];
+        var modelName = catalog_unit.model;
         var Model = qed.models[modelName];
 
         var model_optns = {
             "data_uri": "svc/data/" + uri,
             "analysis_id": parts[1],
             "dataset_id": parts[2],
-            "model_unit": model_unit
+            "model_unit": model_unit,
+            "catalog_unit": catalog_unit
         };
 
         var model = new Model(model_optns);
         _.defer(function() {
             model.fetch({
                 success:function () {
+                    console.log("fetch-model");
                     if (model.make_copy) model.make_copy(Model, model_optns);
                     model.trigger('load');
+                },
+                error: function(e,o) {
+                    console.log("fetch-model:" + model.url() + ":" + JSON.stringify(e));
                 }
             });
         });
