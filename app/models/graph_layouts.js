@@ -4,10 +4,6 @@ var Layout = Backbone.Model.extend({
         edges:[]
     },
 
-    initialize: function() {
-        _.bindAll(this, "url", "parse", "filterNodes");
-    },
-
     url:function () {
         return "svc" + this.get("uri");
     },
@@ -18,10 +14,9 @@ var Layout = Backbone.Model.extend({
             node_data[a] = _.clone(graphData[a]);
         });
 
+        var annotations = this.get("annotations") || {};
         node_data.label = node_data.nByi.map(function (f) {
-            var lbl = qed.Lookups.Labels[f];
-            if (lbl && _.isString(lbl)) return lbl;
-            return f;
+            return (annotations[f] && annotations[f].label) ? annotations[f].label : f;
         });
 
         node_data.feature_id = node_data.nByi;
@@ -98,9 +93,9 @@ var Layouts = Backbone.Model.extend({
     },
 
     parse:function (json) {
-        var _this = this;
+        var annotations = {"annotations": this.get("annotations") };
         var layouts = _.map(json.files, function (f) {
-            return new Layout(f, _this.options);
+            return new Layout(_.extend(f, annotations));
         });
         return { "layout":layouts };
     }
@@ -115,10 +110,11 @@ module.exports = Backbone.Model.extend({
     },
 
     parse:function (json) {
-        var _this = this;
+        var annotations = { "annotations": this.get("annotations") };
+        var model_unit = this.get("model_unit");
         var layouts = _.map(json.directories, function (layoutDir) {
-            var layout = _this.get("model_unit").layouts[layoutDir.label];
-            var l = new Layouts(_.extend({}, layout, layoutDir, _this.options));
+            var layout = model_unit.layouts[layoutDir.label];
+            var l = new Layouts(_.extend(annotations, layout, layoutDir));
             l.fetch({ async:false });
             return l;
         });

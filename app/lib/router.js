@@ -100,19 +100,27 @@ module.exports = Backbone.Router.extend({
 
     viewsByUri: function(uri, view_name, options) {
         var parts = uri.split("/");
-        var model_unit = qed.Datamodel.get(parts[0])[parts[1]];
+        var data_root = parts[0];
+        var analysis_id = parts[1];
+        var dataset_id = parts[2];
+        var model_unit = qed.Datamodel.get(data_root)[analysis_id];
         var catalog = model_unit.catalog;
-        var catalog_unit = catalog[parts[2]];
+        var catalog_unit = catalog[dataset_id];
         var modelName = catalog_unit.model;
         var Model = qed.models[modelName];
 
         var model_optns = {
             "data_uri": "svc/data/" + uri,
-            "analysis_id": parts[1],
-            "dataset_id": parts[2],
+            "analysis_id": analysis_id,
+            "dataset_id": dataset_id,
             "model_unit": model_unit,
             "catalog_unit": catalog_unit
         };
+        if (_.has(model_unit, "annotations")) {
+            _.extend(model_optns, {
+                "annotations": qed.GetAnnotations("svc/data/" + model_unit["annotations"] + "/" + dataset_id) || {}
+            });
+        }
 
         var model = new Model(model_optns);
         _.defer(function() {

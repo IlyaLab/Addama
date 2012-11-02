@@ -3,7 +3,7 @@ $(function () {
         models: {
             "JSON": require("models/model_json"),
             "Catalogs": require("models/catalog"),
-            "Annotations": require("models/model_catalog"),
+            "Annotations": require("models/annotations"),
             "Mappings": require("models/model_catalog"),
             "FeatureMatrix": require("models/featureMatrix2"),
             "Adjacencies": require("models/adjacencies"),
@@ -81,5 +81,19 @@ $(function () {
     });
 
     qed.Datamodel.standard_fetch();
-    qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" }).standard_fetch();
+    qed.Lookups.Chromosomes = new qed.models.Annotations({ url:"svc/data/lookups/chromosomes" }).fetch();
+
+    qed.Annotations = {};
+    qed.GetAnnotations = function(url) {
+        if (_.isEmpty(qed.Annotations[url])) {
+            var annotations = new qed.models.Annotations({"url":url});
+            annotations.fetch({
+                async: false,
+                success: function() {
+                    qed.Annotations[url] = annotations.get("itemsById");
+                }
+            });
+        }
+        return qed.Annotations[url];
+    };
 });
