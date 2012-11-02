@@ -157,7 +157,7 @@
 
             layout.mutations.y = mutations_height;
             layout.protein_scale_line.y = layout.mutations.y;
-            
+
             // If stems are not drawn, move the scale line down so that it will not overlap with the mutation shapes
             if (config.enable_mutation_stems === false) {
                 layout.protein_scale_line.y += config.mutation_shape_width / 2.0;

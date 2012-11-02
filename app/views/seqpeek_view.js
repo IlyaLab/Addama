@@ -20,8 +20,43 @@ module.exports = View.extend({
     },
 
     initControls: function () {
+        var that = this;
+
+        var cancer_subtypes = [
+            'BRCA',
+            'COADREAD',
+            'GBM',
+            'KIRC',
+            'LAML',
+            'LUAD',
+            'LUSC',
+            'OV',
+            'PRAD',
+            'STAD',
+            'UCEC'
+        ];
+
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
         this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
+
+        // Populate the subtype lists
+        var default_subtypes = ['BRCA', 'GBM', 'UCEC'];
+        _.each(default_subtypes, function(subtype) {
+            var html = '<div class="subtype-list-member ui-state-default">' + subtype + '</div>';
+            that.$el.find(".subtypes-included").append(html);
+        });
+
+        _.each(_.without(cancer_subtypes, default_subtypes), function(subtype) {
+            var html = '<div class="subtype-list-member ui-state-default">' + subtype + '</div>';
+            that.$el.find(".subtypes-excluded").append(html);
+        });
+
+        // Sortable cancer subtype list
+        this.$el.find(".subtypes-connected-sortable").sortable({
+            item: '.subtype-list-member',
+            connectWith: '.subtypes-connected-sortable',
+            revert: true
+        }).disableSelection();
 
         var seqpeek_container = this.$el.find(".seqpeek-container");
 
