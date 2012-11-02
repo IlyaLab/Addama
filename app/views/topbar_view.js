@@ -30,9 +30,9 @@ module.exports = View.extend({
     },
 
     initHangoutLink: function() {
-        var hangoutId = qed.Display.get("hangoutId");
-        if (hangoutId) {
-            this.$el.find(".hangout-container").html(HangoutLink({ "hangoutId": hangoutId }));
+        var hangoutUrl = qed.Display.get("hangoutUrl");
+        if (hangoutUrl) {
+            this.$el.find(".hangout-container").html(HangoutLink({ "url": hangoutUrl }));
         }
     },
 
