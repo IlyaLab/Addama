@@ -25,7 +25,9 @@ module.exports = Model.extend({
             type:"POST",
             data: saved_item,
             context:this,
-            success: this.standard_fetch
+            success: function() {
+                this.trigger("load");
+            }
         });
     }
 });

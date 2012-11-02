@@ -2,6 +2,7 @@ var View = require('./view');
 var template = require('./templates/oncovis');
 var ControlsView = require("../views/oncovis_controls");
 var SelectorsView = require("../views/oncovis_selectors");
+var GeneListView = require("../views/genelist_view");
 var ALL_COLUMNS = "All Columns";
 
 module.exports = View.extend({
@@ -29,6 +30,8 @@ module.exports = View.extend({
 
     afterRender:function () {
         this.initSelectors();
+
+        new GeneListView({ $el: this.$el }).on("genelist-selected", this.onNewRows);
     },
 
     initSelectors: function() {

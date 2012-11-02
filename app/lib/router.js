@@ -1,11 +1,3 @@
-var GraphModel = require('../models/graph');
-var FeatureListModel = require('../models/featureList');
-var GenomicFeatureListModel = require('../models/genomic_featureList');
-var FeatureMatrixModel = require('../models/featureMatrix');
-
-var DataMenuView = require("../views/data_menu");
-var MenuItemsView = require("../views/menu_items");
-
 module.exports = Backbone.Router.extend({
     targetEl: "#mainDiv",
     routes:{
@@ -36,6 +28,7 @@ module.exports = Backbone.Router.extend({
         var topnavbar = new TopNavBar();
         $('#navigation-container').append(topnavbar.render().el);
 
+        var DataMenuView = require("../views/data_menu");
         var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
         _.each(section_ids, function(section_id) {
             $(".data-menu .navbar-inner").append(new DataMenuView({ "sectionId": section_id, "section": qed.Datamodel.get(section_id) }).render().el);
@@ -62,40 +55,6 @@ module.exports = Backbone.Router.extend({
         var HomeView = require('../views/home_view');
         var homeView = new HomeView();
         this.$el.html(homeView.render().el);
-    },
-
-    route_analysis:function (analysis_type, dataset_id, remainder) {
-
-        var arg_array = remainder.length ? remainder.split('/') : [],
-            len = arg_array.length,
-            features = arg_array.slice(0, len - 1),
-            view_name = '';
-
-        if (len > 0) { //if there's param (even an empty one)
-            view_name = arg_array[len - 1];
-        }
-
-        //graph based analysis
-        if (_(['rf-ace', 'mds', 'pairwise']).contains(analysis_type)) {
-            if (len <= 2) {  // 1 or no parameters.  just draw vis of analysis
-                return this.ModelAndView(view_name || 'graph', GraphModel, {analysis_id:analysis_type, dataset_id:dataset_id});
-            }
-
-            return this.ModelAndView(view_name, FeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
-        }
-
-        if (analysis_type === 'information_gain') {
-            return this.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
-        }
-
-        //tabular data like /feature_matrices
-        if (view_name == 'heat') {
-            var oncovisView = this.ModelAndView(view_name, qed.Models.FeatureMatrix, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
-            this.InitGeneListViews(oncovisView);
-            return oncovisView;
-        }
-
-        return this.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
     },
 
     viewsByUri: function(uri, view_name, options) {
@@ -134,46 +93,5 @@ module.exports = Backbone.Router.extend({
         var view = new ViewClass(view_options);
         this.$el.html(view.render().el);
         return view;
-    },
-
-    ModelAndView:function (view_name, ModelClass, model_optns, view_optns) {
-        var model = new ModelClass(model_optns);
-        try {
-            var ViewClass = this.views[view_name];
-            var view = new ViewClass(_.extend(view_optns || {}, { "model":model }));
-            this.$el.html(view.render().el);
-            return view;
-        } finally {
-            model.fetch({
-                success:function () {
-                    if (model.make_copy) model.make_copy(ModelClass, model_optns);
-                    model.trigger('load');
-                }
-            });
-        }
-    },
-
-    InitGeneListViews:function (dataView) {
-        var ProfiledModel = require("../models/genelist_profiled");
-        var profiledModel = new ProfiledModel();
-        profiledModel.standard_fetch();
-
-        var CustomModel = require("../models/genelist_custom");
-        var customModel = new CustomModel();
-        customModel.standard_fetch();
-
-        var profiledView = new MenuItemsView({ model:profiledModel, selectEvent:"genelist-selected" });
-        $(".genelist-profiled").html(profiledView.render().el);
-
-        var customView = new MenuItemsView({ model:customModel, selectEvent:"genelist-selected" });
-        $(".genelist-custom").html(customView.render().el);
-
-        var ManageGLView = require("../views/genelist_manage");
-        var manageGLView = new ManageGLView({ model:customModel });
-        $('.genelist-modal').html(manageGLView.render().el);
-
-        return _.map([profiledView, customView, manageGLView], function (v) {
-            if (dataView.onNewRows) v.on("genelist-selected", dataView.onNewRows);
-        });
     }
 });
