@@ -4,6 +4,7 @@ var SignInModal = require("./templates/sign_in_modal");
 var SignInView = require("./sign_in");
 var SessionsView = require("./sessions_view");
 var HangoutLink = require("./templates/hangout_link");
+var AboutLink = require("./templates/about_link");
 
 module.exports = View.extend({
     id:'top-bar',
@@ -23,14 +24,26 @@ module.exports = View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink');
+        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink', 'initAboutLinks');
         _.defer(this.initHangoutLink);
+        _.defer(this.initAboutLinks);
     },
 
     initHangoutLink: function() {
         var hangoutId = qed.Display.get("hangoutId");
         if (hangoutId) {
             this.$el.find(".hangout-container").html(HangoutLink({ "hangoutId": hangoutId }));
+        }
+    },
+
+    initAboutLinks: function() {
+        var aboutLinks = qed.Display.get("aboutLinks") || [];
+        if (!_.isEmpty(aboutLinks)) {
+            var UL = this.$el.find(".about-links");
+            UL.empty();
+            _.each(aboutLinks, function(aboutLink) {
+                UL.append(AboutLink(aboutLink));
+            });
         }
     },
 
