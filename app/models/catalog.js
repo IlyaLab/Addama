@@ -1,11 +1,7 @@
-var Model = require('./model');
-
-module.exports = Model.extend({
-    url: "",
+module.exports = Backbone.Model.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        if (this.url.indexOf("CATALOG") < 0) this.url += "/CATALOG";
     },
 
     url:function () {
@@ -27,10 +23,17 @@ module.exports = Model.extend({
             return null;
         }));
 
+        var unit = this.unit;
+        if (!unit.catalog) unit.catalog = {};
+        _.each(itemsById, function(item, item_id) {
+            if (!unit.catalog[item_id]) unit.catalog[item_id] = {};
+            _.extend(unit.catalog[item_id], (unit["catalog_defaults"] || {}), item);
+        });
+
         return { "items": items, "itemsById": itemsById};
     },
 
     fetch:function (options) {
-        return Model.prototype.fetch.call(this, _.extend({}, options, {dataType:'text'}));
+        return Backbone.Model.prototype.fetch.call(this, _.extend({}, options, {dataType:'text'}));
     }
 });
