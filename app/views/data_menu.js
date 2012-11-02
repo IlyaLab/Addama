@@ -13,22 +13,20 @@ module.exports = View.extend({
     renderMenuItems: function() {
         var sectionId = this.sectionId;
         var menus = _.map(this.section, function(unit, unit_id) {
-            var views = _.compact(_.flatten(_.map(unit.models, function(unit_model) {
-                return qed.ViewMappings[unit_model];
-            })));
 
             if (unit.catalog && !_.isEmpty(unit.catalog)) {
                 return {
                     "label": unit.label,
                     "items": _.map(unit.catalog, function(item, item_id) {
+                        var views = qed.ViewMappings[item.model] || [{"label":"Grid","id":"grid"}];
                         return {
                             "label": item.label || item_id,
                             "items": _.map(views, function(view) {
                                 return { "label": view.label, "href": "#v/" + sectionId + "/" + unit_id + "/" + item_id + "/" + view.id };
-                            })
+                            }),
+                            "multiItem": (views.length > 1)
                         };
-                    }),
-                    "multiItem": (views.length > 1)
+                    })
                 };
             }
         });
