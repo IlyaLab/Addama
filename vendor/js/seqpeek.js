@@ -287,13 +287,13 @@
             this.render();
         },
 
-        addSubtypes: function(new_subtypes, order) {
+        changeSubtypes: function(new_subtypes, order) {
             var data = this.data;
 
             // Filter out subtypes that might already be in the visualization
             _.chain(new_subtypes)
                 .filter(function(s) {
-                    return _.has(data.subtype_to_index_map, s.label) === false;
+                    return _.has(data.subtype_to_index_map, s.label) === false || order.indexOf(s.label) === -1
                 })
                 .each(function(s) {
                     data.cancer_subtypes.push(s);
@@ -1108,7 +1108,7 @@
                 vis.draw(data, options);
             });
         },
-        add_subtypes : function(new_subtypes, order) {
+        change_subtypes : function(new_subtypes, order) {
             return this.each(function() {
                 var vis = $(this).data("SeqPeek");
                 if (vis) {
