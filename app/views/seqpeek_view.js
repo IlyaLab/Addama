@@ -181,7 +181,7 @@ module.exports = View.extend({
 
         this.drawGraph();
 
-        this.$el.find(".seqpeek-container").seqpeek('add_subtypes', data.cancer_subtypes, this.current_subtypes.toArray());
+        this.$el.find(".seqpeek-container").seqpeek('change_subtypes', data.cancer_subtypes, this.current_subtypes.toArray());
     },
 
     ////////////////////////////

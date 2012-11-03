@@ -1112,7 +1112,7 @@
             return this.each(function() {
                 var vis = $(this).data("SeqPeek");
                 if (vis) {
-                    vis.addSubtypes(new_subtypes, order);
+                    vis.changeSubtypes(new_subtypes, order);
                 }
             });
         },
