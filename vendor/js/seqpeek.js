@@ -300,15 +300,17 @@
             var that = this;
             var data = this.data;
 
-            this.vis.cancer_types_g = this.vis.root
+            var cancer_types_g = this.vis.root
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type")
                     .data(data.cancer_subtypes, function(d) {
                         return d.label;
                     });
 
-            this.vis.cancer_types_g
-                .enter()
+            var subtypes_enter = cancer_types_g.enter();
+            var subtypes_exit = cancer_types_g.exit();
+
+            var subtypes_g = subtypes_enter
                 .append("g")
                     .attr("class", "cancer-type")
                     .attr("height", function(d) {
@@ -318,8 +320,7 @@
                         return "translate(0," + d.layout.y + ")";
                     });
 
-            this.vis.cancer_types_g
-                .enter()
+            subtypes_g
                 .append("g")
                     .attr("class", "protein")
                     .attr("transform", "translate(" + this.config.band_label_width + ",0)")
@@ -330,8 +331,7 @@
                         return "translate(0," + (d.layout.mutations.y) + ")";
                     });
 
-            this.vis.cancer_types_g
-                .enter()
+            subtypes_g
                 .append("text")
                     .attr("left", 0)
                     .attr("y", function(d) {
@@ -341,16 +341,29 @@
                         return d.label;
                     });
 
-            // Vertical reference lines on the protein scale
-            /*
-            this.vis.cancer_types_g
-                .selectAll(".protein")
-                .append("g")
-                    .attr("class", "background-ticks")
-                    .attr("transform", function(d) {
-                        return "translate(0," + (d.layout.mutations.y) + ")";
-                    });
-*/
+            if (that.config.enable_transitions) {
+                cancer_types_g = cancer_types_g
+                    .transition()
+                    .duration(500);
+
+                subtypes_exit = subtypes_exit
+                    .transition()
+                    .duration(500);
+            }
+
+            // Update
+            cancer_types_g
+                .attr("height", function(d) {
+                    return d.layout.subtype_height;
+                })
+                .attr("transform", function(d) {
+                    return "translate(0," + d.layout.y + ")";
+                });
+
+            // Exit
+            subtypes_exit
+                .remove();
+
             this.updateMutationLayout();
 
             this.updateVerticalGroups();
@@ -380,7 +393,12 @@
             var that = this;
             var data = this.data;
 
-            this.vis.cancer_types_g
+            var subtypes = this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type");
+
+            //this.vis.cancer_types_g
+            subtypes
                 .each(function(subtype_data) {
                     var background_lines = d3
                         .select(this)
@@ -399,7 +417,8 @@
                         });
                 });
 
-            this.vis.cancer_types_g
+            //this.vis.cancer_types_g
+            subtypes
                 .each(function(subtype_data) {
                     var mutation_group = d3
                         .select(this)
@@ -427,7 +446,8 @@
                         .style("opacity", 1.0);
                 });
 
-            this.vis.cancer_types_g
+            //this.vis.cancer_types_g
+            subtypes
                 .each(function(subtype_data) {
                     var protein_scales = d3
                         .select(this)
@@ -472,7 +492,8 @@
                         .remove();
                 });
 
-            this.vis.cancer_types_g
+            //this.vis.cancer_types_g
+            subtypes
                 .each(function(subtype_data) {
                     var domains = d3
                         .select(this)
@@ -591,7 +612,13 @@
         applyProteinScales: function() {
             var that = this;
 
-            this.vis.cancer_types_g
+            var subtypes = this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type");
+
+
+            //this.vis.cancer_types_g
+            subtypes
                 .selectAll(".protein")
                 .selectAll("g.background-ticks")
                 .each(function(subtype_data) {
@@ -624,7 +651,8 @@
                         .attr("y2", layout.background_ticks.y2);
             });
 
-            that.vis.cancer_types_g
+            //that.vis.cancer_types_g
+            subtypes
                 .selectAll(".protein")
                 .selectAll(".scale")
                 .each(function(subtype_data) {
@@ -691,7 +719,12 @@
             var that = this;
             var mutationIdFn = this.mutationIdFn;
 
-            that.vis.cancer_types_g
+            var subtypes = this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type");
+
+            //that.vis.cancer_types_g
+            subtypes
                 .selectAll(".protein")
                 .selectAll(".mutations")
                 .each(function(mutation_data) {
@@ -854,7 +887,12 @@
         applyProteinDomains: function() {
             var that = this;
 
-            that.vis.cancer_types_g
+            var subtypes = this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type");
+
+            //that.vis.cancer_types_g
+            subtypes
                 .selectAll(".protein")
                 .selectAll(".domains")
                 .each(function() {
@@ -914,7 +952,9 @@
             var that = this;
             var mutationIdFn = this.mutationIdFn;
 
-            var mutation_group = this.vis.cancer_types_g
+            var mutation_group = this.vis.root
+                            .selectAll("g.data-area")
+                            .selectAll("g.cancer-type")
                 .selectAll(".protein")
                 .selectAll(".mutations");
 
