@@ -12,7 +12,7 @@ module.exports = View.extend({
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders');
+        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onSubtypesChange');
     },
 
     afterRender: function () {
@@ -36,27 +36,30 @@ module.exports = View.extend({
             'UCEC'
         ];
 
+        var default_subtypes = ['BRCA', 'GBM', 'UCEC'];
+
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
         this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
 
         // Populate the subtype lists
-        var default_subtypes = ['BRCA', 'GBM', 'UCEC'];
         _.each(default_subtypes, function(subtype) {
             var html = '<div class="subtype-list-member ui-state-default">' + subtype + '</div>';
             that.$el.find(".subtypes-included").append(html);
         });
 
-        _.each(_.without(cancer_subtypes, default_subtypes), function(subtype) {
+        _.each(_.difference(cancer_subtypes, default_subtypes), function(subtype) {
             var html = '<div class="subtype-list-member ui-state-default">' + subtype + '</div>';
             that.$el.find(".subtypes-excluded").append(html);
         });
 
-        // Sortable cancer subtype list
         this.$el.find(".subtypes-connected-sortable").sortable({
             item: '.subtype-list-member',
             connectWith: '.subtypes-connected-sortable',
             revert: true
         }).disableSelection();
+
+        // Update event is fired after the DOM manipulation is finished
+        this.$el.find(".subtypes-included").sortable('option', 'update', this.onSubtypesChange);
 
         var seqpeek_container = this.$el.find(".seqpeek-container");
 
@@ -65,14 +68,25 @@ module.exports = View.extend({
             lastLabelWidth = value;
         });
 
-        var subtypes = ['BRCA', 'GBM', 'UCEC'];
-        var gene_label = 'TP53';
-
-        this.loadMutations(subtypes, gene_label);
-
         this.bind("post-render", function() {
 
         });
+    },
+
+    onSubtypesChange: function(event, ui) {
+        var gene_label;
+        var subtypes;
+
+        subtypes = this.$el
+            .find(".subtypes-included .subtype-list-member")
+            .map(function() {
+                // The value is in div.textContent
+                return this.textContent;
+            });
+
+        gene_label = 'TP53';
+
+        this.loadMutations(subtypes, gene_label);
     },
 
     renderGraph: function () {
