@@ -12,7 +12,9 @@ module.exports = View.extend({
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'renderGraph', 'initControls', 'render', 'resetSliders', 'onSubtypesChange');
+        _.bindAll(this, 'initControls', 'initGraph', 'resetSliders', 'onSubtypesChange', 'updateGraph');
+
+        this.drawGraph = _.once(this.initGraph);
     },
 
     afterRender: function () {
@@ -61,8 +63,6 @@ module.exports = View.extend({
         // Update event is fired after the DOM manipulation is finished
         this.$el.find(".subtypes-included").sortable('option', 'update', this.onSubtypesChange);
 
-        var seqpeek_container = this.$el.find(".seqpeek-container");
-
         var lastLabelWidth = 70;
         this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
             lastLabelWidth = value;
@@ -71,6 +71,14 @@ module.exports = View.extend({
         this.bind("post-render", function() {
 
         });
+
+        // Trigger initial visualization
+        this.onSubtypesChange();
+    },
+
+    resetSliders: function () {
+        this.$el.find(".slider_scale_width").oncovis_range("reset");
+        this.$el.find(".slider_label_width").oncovis_range("reset");
     },
 
     onSubtypesChange: function(event, ui) {
@@ -89,27 +97,8 @@ module.exports = View.extend({
         this.loadMutations(subtypes, gene_label);
     },
 
-    renderGraph: function () {
+    initGraph: function () {
         var data = this.data;
-
-        // Hide protein scale and domains in all but the last subtype
-        _.chain(data.cancer_subtypes)
-            .initial()
-            .each(function(subtype) {
-                subtype.layout = {
-                    protein_scale_line: {
-                        enabled: true,
-                        y: 0
-                    },
-                    protein_scale_ticks: {
-                        enabled: false,
-                        y: 0
-                    },
-                    protein_domains: {
-                        enabled: false
-                    }
-                };
-            });
 
         var options = {
             location_tick_height: 25,
@@ -144,9 +133,30 @@ module.exports = View.extend({
         this.trigger("post-render");
     },
 
-    resetSliders: function () {
-        this.$el.find(".slider_scale_width").oncovis_range("reset");
-        this.$el.find(".slider_label_width").oncovis_range("reset");
+    updateGraph: function() {
+        var data = this.data;
+
+        // Hide protein scale and domains in all but the last subtype
+        _.chain(data.cancer_subtypes)
+            .initial()
+            .each(function(subtype) {
+                subtype.layout = {
+                    protein_scale_line: {
+                        enabled: true,
+                        y: 0
+                    },
+                    protein_scale_ticks: {
+                        enabled: false,
+                        y: 0
+                    },
+                    protein_domains: {
+                        enabled: false
+                    }
+                };
+            });
+
+        this.drawGraph();
+
     },
 
     ////////////////////////////
@@ -290,6 +300,6 @@ module.exports = View.extend({
             cancer_subtypes: subtype_array
         };
 
-        this.renderGraph();
+        this.updateGraph();
     }
 });
