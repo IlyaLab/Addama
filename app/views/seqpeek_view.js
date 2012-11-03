@@ -14,6 +14,7 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, 'initControls', 'initGraph', 'resetSliders', 'onSubtypesChange', 'updateGraph');
 
+        this.current_subtypes = [];
         this.drawGraph = _.once(this.initGraph);
     },
 
@@ -38,7 +39,7 @@ module.exports = View.extend({
             'UCEC'
         ];
 
-        var default_subtypes = ['BRCA', 'GBM', 'UCEC'];
+        var default_subtypes = ['UCEC', 'GBM', 'BRCA'];
 
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
         this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
@@ -83,22 +84,42 @@ module.exports = View.extend({
 
     onSubtypesChange: function(event, ui) {
         var gene_label;
-        var subtypes;
+        var ui_subtypes;
 
-        subtypes = this.$el
+        ui_subtypes = this.$el
             .find(".subtypes-included .subtype-list-member")
             .map(function() {
                 // The value is in div.textContent
                 return this.textContent;
             });
 
-        gene_label = 'TP53';
+        var new_subtypes = _.difference(ui_subtypes, this.current_subtypes);
+        this.current_subtypes = ui_subtypes;
 
-        this.loadMutations(subtypes, gene_label);
+        this.loadMutations(new_subtypes, 'TP53');
     },
 
     initGraph: function () {
         var data = this.data;
+
+        // Hide protein scale and domains in all but the last subtype
+        _.chain(data.cancer_subtypes)
+            .initial()
+            .each(function(subtype) {
+                subtype.layout = {
+                    protein_scale_line: {
+                        enabled: true,
+                        y: 0
+                    },
+                    protein_scale_ticks: {
+                        enabled: false,
+                        y: 0
+                    },
+                    protein_domains: {
+                        enabled: false
+                    }
+                };
+            });
 
         var options = {
             location_tick_height: 25,
@@ -135,30 +156,29 @@ module.exports = View.extend({
 
     updateGraph: function() {
         var data = this.data;
+        var that = this;
 
-        // Hide protein scale and domains in all but the last subtype
-        _.chain(data.cancer_subtypes)
-            .initial()
-            .each(function(subtype) {
-                subtype.layout = {
-                    protein_scale_line: {
-                        enabled: true,
-                        y: 0
-                    },
-                    protein_scale_ticks: {
-                        enabled: false,
-                        y: 0
-                    },
-                    protein_domains: {
-                        enabled: false
-                    }
-                };
-            });
+        // The subtypes may not be in the same order as in
+        // the UI when they come from the data source.
+        var order = this.current_subtypes.toArray();
+
+        data.cancer_subtypes = data.cancer_subtypes.sort(function(a, b) {
+            if (order.indexOf(a.label) < order.indexOf(b.label)) {
+                return -1;
+            }
+            else if (order.indexOf(a.label) == order.indexOf(b.label)) {
+                return 0;
+            }
+            else {
+                return 1;
+            }
+
+            //return order.indexOf(a.label) < order.indexOf(b.label);
+        });
 
         this.drawGraph();
 
-        // The 'data' object references the one in the visualization object
-        this.$el.find(".seqpeek-container").seqpeek('update_data');
+        //this.$el.find(".seqpeek-container").seqpeek('add_subtypes', data.cancer_subtypes, this.current_subtypes);
     },
 
     ////////////////////////////
@@ -301,6 +321,8 @@ module.exports = View.extend({
             protein: protein_data,
             cancer_subtypes: subtype_array
         };
+
+        console.log(subtype_array);
 
         this.updateGraph();
     }

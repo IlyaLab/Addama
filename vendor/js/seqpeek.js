@@ -42,7 +42,6 @@
         },
 
         processData: function() {
-            var that = this;
             var data = this.data;
 
             var gatherSamplesFn = function(entries) {
@@ -284,9 +283,22 @@
                     .attr("width", size_info.width)
                     .attr("height", size_info.height)
                     .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")");
+
+            this.render();
         },
 
-        updateData: function() {
+        addSubtypes: function(new_subtypes, order) {
+            var data = this.data;
+
+            // Filter out subtypes that might already be in the visualization
+            _.chain(new_subtypes)
+                .filter(function(s) {
+                    return _.has(data.subtype_to_index_map, s.label) === false;
+                })
+                .each(function(s) {
+                    data.cancer_subtypes.push(s);
+                });
+
             // Do data mangling for new subtypes
             this.processData();
 
@@ -294,6 +306,10 @@
             this.updateVerticalScaleRanges();
 
             this.render();
+        },
+
+        changeSubtypeOrder: function(order_labels) {
+            //var current_order =
         },
 
         render: function() {
@@ -1084,13 +1100,16 @@
                 vis.draw(data, options);
             });
         },
-        update_data : function() {
+        add_subtypes : function(new_subtypes, order) {
             return this.each(function() {
                 var vis = $(this).data("SeqPeek");
                 if (vis) {
-                    vis.updateData();
+                    vis.addSubtypes(new_subtypes, order);
                 }
             });
+        },
+        set_subtype_order: function() {
+            return this;
         },
         set_stems : function(stems_enabled) {
             return this.each(function() {
