@@ -96,11 +96,32 @@ module.exports = View.extend({
         var new_subtypes = _.difference(ui_subtypes, this.current_subtypes);
         this.current_subtypes = ui_subtypes;
 
-        this.loadMutations(new_subtypes, 'TP53');
+        if (new_subtypes.length > 0) {
+            this.loadMutations(new_subtypes, 'TP53');
+        }
+        else {
+            this.updateGraph();
+        }
     },
 
     initGraph: function () {
         var data = this.data;
+
+        // The subtypes may not be in the same order as in
+        // the UI when they come from the data source.
+        var order = this.current_subtypes.toArray();
+
+        data.cancer_subtypes = data.cancer_subtypes.sort(function(a, b) {
+            if (order.indexOf(a.label) < order.indexOf(b.label)) {
+                return -1;
+            }
+            else if (order.indexOf(a.label) == order.indexOf(b.label)) {
+                return 0;
+            }
+            else {
+                return 1;
+            }
+        });
 
         // Hide protein scale and domains in all but the last subtype
         _.chain(data.cancer_subtypes)
@@ -158,27 +179,9 @@ module.exports = View.extend({
         var data = this.data;
         var that = this;
 
-        // The subtypes may not be in the same order as in
-        // the UI when they come from the data source.
-        var order = this.current_subtypes.toArray();
-
-        data.cancer_subtypes = data.cancer_subtypes.sort(function(a, b) {
-            if (order.indexOf(a.label) < order.indexOf(b.label)) {
-                return -1;
-            }
-            else if (order.indexOf(a.label) == order.indexOf(b.label)) {
-                return 0;
-            }
-            else {
-                return 1;
-            }
-
-            //return order.indexOf(a.label) < order.indexOf(b.label);
-        });
-
         this.drawGraph();
 
-        //this.$el.find(".seqpeek-container").seqpeek('add_subtypes', data.cancer_subtypes, this.current_subtypes);
+        this.$el.find(".seqpeek-container").seqpeek('add_subtypes', data.cancer_subtypes, this.current_subtypes.toArray());
     },
 
     ////////////////////////////
@@ -321,8 +324,6 @@ module.exports = View.extend({
             protein: protein_data,
             cancer_subtypes: subtype_array
         };
-
-        console.log(subtype_array);
 
         this.updateGraph();
     }

@@ -299,6 +299,18 @@
                     data.cancer_subtypes.push(s);
                 });
 
+            data.cancer_subtypes = data.cancer_subtypes.sort(function(a, b) {
+                if (order.indexOf(a.label) < order.indexOf(b.label)) {
+                    return -1;
+                }
+                else if (order.indexOf(a.label) == order.indexOf(b.label)) {
+                    return 0;
+                }
+                else {
+                    return 1;
+                }
+            });
+
             // Do data mangling for new subtypes
             this.processData();
 
@@ -306,10 +318,6 @@
             this.updateVerticalScaleRanges();
 
             this.render();
-        },
-
-        changeSubtypeOrder: function(order_labels) {
-            //var current_order =
         },
 
         render: function() {
