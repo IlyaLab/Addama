@@ -157,6 +157,8 @@ module.exports = View.extend({
 
         this.drawGraph();
 
+        // The 'data' object references the one in the visualization object
+        this.$el.find(".seqpeek-container").seqpeek('update_data');
     },
 
     ////////////////////////////

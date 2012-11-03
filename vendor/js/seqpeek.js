@@ -67,21 +67,23 @@
             _.each(data.cancer_subtypes, function(subtype, index) {
                 data.subtype_to_index_map[subtype.label] = index;
 
-                var mutations_by_loc = _
-                    .chain(subtype.mutations)
-                    .groupBy('mutation_id')
-                    .map(gatherSamplesFn)
-                    .groupBy('location')
-                    .value();
+                if (! _.has(subtype, 'mutations_by_loc') && ! _.has(subtype, 'mutations_processed')) {
+                    var mutations_by_loc = _
+                        .chain(subtype.mutations)
+                        .groupBy('mutation_id')
+                        .map(gatherSamplesFn)
+                        .groupBy('location')
+                        .value();
 
-                var all_mutations = [];
+                    var all_mutations = [];
 
-                _.each(mutations_by_loc, function(mutations, location) {
-                    all_mutations.push.apply(all_mutations, mutations);
-                });
+                    _.each(mutations_by_loc, function(mutations, location) {
+                        all_mutations.push.apply(all_mutations, mutations);
+                    });
 
-                subtype.mutations_by_loc = mutations_by_loc;
-                subtype.mutations_processed = all_mutations;
+                    subtype.mutations_by_loc = mutations_by_loc;
+                    subtype.mutations_processed = all_mutations;
+                }
 
                 var default_layout = {
                     background_ticks: {
@@ -274,7 +276,7 @@
             this.vis.root = d3.select(this.config.target_el)
                 .append("svg")
                     .attr("width", (2 * this.config.plot.horizontal_padding + size_info.width))
-                    .attr("height", (2 * this.config.plot.vertical_padding + size_info.height));
+                    .attr("height", (2 * this.config.plot.vertical_padding + 2 * size_info.height));
 
             this.vis.root
                 .append("g")
@@ -282,6 +284,14 @@
                     .attr("width", size_info.width)
                     .attr("height", size_info.height)
                     .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")");
+        },
+
+        updateData: function() {
+            // Do data mangling for new subtypes
+            this.processData();
+
+            // Do layouts for new subtypes
+            this.updateVerticalScaleRanges();
 
             this.render();
         },
@@ -295,7 +305,9 @@
                 .selectAll("g.cancer-type")
                     .data(data.cancer_subtypes, function(d) {
                         return d.label;
-                    })
+                    });
+
+            this.vis.cancer_types_g
                 .enter()
                 .append("g")
                     .attr("class", "cancer-type")
@@ -307,11 +319,19 @@
                     });
 
             this.vis.cancer_types_g
+                .enter()
                 .append("g")
                     .attr("class", "protein")
-                    .attr("transform", "translate(" + this.config.band_label_width + ",0)");
+                    .attr("transform", "translate(" + this.config.band_label_width + ",0)")
+                // Vertical reference lines on the protein scale
+                .append("g")
+                    .attr("class", "background-ticks")
+                    .attr("transform", function(d) {
+                        return "translate(0," + (d.layout.mutations.y) + ")";
+                    });
 
             this.vis.cancer_types_g
+                .enter()
                 .append("text")
                     .attr("left", 0)
                     .attr("y", function(d) {
@@ -322,6 +342,7 @@
                     });
 
             // Vertical reference lines on the protein scale
+            /*
             this.vis.cancer_types_g
                 .selectAll(".protein")
                 .append("g")
@@ -329,7 +350,7 @@
                     .attr("transform", function(d) {
                         return "translate(0," + (d.layout.mutations.y) + ")";
                     });
-
+*/
             this.updateMutationLayout();
 
             this.updateVerticalGroups();
@@ -1021,6 +1042,14 @@
                 var vis;
                 $this.data("SeqPeek", (vis = SeqPeekFactory.create($this.get(0))));
                 vis.draw(data, options);
+            });
+        },
+        update_data : function() {
+            return this.each(function() {
+                var vis = $(this).data("SeqPeek");
+                if (vis) {
+                    vis.updateData();
+                }
             });
         },
         set_stems : function(stems_enabled) {
