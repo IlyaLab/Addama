@@ -112,7 +112,7 @@ var Graph = Backbone.Model.extend({
     },
 
     parse:function (txt) {
-        var annotations = qed.Annotations[this.dataset_id];
+        var annotations = qed.Annotations[this.dataset_id] || {};
 
         var processedNodes = {};
         var edges = [];

@@ -32,10 +32,12 @@ module.exports = View.extend({
         };
 
         var annotations = qed.Annotations[this.model.get("dataset_id")] || {};
-        var headers = _.keys(annotations[_.first(_.keys(annotations))]);
-        _.each(headers, function (header) {
-            hovercard_config[header] = header;
-        });
+        if (!_.isEmpty(annotations)) {
+            var headers = _.keys(annotations[_.first(_.keys(annotations))]);
+            _.each(headers, function (header) {
+                hovercard_config[header] = header;
+            });
+        }
 
         var extent = [0, 0.5];
         var color_scale = d3.scale.linear().domain(extent).range(['green', 'red']);
