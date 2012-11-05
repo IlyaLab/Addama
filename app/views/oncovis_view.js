@@ -29,6 +29,8 @@ module.exports = View.extend({
     },
 
     afterRender:function () {
+        this.initSelectors();
+
         new GeneListView({ $el: this.$el }).on("genelist-selected", this.onNewRows);
     },
 
@@ -56,11 +58,6 @@ module.exports = View.extend({
             _this.$el.find('.selector-modal').modal("hide");
             _this.model.trigger("load");
         });
-
-        if (_.isEmpty(this.rowLabels)) {
-            var rows = this.model.get("ROWS");
-            this.rowLabels = _.first(rows, (rows.length < 50) ? rows.length : 50);
-        }
     },
 
     getColumnModel:function () {
@@ -104,7 +101,16 @@ module.exports = View.extend({
 
     renderGraph:function () {
         this.initControls();
-        this.initSelectors();
+
+        if (_.isEmpty(this.rowLabels)) {
+            var rows = this.model.get("ROWS");
+            this.rowLabels = _.first(rows, (rows.length < 50) ? rows.length : 50);
+        }
+
+        if (this.clusterProperty) {
+            var removeIdx = _.indexOf(this.rowLabels, this.clusterProperty);
+            if (removeIdx >= 0) this.rowLabels.splice(removeIdx,1);
+        }
 
         if (!this.rowLabels || !this.rowLabels.length) {
             this.$el.find('.selector-modal').modal("show");
