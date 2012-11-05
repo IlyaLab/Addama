@@ -25,11 +25,12 @@ def processFile(filename, options):
 
     json_out = { "items" : [] }
     for line in f.readlines():
-        cols = line.split("\t")
-        feature_a = feature_id_extract(cols[0])
-        feature_b = feature_id_extract(cols[1])
-        if not feature_a is None: json_out["items"].append(feature_a)
-        if not feature_b is None: json_out["items"].append(feature_b)
+        if not line.startswith("##"):
+            cols = line.split("\t")
+            feature_a = feature_id_extract(cols[0])
+            feature_b = feature_id_extract(cols[1])
+            if not feature_a is None: json_out["items"].append(feature_a)
+            if not feature_b is None: json_out["items"].append(feature_b)
 
     print json.dumps(json_out, indent=4)
 
