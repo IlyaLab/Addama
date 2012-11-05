@@ -46,8 +46,8 @@ module.exports = View.extend({
             GENOME:{
                 DATA:{
                     key_order:_.keys(qed.Lookups.Chromosomes.get("itemsById")),
-                    key_length:_.map(_.values(qed.Lookups.Chromosomes.get("itemsById")), function (v) {
-                        return parseInt(v["chr_lengths"])
+                    key_length:_.map(qed.Lookups.Chromosomes.get("itemsById"), function (obj, chr) {
+                        return {chr_name:chr, chr_length:parseInt(obj["chr_lengths"])};
                     })
                 },
                 OPTIONS:{
