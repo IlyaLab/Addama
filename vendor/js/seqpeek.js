@@ -347,7 +347,8 @@
                     })
                     .attr("transform", function(d) {
                         return "translate(0," + d.layout.y + ")";
-                    });
+                    })
+                    .style("opacity", 1e-6);
 
             subtypes_g
                 .append("g")
@@ -377,7 +378,8 @@
 
                 subtypes_exit = subtypes_exit
                     .transition()
-                    .duration(500);
+                    .duration(500)
+                    .style("opacity", 1e-6);
             }
 
             // Update
@@ -387,7 +389,8 @@
                 })
                 .attr("transform", function(d) {
                     return "translate(0," + d.layout.y + ")";
-                });
+                })
+                .style("opacity", 1.0);
 
             // Exit
             subtypes_exit
