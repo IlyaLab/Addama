@@ -293,11 +293,16 @@
             // Filter out subtypes that might already be in the visualization
             _.chain(new_subtypes)
                 .filter(function(s) {
-                    return _.has(data.subtype_to_index_map, s.label) === false || order.indexOf(s.label) === -1
+                    return _.has(data.subtype_to_index_map, s.label) === false;
                 })
                 .each(function(s) {
                     data.cancer_subtypes.push(s);
                 });
+
+            // Remove subtypes that are not included in the 'order' array
+            data.cancer_subtypes = _.filter(data.cancer_subtypes, function(s) {
+                return order.indexOf(s.label) != -1;
+            });
 
             data.cancer_subtypes = data.cancer_subtypes.sort(function(a, b) {
                 if (order.indexOf(a.label) < order.indexOf(b.label)) {
