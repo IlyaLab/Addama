@@ -51,7 +51,11 @@ class LocalFileHandler(tornado.web.RequestHandler):
             else:
                 rfile = open(options.data_path + filepath)
                 while True:
-                    if rfile.readline().startswith("##"): continue
+                    thisline = rfile.readline()
+                    if thisline.startswith("##"):
+                        continue
+                    else:
+                        self.write(thisline)
                     self.write(rfile.read())
                     break
                 rfile.close()
