@@ -319,7 +319,7 @@
 
             if (_.isFunction(config.post_process_fn)) {
                 config.post_process_fn(data.cancer_subtypes)
-            };
+            }
 
             // Do data mangling for new subtypes
             this.processData();
@@ -434,7 +434,6 @@
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type");
 
-            //this.vis.cancer_types_g
             subtypes
                 .each(function(subtype_data) {
                     var background_lines = d3
@@ -454,7 +453,6 @@
                         });
                 });
 
-            //this.vis.cancer_types_g
             subtypes
                 .each(function(subtype_data) {
                     var mutation_group = d3
@@ -483,7 +481,6 @@
                         .style("opacity", 1.0);
                 });
 
-            //this.vis.cancer_types_g
             subtypes
                 .each(function(subtype_data) {
                     var protein_scales = d3
@@ -529,7 +526,6 @@
                         .remove();
                 });
 
-            //this.vis.cancer_types_g
             subtypes
                 .each(function(subtype_data) {
                     var domains = d3
@@ -653,8 +649,6 @@
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type");
 
-
-            //this.vis.cancer_types_g
             subtypes
                 .selectAll(".protein")
                 .selectAll("g.background-ticks")
@@ -688,7 +682,6 @@
                         .attr("y2", layout.background_ticks.y2);
             });
 
-            //that.vis.cancer_types_g
             subtypes
                 .selectAll(".protein")
                 .selectAll(".scale")
@@ -697,24 +690,27 @@
                         .selectAll(".protein-scale")
                             .data(function(d) {
                                 if (d.layout.protein_scale_line.enabled === true) {
-                                    return [{
-                                        y1: d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0,
-                                        y2: d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0
-                                    }];
+                                    return [d];
                                 }
 
                             return [];
+                        }, function(d) {
+                            return d.label;
                         });
 
                     scale_line
                         .enter()
                         .append("svg:line")
                             .attr("class", "protein-scale")
-                            .attr("y1", function(d) { return d.y1; })
-                            .attr("y2", function(d) { return d.y2; })
+                            .attr("y1", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
+                            .attr("y2", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
                             .attr("x1", 0)
                             .attr("x2", that.config.protein_scale_width)
                             .style("stroke", "black");
+
+                    scale_line
+                        .attr("y1", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
+                        .attr("y2", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; });
 
                     scale_line
                         .exit()

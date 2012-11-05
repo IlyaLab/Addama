@@ -39,7 +39,7 @@ module.exports = View.extend({
             'UCEC'
         ];
 
-        var default_subtypes = ['UCEC', 'GBM', 'BRCA'];
+        var default_subtypes = ['UCEC', 'BRCA', 'GBM'];
 
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
         this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
