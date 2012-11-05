@@ -698,22 +698,36 @@
                             return d.label;
                         });
 
-                    scale_line
-                        .enter()
+                    var scale_line_enter = scale_line.enter();
+                    var scale_line_exit = scale_line.exit();
+
+                    scale_line_enter
                         .append("svg:line")
                             .attr("class", "protein-scale")
                             .attr("y1", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
                             .attr("y2", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
                             .attr("x1", 0)
                             .attr("x2", that.config.protein_scale_width)
-                            .style("stroke", "black");
+                            .style("stroke", "black")
+                            .style("opacity", 1e-6);
+
+                    if (that.config.enable_transitions) {
+                        scale_line = scale_line
+                            .transition()
+                            .duration(500);
+
+                        scale_line_exit = scale_line_exit
+                            .transition()
+                            .duration(500)
+                            .style("opacity", 1e-6);
+                    }
 
                     scale_line
                         .attr("y1", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
-                        .attr("y2", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; });
+                        .attr("y2", function(d) { return d.layout.protein_scale_ticks.enabled === true ? -that.config.location_tick_height : 0; })
+                        .style("opacity", 1.0);
 
-                    scale_line
-                        .exit()
+                    scale_line_exit
                         .remove();
 
                     var scale_ticks = d3.select(this)
@@ -756,7 +770,6 @@
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type");
 
-            //that.vis.cancer_types_g
             subtypes
                 .selectAll(".protein")
                 .selectAll(".mutations")
