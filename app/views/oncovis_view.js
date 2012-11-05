@@ -58,7 +58,8 @@ module.exports = View.extend({
         });
 
         if (_.isEmpty(this.rowLabels)) {
-            this.rowLabels = _.first(this.model.get("ROWS"), 50);
+            var rows = this.model.get("ROWS");
+            this.rowLabels = _.first(rows, (rows.length < 50) ? rows.length : 50);
         }
     },
 
