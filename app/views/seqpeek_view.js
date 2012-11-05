@@ -82,7 +82,7 @@ module.exports = View.extend({
         this.$el.find(".slider_label_width").oncovis_range("reset");
     },
 
-    onSubtypesChange: function(event, ui) {
+    onSubtypesChange: function() {
         var gene_label;
         var ui_subtypes;
 
@@ -176,12 +176,50 @@ module.exports = View.extend({
     },
 
     updateGraph: function() {
-        var data = this.data;
-        var that = this;
+        var data = this.data,
+            that = this;
 
         this.drawGraph();
 
-        this.$el.find(".seqpeek-container").seqpeek('change_subtypes', data.cancer_subtypes, this.current_subtypes.toArray());
+        var postProcessFn = function(subtypes) {
+            _.chain(subtypes)
+                .initial()
+                .each(function(s) {
+                    s.layout = {
+                        protein_scale_line: {
+                            enabled: true,
+                            y: 0
+                        },
+                        protein_scale_ticks: {
+                            enabled: false,
+                            y: 0
+                        },
+                        protein_domains: {
+                            enabled: false
+                        }
+                    };
+                });
+
+            _.last(subtypes).layout = {
+                protein_scale_line: {
+                    enabled: true,
+                    y: 0
+                },
+                protein_scale_ticks: {
+                    enabled: true,
+                    y: 0
+                },
+                protein_domains: {
+                    enabled: true
+                }
+            }
+        };
+
+        this.$el.find(".seqpeek-container").seqpeek('change_subtypes', data.cancer_subtypes, {
+                subtype_order: this.current_subtypes.toArray(),
+                post_process_fn: postProcessFn
+            }
+        );
     },
 
     ////////////////////////////

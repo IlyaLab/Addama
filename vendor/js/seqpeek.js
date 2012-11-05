@@ -1,5 +1,5 @@
 !function ($) {
-    var SeqPeekProtype = {
+    var SeqPeekPrototype = {
         mutationSortFn: function(a, b) {
             var order = [
                 "Silent",
@@ -287,8 +287,9 @@
             this.render();
         },
 
-        changeSubtypes: function(new_subtypes, order) {
-            var data = this.data;
+        changeSubtypes: function(new_subtypes, config) {
+            var data = this.data,
+                order = config.subtype_order;
 
             // Filter out subtypes that might already be in the visualization
             _.chain(new_subtypes)
@@ -316,6 +317,10 @@
                 }
             });
 
+            if (_.isFunction(config.post_process_fn)) {
+                config.post_process_fn(data.cancer_subtypes)
+            };
+
             // Do data mangling for new subtypes
             this.processData();
 
@@ -339,7 +344,7 @@
             var subtypes_enter = cancer_types_g.enter();
             var subtypes_exit = cancer_types_g.exit();
 
-            var subtypes_g = subtypes_enter
+            var subtype = subtypes_enter
                 .append("g")
                     .attr("class", "cancer-type")
                     .attr("height", function(d) {
@@ -350,7 +355,7 @@
                     })
                     .style("opacity", 1e-6);
 
-            subtypes_g
+            subtype
                 .append("g")
                     .attr("class", "protein")
                     .attr("transform", "translate(" + this.config.band_label_width + ",0)")
@@ -361,7 +366,7 @@
                         return "translate(0," + (d.layout.mutations.y) + ")";
                     });
 
-            subtypes_g
+            subtype
                 .append("text")
                     .attr("left", 0)
                     .attr("y", function(d) {
@@ -1097,7 +1102,7 @@
 
     var SeqPeekFactory = {
         create: function(target_el) {
-            var obj = Object.create(SeqPeekProtype, {});
+            var obj = Object.create(SeqPeekPrototype, {});
             obj.config = {
                 target_el: target_el
             };
