@@ -78,8 +78,8 @@ class WhoamiHandler(tornado.web.RequestHandler):
 
         providers = []
         providers.append(google_provider)
-        providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "img/facebook_logo.jpg" })
-        providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
+        # providers.append({ "id": "facebook", "label": "Facebook", "active": False, "logo": "img/facebook_logo.jpg" })
+        # providers.append({ "id": "twitter", "label": "Twitter", "active": False, "logo":"https://twitter.com/images/resources/twitter-bird-white-on-blue.png" })
 
         self.write({"providers":providers});
         self.set_status(200)
