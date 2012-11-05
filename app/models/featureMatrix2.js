@@ -21,9 +21,11 @@ module.exports = Model.extend({
             DATA = [];
 
         _.each(_.rest(tsv_rows, 1), function (tsv_row, tsv_row_idx) {
-            var data_values = tsv_row.split("\t");
-            ROWS.push(_.first(data_values));
-            DATA[tsv_row_idx] = _.rest(data_values, 1);
+            if (!_.isEmpty(tsv_row)) {
+                var data_values = tsv_row.split("\t");
+                ROWS.push(_.first(data_values));
+                DATA[tsv_row_idx] = _.rest(data_values, 1);
+            }
         });
 
         return {"DATA":DATA, "COLUMNS":COLUMNS, "ROWS":ROWS};
