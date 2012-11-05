@@ -29,8 +29,6 @@ module.exports = View.extend({
     },
 
     afterRender:function () {
-        this.initSelectors();
-
         new GeneListView({ $el: this.$el }).on("genelist-selected", this.onNewRows);
     },
 
@@ -60,7 +58,7 @@ module.exports = View.extend({
         });
 
         if (_.isEmpty(this.rowLabels)) {
-            this.$el.find('.selector-modal').modal("show");
+            this.rowLabels = _.first(this.model.get("ROWS"), 50);
         }
     },
 
@@ -105,8 +103,10 @@ module.exports = View.extend({
 
     renderGraph:function () {
         this.initControls();
+        this.initSelectors();
 
         if (!this.rowLabels || !this.rowLabels.length) {
+            this.$el.find('.selector-modal').modal("show");
             return;
         }
 
@@ -141,8 +141,8 @@ module.exports = View.extend({
         });
 
         var optns = {
-            plot_width:3000,
-            plot_height:3000,
+            plot_width:1500,
+            plot_height:700,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
                 return d ? d.colorscale : "white";
