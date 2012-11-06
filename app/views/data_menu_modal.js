@@ -22,7 +22,7 @@ module.exports = View.extend({
             {"label":"Grid", "id":"grid"}
         ];
 
-        this.$el.find(".modal-header h3").html(item.label);
+        this.$el.find(".modal-header h4").html(item.label);
         this.$el.find(".modal-body .info").html(item.description);
         var UL = this.$el.find(".data-links");
         _.each(views, function (view) {
