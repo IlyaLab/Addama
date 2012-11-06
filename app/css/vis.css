@@ -197,3 +197,15 @@ svg .wedge[data-ring="2"] .background {
     height:700px;
     overflow: auto;
 }
+
+.match.PFAM {
+    fill: midnightblue;
+}
+
+.match.SMART {
+    fill: firebrick;
+}
+
+.match.PROFILE {
+    fill: darkorange;
+}
