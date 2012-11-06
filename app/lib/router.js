@@ -42,7 +42,7 @@ module.exports = Backbone.Router.extend({
         Controller.oncovis.view();
     },
 
-    seqpeek: function() {
+    seqpeek: function(gene_label) {
         Controller.seqpeek.view();
     },
 

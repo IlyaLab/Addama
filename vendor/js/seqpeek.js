@@ -1,24 +1,49 @@
 !function ($) {
     var SeqPeekPrototype = {
         mutationSortFn: function(a, b) {
-            var order = [
-                "Silent",
-                "Nonsense_Mutation",
-                "Frame_Shift_Del",
-                "Frame_Shift_Ins",
-                "Missense_Mutation"
-            ];
+            var subtype_order = _
+                .chain(this.data.cancer_subtypes)
+                .pluck('label')
+                .reduce(function(memo, label, index) {
+                    memo[label] = index;
+                    return memo;
+                }, {})
+                .value();
 
-            var order_map = {};
-            _.each(order, function(label, index) {
-                order_map[label] = index;
-            });
+            var mutation_order = _
+                .chain([
+                    "Silent",
+                    "Nonsense_Mutation",
+                    "Frame_Shift_Del",
+                    "Frame_Shift_Ins",
+                    "Missense_Mutation"
+                ])
+                .reduce(function(memo, label, index) {
+                    memo[label] = index;
+                    return memo;
+                }, {})
+                .value();
 
-            if (_.has(order_map, a.mutation_type) && _.has(order_map, b.mutation_type)) {
-                return order_map[a.mutation_type] > order_map[b.mutation_type];
+            if (!_.has(mutation_order, a.mutation_type) || !_.has(mutation_order, b.mutation_type)) {
+                return 0;
+            }
+
+            if( mutation_order[a.mutation_type] < mutation_order[b.mutation_type]) {
+                return -1;
+            }
+            else if( mutation_order[a.mutation_type] > mutation_order[b.mutation_type]) {
+                return 1;
             }
             else {
-                return 0;
+                if (subtype_order[a.cancer_subtype] < subtype_order[b.cancer_subtype]) {
+                    return -1;
+                }
+                else if (subtype_order[a.cancer_subtype] > subtype_order[b.cancer_subtype]) {
+                    return 1;
+                }
+                else {
+                    return 0
+                }
             }
         },
 
@@ -584,7 +609,7 @@
                     var group,
                         scale = d3.scale.ordinal();
 
-                    mutations.sort(that.mutationSortFn);
+                    mutations.sort(_.bind(that.mutationSortFn, that));
 
                     var mutation_ids_sorted = _
                         .chain(mutations)
@@ -1062,12 +1087,9 @@
         setStems: function(stems_enabled) {
             this.config.enable_mutation_stems = stems_enabled;
 
-            this.updateStems();
-            this.updateMutationLayout();
             this.updateVerticalScaleRanges();
-            this.updateVerticalGroups();
-            this.updateSubtypePositions();
-            this.updateMutationMarkers();
+            this.updateStems();
+            this.render();
         },
 
         setProteinScales: function(param_subtypes) {
