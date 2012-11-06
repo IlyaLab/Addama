@@ -2,6 +2,14 @@ var View = require('./view');
 var DropdownTemplate = require("./templates/data_dropdown_menu");
 
 module.exports = View.extend({
+    events: {
+        "click .selected-data-item": function(e) {
+            this.trigger("select-data-item", {
+                "unitId": $(e.target).data("unitid"),
+                "itemId": $(e.target).data("itemid")
+            });
+        }
+    },
 
     initialize:function (options) {
         _.extend(this, options);
@@ -12,26 +20,22 @@ module.exports = View.extend({
 
     renderMenuItems: function() {
         var sectionId = this.sectionId;
-        var menus = _.map(this.section, function(unit, unit_id) {
-
+        var menus = _.map(this.section, function(unit, unitId) {
             if (unit.catalog && !_.isEmpty(unit.catalog)) {
                 return {
                     "label": unit.label,
-                    "items": _.map(unit.catalog, function(item, item_id) {
-                        var views = qed.ViewMappings[item.model] || [{"label":"Grid","id":"grid"}];
+                    "items": _.map(unit.catalog, function(item, itemId) {
                         return {
-                            "label": item.label || item_id,
-                            "items": _.map(views, function(view) {
-                                return { "label": view.label, "href": "#v/" + sectionId + "/" + unit_id + "/" + item_id + "/" + view.id };
-                            }),
-                            "multiItem": (views.length > 1)
+                            "label": item.label || itemId,
+                            "unitId": unitId,
+                            "itemId": itemId
                         };
                     })
                 };
             }
         });
 
-        this.$el.append(DropdownTemplate({ "label": this.section.label, "items": _.compact(menus) }))
+        this.$el.append(DropdownTemplate({ "label": this.section.label, "items": _.compact(menus) }));
     },
 
     afterRender: function() {

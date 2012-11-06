@@ -5,21 +5,7 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{label}} <b class="caret"></b></a>
         <ul class="dropdown-menu">
             {{#each items}}
-                {{#if multiItem}}
-                <li class="dropdown-submenu">
-                    <a tabindex="-1" href="#">{{label}}</a>
-                    <ul class="dropdown-menu">
-                        {{#each items}}
-                        <li><a href="{{href}}">{{label}}</a></li>
-                        {{/each}}
-                    </ul>
-                </li>
-                {{/if}}
-                {{#unless multiItem}}
-                    {{#each items}}
-                        <li><a href="{{href}}">{{../label}}</a></li>
-                    {{/each}}
-                {{/unless}}
+            <li><a href="#" onclick="return false;" class="selected-data-item" data-unitId="{{unitId}}" data-itemId="{{itemId}}">{{label}}</a></li>
             {{/each}}
         </ul>
     </li>
