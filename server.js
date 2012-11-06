@@ -36,7 +36,9 @@ exports.startServer = function(port, path) {
         config = proxy_config[i];
         if (req.url.match(new RegExp('^'+config.url,'i'))) {
           target = { host:config.host, port:config.port};
-          req.url = req.url.slice(config.url.length);
+          if (!config.keep_url) {
+            req.url = req.url.slice(config.url.length);
+          }
           console.log(req.url);
           break;
         }
