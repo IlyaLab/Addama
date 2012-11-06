@@ -16,9 +16,6 @@ module.exports = View.extend({
         "click .signin": function() {
             this.$signInModal.modal("toggle");
             return false;
-        },
-        "click .data-menu-link": function() {
-            $('.data-menu').toggle(1000);
         }
     },
 

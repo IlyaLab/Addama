@@ -1,7 +1,9 @@
 var View = require('./view');
-var DropdownTemplate = require("./templates/data_dropdown_menu");
+var template = require("./templates/data_dropdown_menu");
 
 module.exports = View.extend({
+    template: template,
+
     events: {
         "click .selected-data-item": function(e) {
             this.trigger("select-data-item", {
@@ -13,13 +15,9 @@ module.exports = View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, "renderMenuItems");
-
-        this.renderMenuItems();
     },
 
-    renderMenuItems: function() {
-        var sectionId = this.sectionId;
+    getRenderData: function() {
         var menus = _.map(this.section, function(unit, unitId) {
             if (unit.catalog && !_.isEmpty(unit.catalog)) {
                 return {
@@ -35,13 +33,6 @@ module.exports = View.extend({
             }
         });
 
-        this.$el.append(DropdownTemplate({ "label": this.section.label, "items": _.compact(menus) }));
-    },
-
-    afterRender: function() {
-        var dropdownLIs = this.$el.find("li.dropdown");
-        this.$el.find(".data-menu-toggle").click(function(e) {
-            dropdownLIs.toggle(1000);
-        });
+        return { "label": this.section.label, "items": _.compact(menus) };
     }
 });

@@ -31,8 +31,8 @@ module.exports = Backbone.Router.extend({
         var DataMenuView = require("../views/data_menu");
         var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
         _.each(section_ids, function(section_id) {
-            var dataMenuView = new DataMenuView({ "sectionId": section_id, "section": qed.Datamodel.get(section_id) });
-            $(".data-menu .navbar-inner").append(dataMenuView.render().el);
+            var dataMenuView = new DataMenuView({ "section": qed.Datamodel.get(section_id) });
+            $(".data-menu").append(dataMenuView.render().el);
             dataMenuView.on("select-data-item", function(selected) {
                 var modalConfig = _.extend({ sectionId: section_id }, selected);
                 var DataMenuModal = require("../views/data_menu_modal");
