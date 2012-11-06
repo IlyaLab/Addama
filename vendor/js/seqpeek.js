@@ -881,15 +881,17 @@
                     var applyMutationTypeGroups = function(data) {
                         var group = location_to_node_map[data.location];
 
-                        var node_g = d3
+                        var mutation_type_g = d3
                             .select(this)
                             .selectAll("g.mutation-type")
                                 .data(function() {
                                     return data.mutations;
                                 }, mutationIdFn);
 
-                        node_g
-                            .enter()
+                        var mutation_type_enter = mutation_type_g.enter(),
+                            mutation_type_exit = mutation_type_g.exit();
+
+                        mutation_type_enter
                             .append("svg:g")
                                 .attr("class", "mutation-type")
                                 .attr("transform", function(d) {
@@ -906,15 +908,32 @@
                                         return 'lightgray';
                                     }
                                 })
+                                .style("opacity", 1e-6)
                             .each(renderCircles);
 
+                        if (that.config.enable_transitions) {
+                            mutation_type_g = mutation_type_g
+                                .transition()
+                                .duration(500);
+
+                            mutation_type_exit = mutation_type_exit
+                                .transition()
+                                .duration(500)
+                                .style("opacity", 1e-6);
+                        }
+
                         // Update
-                        node_g
+                        mutation_type_g
                             .attr("transform", function(d) {
                                 var x = group.scale(mutationIdFn(d)) + that.config.mutation_shape_width / 2.0;
                                 var y = that.config.mutation_stem_height * (that.config.enable_mutation_stems === true ? 1 : 0);
                                 return "translate(" + x + "," + y + ")";
-                            });
+                            })
+                            .style("opacity", 1.0);
+
+
+                        mutation_type_exit
+                            .remove();
                     };
 
                     var mutation_group_g = d3.select(this)
