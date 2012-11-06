@@ -45,6 +45,13 @@ $(function () {
         }
     });
 
+    var startupUI = function() {
+        var QEDRouter = require('lib/router');
+        qed.Router = new QEDRouter();
+        qed.Router.initTopNavBar();
+        Backbone.history.start();
+    };
+
     qed.Datamodel.fetch({
         url:"svc/data/qed_datamodel.json",
         success:function () {
@@ -58,12 +65,7 @@ $(function () {
                 return sum + next;
             });
 
-            var initLayoutFn = _.after(allCatalogs, function () {
-                var QEDRouter = require('lib/router');
-                qed.Router = new QEDRouter();
-                qed.Router.initTopNavBar();
-                Backbone.history.start();
-            });
+            var initLayoutFn = _.after(allCatalogs, startupUI);
             _.each(section_ids, function (section_id) {
                 _.each(qed.Datamodel.get(section_id), function (unit, unit_id) {
                     if (unit_id != "label") {
@@ -72,7 +74,8 @@ $(function () {
                     }
                 });
             });
-        }
+        },
+        error: startupUI
     });
 
     qed.Lookups.Chromosomes = new qed.Models.Annotations({ url:"svc/data/lookups/chromosomes" });
