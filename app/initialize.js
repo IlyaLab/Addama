@@ -5,7 +5,8 @@ $(function () {
             "Annotations":require("models/annotations"),
             "Mappings":require("models/mappings"),
             "FeatureMatrix":require("models/featureMatrix2"),
-            "GraphLayouts":require("models/graph_layouts")
+            "GraphLayouts":require("models/graph_layouts"),
+            "Mutations":require("models/mutations")
         },
         ViewMappings:{
             "Annotations":[
@@ -19,6 +20,9 @@ $(function () {
                 { "id":"circ", label:"CircVis" },
                 { "id":"grid", label:"Grid" },
                 { "id":"graph", label:"Graph" }
+            ],
+            "Mutations": [
+                { "id":"seqpeek", label:"Mutation Viewer" }
             ]
         },
         Views:{
@@ -29,7 +33,8 @@ $(function () {
             "pwpv":require("views/pwpv_view"),
             "twoD":require("views/2D_Distribution_view"),
             "kde":null,
-            "parcoords":require("views/parcoords_view")
+            "parcoords":require("views/parcoords_view"),
+            "seqpeek":require("views/seqpeek_view")
         },
         Lookups:{
             Labels:{}
