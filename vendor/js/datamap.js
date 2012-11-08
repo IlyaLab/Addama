@@ -1,4 +1,5 @@
 // TODO : Figure out better way to get native element types (e.g. this.$el.dataset)
+// TODO : Canvas may be required
 !function ($) {
     var DataMap = function (element) {
         this.$el = $(element);
@@ -14,13 +15,14 @@
         transitionDuration:1000,
 
         stepsData:{},
-        roots: {},
+        roots:{},
 
         init:function (options) {
             if (options) _.extend(this, options);
             console.log("DataMap.init");
 
             _.bindAll(this, "_initStep", "_computeWindowScale", "_perspective", "_scale", "_translate", "_rotate");
+            _.bindAll(this, "_onStepEnter", "_onStepLeave");
 
             var rootData = this.$el[0].dataset;
             var config = {
@@ -62,8 +64,119 @@
             this.$el.trigger("impress:init", { api:this });
         },
 
-        goto:function () {
-            console.log("DataMap.goto");
+        goto:function (options) {
+            console.log("DataMap.goto:" + options.step);
+            var $step = $(options.step);
+            var stepId = $step[0].id;
+
+            window.scrollTo(0, 0);
+
+            if (this.activeStep) {
+                this.activeStep.removeClass("impress-active");
+                this.$el.removeClass("impress-on-" + this.activeStep[0].id);
+            }
+            $step.addClass("impress-active");
+
+            this.$el.addClass("impress-on-" + stepId);
+
+            // compute target state of the canvas based on given step
+            var stepData = this.stepsData[stepId];
+            var target = {
+                rotate:{
+                    x:-stepData.rotate.x,
+                    y:-stepData.rotate.y,
+                    z:-stepData.rotate.z
+                },
+                translate:{
+                    x:-stepData.translate.x,
+                    y:-stepData.translate.y,
+                    z:-stepData.translate.z
+                },
+                scale:1 / stepData.scale
+            };
+
+            // Check if the transition is zooming in or not.
+            //
+            // This information is used to alter the transition style:
+            // when we are zooming in - we start with move and rotate transition
+            // and the scaling is delayed, but when we are zooming out we start
+            // with scaling down and move and rotation are delayed.
+            var zoomin = target.scale >= this.currentState.scale;
+
+            var duration = options.duration || this.transitionDuration;
+            var delay = (duration / 2);
+
+            // if the same step is re-selected, force computing window scaling,
+            // because it is likely to be caused by window resize
+            if ($step === this.activeStep) {
+                this.windowScale = computeWindowScale(config);
+            }
+
+            var targetScale = target.scale * this.windowScale;
+
+            // trigger leave of currently active element (if it's not the same step again)
+            if (this.activeStep && this.activeStep !== $step) {
+                this._onStepLeave(this.activeStep);
+            }
+
+            // Now we alter transforms of `root` and `canvas` to trigger transitions.
+            //
+            // And here is why there are two elements: `root` and `canvas` - they are
+            // being animated separately:
+            // `root` is used for scaling and `canvas` for translate and rotations.
+            // Transitions on them are triggered with different delays (to make
+            // visually nice and 'natural' looking transitions), so we need to know
+            // that both of them are finished.
+            this.$el.css({
+                // to keep the perspective look similar for different scales
+                // we need to 'scale' the perspective, too
+                transform:this._perspective(this.perspective / targetScale) + this._scale(targetScale),
+                transitionDuration:duration + "ms",
+                transitionDelay:(zoomin ? delay : 0) + "ms"
+            });
+
+//            this.$canvas.css({
+//                transform:rotate(target.rotate, true) + translate(target.translate),
+//                transitionDuration:duration + "ms",
+//                transitionDelay:(zoomin ? 0 : delay) + "ms"
+//            });
+
+            // Here is a tricky part...
+            //
+            // If there is no change in scale or no change in rotation and translation, it means there was actually
+            // no delay - because there was no transition on `root` or `canvas` elements.
+            // We want to trigger `impress:stepenter` event in the correct moment, so here we compare the current
+            // and target values to check if delay should be taken into account.
+            //
+            // I know that this `if` statement looks scary, but it's pretty simple when you know what is going on
+            // - it's simply comparing all the values.
+            if (this.currentState.scale === target.scale ||
+                (this.currentState.rotate.x === target.rotate.x && this.currentState.rotate.y === target.rotate.y &&
+                    this.currentState.rotate.z === target.rotate.z && this.currentState.translate.x === target.translate.x &&
+                    this.currentState.translate.y === target.translate.y && this.currentState.translate.z === target.translate.z)) {
+                delay = 0;
+            }
+
+            // store current state
+            this.currentState = target;
+            this.activeStep = $step;
+
+            // And here is where we trigger `impress:stepenter` event.
+            // We simply set up a timeout to fire it taking transition duration (and possible delay) into account.
+            //
+            // I really wanted to make it in more elegant way. The `transitionend` event seemed to be the best way
+            // to do it, but the fact that I'm using transitions on two separate elements and that the `transitionend`
+            // event is only triggered when there was a transition (change in the values) caused some bugs and
+            // made the code really complicated, cause I had to handle all the conditions separately. And it still
+            // needed a `setTimeout` fallback for the situations when there is no transition at all.
+            // So I decided that I'd rather make the code simpler than use shiny new `transitionend`.
+            //
+            // If you want learn something interesting and see how it was done with `transitionend` go back to
+            // version 0.5.2 of impress.js: http://github.com/bartaz/impress.js/blob/0.5.2/js/impress.js
+            var _this = this;
+            _.defer(function() {
+                _this._onStepEnter(_this.activeStep);
+            });
         },
 
         prev:function () {
@@ -75,27 +188,25 @@
         },
 
         _initStep:function (el, idx) {
-            var data = el.dataset;
+            console.log("_initStep:" + el.id + "," + idx);
+            if (!el.id) el.id = "step-" + (idx + 1);
+
             var step = {
                 translate:{
-                    x:(data.x),
-                    y:(data.y),
-                    z:(data.z)
+                    x:(el.dataset.x),
+                    y:(el.dataset.y),
+                    z:(el.dataset.z)
                 },
                 rotate:{
-                    x:(data.rotateX),
-                    y:(data.rotateY),
-                    z:(data.rotateZ || data.rotate)
+                    x:(el.dataset.rotateX),
+                    y:(el.dataset.rotateY),
+                    z:(el.dataset.rotateZ || el.dataset.rotate)
                 },
-                scale:(data.scale || 1),
+                scale:(el.dataset.scale || 1),
                 el:el
             };
 
-            if (!el.id) {
-                el.id = "step-" + (idx + 1);
-            }
-
-            this.stepsData["impress-" + el.id] = step;
+            this.stepsData[el.id] = step;
 
             $(el).css({
                 position:"absolute",
@@ -104,7 +215,7 @@
             });
         },
 
-        _computeWindowScale: function(config) {
+        _computeWindowScale:function (config) {
             var hScale = window.innerHeight / config.height;
             var wScale = window.innerWidth / config.width;
             var scale = hScale > wScale ? wScale : hScale;
@@ -118,24 +229,38 @@
             return scale;
         },
 
-        _perspective: function(p) {
+        _perspective:function (p) {
             return " perspective(" + p + "px) "
         },
 
-        _scale: function(s) {
+        _scale:function (s) {
             return " scale(" + s + ") ";
         },
 
-        _translate: function(t) {
+        _translate:function (t) {
             return " translate3d(" + t.x + "px," + t.y + "px," + t.z + "px) ";
         },
 
-        _rotate: function( r, revert ) {
+        _rotate:function (r, revert) {
             var rX = " rotateX(" + r.x + "deg) ",
                 rY = " rotateY(" + r.y + "deg) ",
                 rZ = " rotateZ(" + r.z + "deg) ";
 
-            return revert ? rZ+rY+rX : rX+rY+rZ;
+            return revert ? rZ + rY + rX : rX + rY + rZ;
+        },
+
+        _onStepEnter: function(step) {
+            if (this.lastEntered !== step) {
+                this.$el.trigger("impress:stepenter", { "step": step });
+                this.lastEntered = step;
+            }
+        },
+
+        _onStepLeave: function(step) {
+            if (this.lastEntered === step) {
+                this.$el.trigger("impress:stepleave", { "step": step });
+                this.lastEntered = null;
+            }
         }
     };
 

@@ -87,12 +87,10 @@
 <div class="navbar navbar-fixed-top" id="navigation-container"></div>
 <div class="container-fluid outer-container" id="mainDiv"></div>
 
-<!--<script src="js/impress.js"></script>-->
-<!--<script>impress().init();</script>-->
-
 <script>
     require('initialize');
     $("#impress-body").datamap();
+    $("#impress-body").datamap("goto", {"step":"#its-in-3d"});
 </script>
 
 <!--these scripts are to support lightweight google hangout integration, should not affect how the app runs outside of hangout-->
