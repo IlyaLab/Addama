@@ -15,7 +15,8 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
 
         ids = identity.split("/")
 
-        collection = open_collection(ids[1])
+        db_name = ids[1]
+        collection = open_collection(db_name, ids[2])
 
         json_items = []
         for item in collection.find(query):
@@ -38,10 +39,10 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
                 json_item[k] = item[k]
         return json_item
 
-def open_collection(collection_name):
+def open_collection(db_name, collection_name):
     #if options.verbose:
     logging.info("open_collection(%s)" % collection_name)
 
     connection = pymongo.Connection(options.mongo_lookup_uri)
-    qed_db = connection["qed_lookups"]
-    return qed_db[collection_name]
+    database = connection[db_name]
+    return database[collection_name]
