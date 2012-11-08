@@ -22,8 +22,23 @@
 
 <body>
 
-<div id="impress-body" class="impress-not-supported">
-    <!--<div class="impress-canvas">-->
+<ul class="nav-links nav nav-pills">
+    <li><a href="#" onclick="return false;" data-id="#bored">Bored</a></li>
+    <li><a href="#" onclick="return false;" data-id="#title">Title</a></li>
+    <li><a href="#" onclick="return false;" data-id="#its">Its</a></li>
+    <li><a href="#" onclick="return false;" data-id="#big">Big</a></li>
+    <li><a href="#" onclick="return false;" data-id="#tiny">Tiny</a></li>
+    <li><a href="#" onclick="return false;" data-id="#ing">Ing</a></li>
+    <li><a href="#" onclick="return false;" data-id="#imagination">Imagination</a></li>
+    <li><a href="#" onclick="return false;" data-id="#source">Source</a></li>
+    <li><a href="#" onclick="return false;" data-id="#one-more-thing">One More Thing</a></li>
+    <li><a href="#" onclick="return false;" data-id="#its-in-3d">Its In 3D</a></li>
+    <li><a href="#" onclick="return false;" data-id="#overview">Overview</a></li>
+    <li><a href="#" onclick="return false;" data-id="#mainDiv">Main</a></li>
+</ul>
+
+<div id="impress-body">
+    <div class="impress-canvas">
         <div id="impress">
             <div id="bored" class="step slide" data-x="-1000" data-y="-1500">
                 <q>Aren't you just <b>bored</b> with all those slides-based presentations?</q>
@@ -57,7 +72,7 @@
                 <p>and <b>tiny</b> ideas</p>
             </div>
 
-            <div id="ing" class="step" data-x="3500" data-y="-850" data-rotate="270" data-scale="6">
+            <div id="ing" class="step" data-x="3500" data-y="-850" data-rotate="270" data-scale="3">
                 <p>by <b class="positioning">positioning</b>, <b class="rotating">rotating</b> and <b class="scaling">scaling</b> them on an infinite canvas</p>
             </div>
 
@@ -80,17 +95,27 @@
             </div>
 
             <div id="overview" class="step" data-x="3000" data-y="1500" data-scale="10"></div>
+
+            <div class="step container-fluid outer-container" id="mainDiv" data-x="10" data-y="10" data-rotate="270" data-scale="1"></div>
         </div>
-    <!--</div>-->
+    </div>
 </div>
 
 <div class="navbar navbar-fixed-top" id="navigation-container"></div>
-<div class="container-fluid outer-container" id="mainDiv"></div>
 
 <script>
     require('initialize');
     $("#impress-body").datamap();
-    $("#impress-body").datamap("goto", {"step":"#its-in-3d"});
+
+    $(".nav-links li a").click(function(e) {
+        var linkId = $(e.target).data("id");
+        console.log("clicked on " + linkId);
+        $("#impress-body").datamap("goto", { "step": $(linkId) });
+    });
+
+    _.defer(function() {
+        $("#impress-body").datamap("goto", { "step": $("#source") });
+    })
 </script>
 
 <!--these scripts are to support lightweight google hangout integration, should not affect how the app runs outside of hangout-->
