@@ -81,10 +81,11 @@ module.exports = Backbone.Router.extend({
         var catalog = model_unit.catalog;
         var catalog_unit = catalog[dataset_id];
         var modelName = catalog_unit.model;
+        var serviceUri = catalog_unit.service || "data/" + uri;
         var Model = qed.Models[modelName];
 
         var model_optns = {
-            "data_uri": "svc/data/" + uri,
+            "data_uri": "svc/" + serviceUri,
             "analysis_id": analysis_id,
             "dataset_id": dataset_id,
             "model_unit": model_unit,
