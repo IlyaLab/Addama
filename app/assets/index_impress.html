@@ -1,23 +1,18 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="shortcut icon" href="img/isbfavicon.ico" type="image/x-icon"/>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=1024" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>impress.js | presentation tool based on the power of CSS3 transforms and transitions in modern browsers | by Bartek Szopka @bartaz</title>
-    
-    <meta name="description" content="impress.js is a presentation tool based on the power of CSS3 transforms and transitions in modern browsers and inspired by the idea behind prezi.com." />
-    <meta name="author" content="Bartek Szopka" />
 
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
-
-    <!--<link href="css/bartaz-impress-0.5.3.css" rel="stylesheet" />-->
     <link rel="stylesheet" href="css/app.css">
     <script src="js/vendor.js"></script>
     <script src="js/app.js"></script>
 
-    <link rel="shortcut icon" href="favicon.png" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <script type="text/javascript">
+        require('initialize');
+    </script>
 </head>
 
 <body>
@@ -104,24 +99,21 @@
 <div class="navbar navbar-fixed-top" id="navigation-container"></div>
 
 <script>
-    require('initialize');
     $("#impress-body").datamap();
 
     $(".nav-links li a").click(function(e) {
         var linkId = $(e.target).data("id");
-        console.log("clicked on " + linkId);
         $("#impress-body").datamap("goto", { "step": $(linkId) });
     });
 
     _.defer(function() {
         $("#impress-body").datamap("goto", { "step": $("#source") });
-    })
+    });
 </script>
 
 <!--these scripts are to support lightweight google hangout integration, should not affect how the app runs outside of hangout-->
 <script src="//hangoutsapi.talkgadget.google.com/talkgadget/apps/gadgets/js/rpc.js"></script>
 <script src="//hangoutsapi.talkgadget.google.com/hangouts/api/hangout.js?v=1.0"></script>
-
 
 </body>
 </html>
