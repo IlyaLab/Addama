@@ -6,14 +6,25 @@ module.exports = View.extend({
     label: "SeqPeek",
     className: "row-fluid",
 
-    events: {
-        "click .reset-sliders": "resetSliders"
-    },
-
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initControls', 'initGraph', 'resetSliders', 'onSubtypesChange', 'updateGraph');
+        _.bindAll(this, 'initControls', 'initTypeahead', 'initGraph', 'initSubtypeLists', 'onGeneChange', 'onSubtypesChange', 'updateGraph', 'updateSummary');
 
+        $.ajax({
+            url:"svc/data/lookups/genes",
+            type:"GET",
+            dataType:"text",
+            success:this.initTypeahead
+        });
+
+        $.ajax({
+            url:"svc/data/lookups/cancers",
+            type:"GET",
+            dataType:"text",
+            success:this.initSubtypeLists
+        });
+
+        this.current_gene = 'TP53';
         this.current_subtypes = [];
         this.drawGraph = _.once(this.initGraph);
     },
@@ -23,28 +34,22 @@ module.exports = View.extend({
     },
 
     initControls: function () {
-        var that = this;
-
-        var cancer_subtypes = [
-            'BRCA',
-            'COADREAD',
-            'GBM',
-            'KIRC',
-            'LAML',
-            'LUAD',
-            'LUSC',
-            'OV',
-            'PRAD',
-            'STAD',
-            'UCEC'
-        ];
-
-        var default_subtypes = ['UCEC', 'BRCA', 'GBM'];
+        this.updateSummary('LOADING');
 
         this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
         this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
 
-        // Populate the subtype lists
+        var lastLabelWidth = 70;
+        this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
+            lastLabelWidth = value;
+        });
+    },
+
+    initSubtypeLists: function(txt) {
+        var that = this;
+        var cancer_subtypes = txt.trim().split("\n");
+        var default_subtypes = ['UCEC', 'BRCA', 'GBM'];
+
         _.each(default_subtypes, function(subtype) {
             var html = '<div class="subtype-list-member ui-state-default">' + subtype + '</div>';
             that.$el.find(".subtypes-included").append(html);
@@ -64,17 +69,39 @@ module.exports = View.extend({
         // Update event is fired after the DOM manipulation is finished
         this.$el.find(".subtypes-included").sortable('option', 'update', this.onSubtypesChange);
 
-        var lastLabelWidth = 70;
-        this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
-            lastLabelWidth = value;
-        });
-
-        this.bind("post-render", function() {
-
-        });
-
         // Trigger initial visualization
         this.onSubtypesChange();
+    },
+
+    initTypeahead:function(txt) {
+        this.genelist = txt.trim().split("\n");
+
+        var that = this;
+        this.$el.find(".genes-typeahead").typeahead({
+            source:function (q, p) {
+                p(_.compact(_.flatten(_.map(q.toLowerCase().split(" "), function (qi) {
+                    return _.map(that.genelist, function (geneitem) {
+                        if (geneitem.toLowerCase().indexOf(qi) >= 0) return geneitem;
+                    });
+                }))));
+            },
+            updater: that.onGeneChange,
+
+            updater2:function (gene) {
+                if (gene == that.current_gene) {
+                    return;
+                }
+
+                that.current_gene = gene;
+
+                // Setting current subtypes empty will make onSubtypesChange to
+                // load mutations for every subtype.
+                that.curret_subtypes = [];
+                that.drawGraph = _.once(that.initGraph);
+
+                that.onSubtypesChange();
+            }
+        });
     },
 
     resetSliders: function () {
@@ -82,8 +109,22 @@ module.exports = View.extend({
         this.$el.find(".slider_label_width").oncovis_range("reset");
     },
 
+    onGeneChange: function(gene) {
+        if (gene == this.current_gene) {
+            return;
+        }
+
+        this.current_gene = gene;
+
+        // Setting current subtypes empty will make onSubtypesChange
+        // reload mutations for every subtype.
+        this.curret_subtypes = [];
+        this.drawGraph = _.once(this.initGraph);
+
+        this.onSubtypesChange();
+    },
+
     onSubtypesChange: function() {
-        var gene_label;
         var ui_subtypes;
 
         ui_subtypes = this.$el
@@ -97,7 +138,7 @@ module.exports = View.extend({
         this.current_subtypes = ui_subtypes;
 
         if (new_subtypes.length > 0) {
-            this.loadMutations(new_subtypes, 'TP53');
+            this.loadMutations(new_subtypes, this.current_gene);
         }
         else {
             this.updateGraph();
@@ -176,8 +217,7 @@ module.exports = View.extend({
     },
 
     updateGraph: function() {
-        var data = this.data,
-            that = this;
+        var data = this.data;
 
         this.drawGraph();
 
@@ -220,109 +260,79 @@ module.exports = View.extend({
                 post_process_fn: postProcessFn
             }
         );
+
+        this.updateSummary();
+    },
+
+    updateSummary: function(message) {
+        var summary_text = message || this.current_gene;
+        this.$el.find('.gene-summary h1').text(summary_text);
     },
 
     ////////////////////////////
     // Data retrieval methods //
     ////////////////////////////
-    buildMutationQuery: function(subtypes, gene_label, uniprot_id) {
-        var subtype_str = _.map(subtypes, function(s) {
-            return 'cancer_subtype = \'' + s + '\'';
-        }).join(' OR ');
-
-        var query_str = 'SELECT * ' + ' WHERE gene_label = \'' + gene_label + '\' AND (' + subtype_str + ') AND uniprot_id = \'' + uniprot_id  + '\'';
-        var query_json = {
-            tq: query_str,
-            tqx: 'out:json_array'
-        };
-
-        var mutation_query_str = '?' + jQuery.param(query_json);
-        return "/genespot_svc/mysql/mutations/query" + mutation_query_str;
+    buildMutationQuery: function(cancer_subtype, gene_label) {
+        var mutation_query = "?gene=" + gene_label + "&cancer=" + cancer_subtype;
+        return "/svc/lookups/qed_lookups/mutations/" + mutation_query;
     },
 
-    buildUniprotQuery: function(uniprot_id) {
-        var query_str = 'SELECT * WHERE uniprot_id = \'' + uniprot_id + '\' LIMIT 1';
-        var query_json = {
-            tq: query_str,
-            tqx: 'out:json_array'
-        };
-
-        var uniprot_query_str = '?' + jQuery.param(query_json);
-        return "/genespot_svc/mysql/uniprot/query" + uniprot_query_str;
-    },
-
-    buildInterproQuery: function(uniprot_id) {
-        var interpro_query_str = '?' + "criteria={\"uniprot_id\":\"" + uniprot_id + "\"}";
-        return "/genespot_svc/mongodb/local/interpro/_find" + interpro_query_str;
-    },
-
-    loadMutationForUniprotID: function(cancer_subtypes, gene_label, uniprot_id) {
-        var that = this;
-        var mutation_query,
-            uniprot_query,
-            interpro_query;
-
-        var data = {};
-
-        var successFn = _.after(3, function() {
-            that.parseMutationData(data);
-        });
-
-        mutation_query = this.buildMutationQuery(cancer_subtypes, gene_label, uniprot_id);
-
-        $.ajax({
-            type: 'GET',
-            url: mutation_query,
-            context: this,
-            success: function(json) {
-                data.mutations = json;
-                successFn();
-            }
-        });
-
-        uniprot_query = this.buildUniprotQuery(uniprot_id);
-
-        $.ajax({
-            type: 'GET',
-            url: uniprot_query,
-            context: this,
-            success: function(json) {
-                data.protein = json;
-                successFn();
-            }
-        });
-
-        interpro_query = this.buildInterproQuery(uniprot_id);
-
-        $.ajax({
-            type: 'GET',
-            url: interpro_query,
-            context: this,
-            success: function(json) {
-                data.interpro = json.results;
-                successFn();
-            }
-        });
+    buildInterProQuery: function(uniprot_id) {
+        var interpro_query_str = '?' + "uniprot_id=" + uniprot_id;
+        return "/svc/lookups/interpro/interpro/" + interpro_query_str;
     },
 
     loadMutations: function(cancer_subtypes, gene_label) {
-        var query_str = 'SELECT gene_label, uniprot_id ' + ' WHERE gene_label = \'' + gene_label + '\' AND uniprot_id != \'UNIPROT_FAIL\' LIMIT 1';
-        var query_json = {
-            tq: query_str,
-            tqx: 'out:json_array'
+        var that = this;
+
+        var data = {
+            mutations: [],
+            subtype_map: {}
         };
 
-        var uniprot_query = "/genespot_svc/mysql/mutations/query" + '?' + jQuery.param(query_json);
+        var successFn = function() {
+            that.parseMutationData(data);
+        };
 
-        $.ajax({
-            type: 'GET',
-            url: uniprot_query,
-            context: this,
-            success: function(json) {
-                if (json.length > 0) {
-                    this.loadMutationForUniprotID(cancer_subtypes, gene_label, json[0].uniprot_id);
-                }
+        var mutationsLoadedFn = _.after(cancer_subtypes.length, function() {
+            var found_subtypes = _.keys(data.subtype_map);
+            // TODO Indicate to user if no mutations were found
+            if (found_subtypes.length > 0) {
+                var uniprot_id = data.subtype_map[found_subtypes[0]][0].uniprot_id;
+                load_interpro_fn(uniprot_id, successFn);
             }
+        });
+
+        var load_mutations_fn = function(subtype, gene_label, callback) {
+            $.ajax({
+                type: 'GET',
+                url: that.buildMutationQuery(subtype, gene_label),
+                context: this,
+                success: function(json) {
+                    if (json.items.length > 0) {
+                        data.subtype_map[subtype] = json.items;
+                    }
+                    callback();
+                }
+            });
+        };
+
+        var load_interpro_fn = function(uniprot_id, callback) {
+            var interpro_query = that.buildInterProQuery(uniprot_id);
+
+            $.ajax({
+                type: 'GET',
+                url: interpro_query,
+                context: this,
+                success: function(json) {
+                    data.interpro = json.items;
+                    callback();
+                }
+            });
+        };
+
+        _.each(cancer_subtypes, function(s) {
+            load_mutations_fn(s, gene_label, mutationsLoadedFn);
         });
     },
 
@@ -330,30 +340,18 @@ module.exports = View.extend({
     // Data parsing methods //
     //////////////////////////
     parseMutationData: function(data) {
-        var subtype_map = {},
-            subtype_array = [];
+        var subtype_array = [];
 
-        _.each(data.mutations, function(d) {
-            if (_.has(subtype_map, d.cancer_subtype) == false)
-            {
-                subtype_map[d.cancer_subtype] = [];
-            }
-
-            subtype_map[d.cancer_subtype].push(d);
-        });
-
-        _.each(subtype_map, function(subtype_data, subtype_label) {
+        _.each(data.subtype_map, function(mutations, subtype_label) {
             subtype_array.push({
                 label: subtype_label,
-                mutations: _.filter(subtype_data, function(d) {
-                    return d.uniprot_id != 'UNIPROT_FAIL';
-                })
+                mutations: mutations
             });
         });
 
         var interpro_signatures = data.interpro[0].matches;
-
-        var protein_data = data.protein[0];
+        var protein_data = data.interpro[0];
+        
         _.extend(protein_data, {
             domains: interpro_signatures
         });

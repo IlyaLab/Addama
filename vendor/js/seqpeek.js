@@ -287,7 +287,7 @@
             this.vis = {};
 
             // Linear scale for location in protein
-            this.vis.x_scale = d3.scale.linear().domain([0, data.protein.sequence_length]).range([0, this.config.protein_scale_width]);
+            this.vis.x_scale = d3.scale.linear().domain([0, data.protein.length]).range([0, this.config.protein_scale_width]);
 
             // Ordinal scale for vertically positioning InterPro signatures
             var protein_domain_ids = _.pluck(data.protein.domains, 'id');
