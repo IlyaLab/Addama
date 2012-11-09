@@ -106,6 +106,7 @@ def main():
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
     logging.info("--mongo_uri=%s" % options.mongo_uri)
+    logging.info("--mongo_lookup_uri=%s" % options.mongo_lookup_uri)
 
     if not options.config_file is None:
         logging.info("--config_file=%s" % options.config_file)
