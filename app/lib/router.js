@@ -3,7 +3,7 @@ var Controller = require('./controller');
 module.exports = Backbone.Router.extend({
     routes:{
         '':'home',
-        'branches':'branches',
+        'branch':'branch',
         'grid':'grid',
         'graph':'graph',
         'pwpv':'pwpv',

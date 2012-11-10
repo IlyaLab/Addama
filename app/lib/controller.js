@@ -14,6 +14,7 @@ var MenuItemsView = require("../views/menu_items");
 
 var VisViewClasses = {
     "graph": require("../views/graph_view"),
+    "branch": require("../views/branch_view"),
     "grid": require("../views/grid_view"),
     "circ": require("../views/circ_view"),
     "heat": require("../views/oncovis_view"),
@@ -45,9 +46,11 @@ Controller = {
 
     branch:{
         view:function () {
+            console.log("branch view");
             var BranchView = require('../views/branch_view');
             var branchView = new BranchView();
             $('#mainDiv').html(branchView.render().el);
+            console.log("render grid");
             branchView.renderGrid();
         }
     },
@@ -162,10 +165,8 @@ Controller = {
             return Controller.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
-        if (analysis_type == 'branches') {
-            var oncovisView = Controller.ModelAndView(view_name || "branch", BranchMatrix, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
-            Controller.InitGeneListViews(oncovisView);
-            return oncovisView;
+        if (analysis_type === 'branches') {
+            return Controller.ModelAndView(view_name || 'branch', BranchMatrix, {analysis_id:analysis_type, dataset_id:dataset_id});
         }
 
         //tabular data like /feature_matrices

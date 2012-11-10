@@ -1,8 +1,6 @@
-var Collection = require('./collection');
-var FeatureData = require('./featureData');
+var Model = require('./model');
 
-module.exports = Collection.extend({
-    model:FeatureData,
+module.exports = Model.extend({
 
     serviceRoot:'svc',
     serviceRead:'/data',
@@ -24,11 +22,11 @@ module.exports = Collection.extend({
     },
 
     parse:function (response) {
-        return d3.tsv.parse(response);
+        return {data:d3.tsv.parse(response)};
     },
 
     fetch:function (options) {
-        return Collection.prototype.fetch.call(this, _.extend({}, options, {dataType:'text'}));
+        return Model.prototype.fetch.call(this, _.extend({}, options, {dataType:'text'}));
     }
 
 });
