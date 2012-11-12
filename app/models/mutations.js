@@ -18,7 +18,7 @@ module.exports = Backbone.Model.extend({
     },
 
     url: function () {
-        return "svc/" + this.catalog_unit.service + "?cancer=BLAH";
+        return this.data_uri;
     },
 
     fetch: function() {

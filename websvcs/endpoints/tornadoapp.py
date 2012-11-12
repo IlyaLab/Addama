@@ -41,6 +41,7 @@ define("config_file", help="Path to config file")
 define("authorized_users", default=[], help="List of authorized user emails")
 define("mongo_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_lookup_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
+define("mongo_lookup_query_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
 
 settings = {
     "debug": True,
@@ -106,6 +107,8 @@ def main():
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
     logging.info("--mongo_uri=%s" % options.mongo_uri)
+    logging.info("--mongo_lookup_uri=%s" % options.mongo_lookup_uri)
+    logging.info("--mongo_lookup_query_limit=%s" % options.mongo_lookup_query_limit)
 
     if not options.config_file is None:
         logging.info("--config_file=%s" % options.config_file)

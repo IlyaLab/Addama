@@ -18,8 +18,11 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
         db_name = ids[1]
         collection = open_collection(db_name, ids[2])
 
+        query_limit = options.mongo_lookup_query_limit
         json_items = []
-        for item in collection.find(query):
+        for idx, item in enumerate(collection.find(query)):
+            if idx > query_limit:  break
+
             json_item = self.jsonable_item(item)
             json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)

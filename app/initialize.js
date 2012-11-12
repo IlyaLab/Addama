@@ -14,7 +14,8 @@ $(function () {
             ],
             "FeatureMatrix":[
                 { "id":"grid", label:"Grid" },
-                { "id":"heat", label:"Heatmap" }
+                { "id":"heat", label:"Heatmap" },
+                { "id":"xfeaturegrid", label:"Cross-Feature Summary" }
             ],
             "GraphLayouts":[
                 { "id":"circ", label:"CircVis" },
@@ -34,7 +35,8 @@ $(function () {
             "twoD":require("views/2D_Distribution_view"),
             "kde":null,
             "parcoords":require("views/parcoords_view"),
-            "seqpeek":require("views/seqpeek_view")
+            "seqpeek":require("views/seqpeek_view"),
+            "xfeaturegrid": require("views/xfeaturegrid")
         },
         Lookups:{
             Labels:{}
