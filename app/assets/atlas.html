@@ -120,6 +120,9 @@
         $(".atlas-map a.small").click(function(e) {
             atlas.minimize({"$el": $(e.target).parents(".atlas-map")});
         });
+
+        $(".atlas-map").draggable({ "scroll": true });
+        $(".atlas-map").resizable({ "animate": false });
     });
 </script>
 
