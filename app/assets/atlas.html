@@ -56,7 +56,7 @@
             </div>
 
             <div id="map-features" class="atlas-map small"
-                 data-small="#v/domains/feature_matrices/2012_09_18_0835__cons/xfeaturegrid"
+                 data-small="#v/domains/feature_matrices/2012_09_18_0835__cons/xfeaturegrid_small"
                  data-medium="#v/domains/feature_matrices/2012_09_18_0835__cons/xfeaturegrid"
                  data-big="#v/domains/feature_matrices/FMatrix_3bMother_BinaryPhenotype_Top50k/heat">
                 <div>
@@ -119,6 +119,13 @@
 
         $(".atlas-map a.small").click(function(e) {
             atlas.minimize({"$el": $(e.target).parents(".atlas-map")});
+        });
+
+        $(".atlas-map .map-contents").click(function(e) {
+            var atlasMap = $(e.target).parents(".atlas-map");
+            if (atlasMap.hasClass("small")) {
+                atlas.emphasize({"$el": atlasMap});
+            }
         });
 
         $(".atlas-map").draggable({ "scroll": true });

@@ -95,6 +95,11 @@
     left: 900px;
 }
 
+#map-features.small {
+    width: 300px;
+    height: 250px;
+}
+
 #map-associations {
     top: 500px;
     left: 550px;

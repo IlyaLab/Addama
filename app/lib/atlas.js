@@ -1,11 +1,8 @@
 var QEDRouter = require("./router");
 var LineItemTemplate = require("../views/templates/line_item");
 
-// TODO : Pass genes and cancers as view options
-// TODO :
 module.exports = Backbone.View.extend({
     initialize: function(element, options) {
-        console.log("initialize");
         this.$el = $(element);
         if (options) _.extend(this, options);
         _.bindAll(this, "emphasize", "maximize", "minimize", "minimize_all", "navigate");
@@ -17,41 +14,42 @@ module.exports = Backbone.View.extend({
 
     emphasize: function(options) {
         var $step = options.$el;
-        console.log("Atlas.emphasize:" + $step[0].id);
-
-        this.minimize_all();
-        this.navigate($step.find(".map-contents"), $step.data("medium"));
-        _.defer(function() {
-            $step.addClass("medium");
-        });
+        if ($step && $step.length) {
+            this.minimize_all();
+            this.navigate($step.find(".map-contents"), $step.data("medium"));
+            _.defer(function() {
+                $step.removeClass("small");
+                $step.addClass("medium");
+            });
+        }
     },
 
     maximize:function (options) {
         var $step = options.$el;
-        console.log("Atlas.maximize:" + $step[0].id);
-
-        this.minimize_all();
-        this.navigate($step.find(".map-contents"), $step.data("big"));
-        _.defer(function() {
-            $step.addClass("big");
-        });
+        if ($step && $step.length) {
+            this.minimize_all();
+            this.navigate($step.find(".map-contents"), $step.data("big"));
+            _.defer(function() {
+                $step.removeClass("small");
+                $step.addClass("big");
+            });
+        }
     },
 
     minimize:function (options) {
         var $step = options.$el;
-        console.log("Atlas.minimize:" + $step[0].id);
+        if ($step && $step.length) {
+            $step.removeClass("medium");
+            $step.removeClass("big");
+            $step.addClass("small");
 
-        $step.removeClass("medium");
-        $step.removeClass("big");
-        $step.addClass("small");
-
-        this.navigate($step.find(".map-contents"), $step.data("small"));
+            this.navigate($step.find(".map-contents"), $step.data("small"));
+        }
     },
 
     minimize_all: function() {
         var _this = this;
         _.each(this.$el.find(".atlas-map"), function(atlasMap) {
-            console.log("minimize_all=" + atlasMap);
             _this.minimize({"$el": $(atlasMap)});
         });
     },
