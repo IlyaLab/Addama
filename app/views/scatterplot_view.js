@@ -8,27 +8,28 @@ module.exports = View.extend({
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'afterRender', 'initControls', 'initGraph', 'updateGraph', 'parseFeatureData', 'buildFeatureQuery', 'loadFeatureData');
+        _.bindAll(this, 'afterRender', 'initControls', 'initFeatureSourcesSelect', 'initGeneTypeaheads', 'initGraph', 'initSubtypeDropdown', 'updateSubtype', 'updateGraph', 'parseFeatureData', 'buildFeatureQuery', 'loadFeatureData');
 
+        
         $.ajax({
             url:"svc/data/lookups/genes",
             type:"GET",
             dataType:"text",
-            success:this.initTypeahead
+            success:this.initGeneTypeaheads
         });
 
         $.ajax({
             url:"svc/data/lookups/cancers",
             type:"GET",
             dataType:"text",
-            success:this.initSubtypeLists
+            success:this.initSubtypeDropdown
         });
 
         $.ajax({
             url:"svc/data/lookups/features_of_interest",
             type:"GET",
             dataType:"text",
-            success:this.initSubtypeLists
+            success:this.initFeatureSourcesSelect
         });
 
         this.drawGraph = _.once(this.initGraph);
@@ -39,13 +40,71 @@ module.exports = View.extend({
     },
 
     initControls: function () {
-        console.log("Scatterplot init");
-
         var cancer = "brca";
         var id1 = "N:CNVR:10p15.1:chr10:5921000:6393999::";
         var id2 = "N:GNAB:TP53:chr17:7565097:7590863:-:binding_delta_abs_somatic";
 
         this.loadFeatureData('fmx_newMerge_05nov', id1, id2, cancer);
+    },
+
+    initSubtypeDropdown: function(txt) {
+        var that = this;
+        var cancerlist = txt.trim().split("\n");
+
+        _.each(cancerlist, function(subtype) {
+            var html = '<option>' + subtype + '</option>';
+            that.$el.find(".subtype-select").append(html);
+        });
+
+        this.$el.find(".subtype-select").change(function(e) {
+            var subtype = that.$el.find(".subtype-select").val()
+            that.updateSubtype(subtype);
+        });
+    },
+
+    initFeatureSourcesSelect: function(txt) {
+        var that = this;
+        var sources = _
+            .chain(txt.split(/\s+/))
+            .filter(function(label) {
+                return !label.length == 0;
+            })
+            .reduce(function(memo, label) {
+                if (!_.has(memo, label)) {
+                    memo[label] = 1;
+                }
+
+                return memo;
+            }, {})
+            .keys()
+            .value();
+        
+        _.each(sources, function(s) {
+            var html = '<option>' + s + '</option>';
+            that.$el.find(".featuresource-select").append(html);
+        });
+
+        this.$el.find(".featuresource-select").change(function(e) {
+            var subtype = that.$el.find(".subtype-select").val()
+            that.updateSubtype(subtype);
+        });
+    },
+
+    initGeneTypeaheads: function(txt) {
+        var that = this;
+        this.genelist = txt.trim().split("\n");
+
+        var source_fn = function (q, p) {
+            p(_.compact(_.flatten(_.map(q.toLowerCase().split(" "), function (qi) {
+                return _.map(that.genelist, function (geneitem) {
+                    if (geneitem.toLowerCase().indexOf(qi) >= 0) return geneitem;
+                });
+            }))));
+        };
+
+        this.$el.find(".genes-typeahead").typeahead({
+            source: source_fn
+        });
     },
 
     initGraph: function () {
@@ -82,6 +141,14 @@ module.exports = View.extend({
         this.drawGraph();
     },
 
+    updateSubtype: function(subtype) {
+        console.log(subtype);
+
+    },
+
+
+    // Functions for loading parsing the feature values
+    // ------------------------------------------------
     parseFeatureData: function(feature_data) {
         var that = this;
         this.data = {
