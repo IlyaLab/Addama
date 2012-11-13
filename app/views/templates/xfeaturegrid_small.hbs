@@ -1,0 +1,24 @@
+<table>
+    <tr>
+    {{#each cancers}}
+        <td class='rotated_cell'>
+            <div class='rotate_text'>{{id}}</div>
+        </td>
+    {{/each}}
+    </tr>
+    <tr>
+    {{#each cancers}}
+        <td>
+            <table border="1" style="text-align: center;">
+                {{#each targetFeatures}}
+                <tr>
+                    {{#each featureValues}}
+                    <td style="background-color: {{value}}; width: 2px; height: 2px;">&nbsp;</td>
+                    {{/each}}
+                </tr>
+                {{/each}}
+            </table>
+        </td>
+    {{/each}}
+    </tr>
+</table>

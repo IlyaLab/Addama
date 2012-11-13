@@ -37,7 +37,8 @@ $(function () {
             "kde":null,
             "parcoords":require("views/parcoords_view"),
             "seqpeek":require("views/seqpeek_view"),
-            "xfeaturegrid": require("views/xfeaturegrid")
+            "xfeaturegrid": require("views/xfeaturegrid"),
+            "xfeaturegrid_small": require("views/xfeaturegrid_small")
         },
         Lookups:{
             Labels:{}

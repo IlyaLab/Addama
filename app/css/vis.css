@@ -209,3 +209,18 @@ svg .wedge[data-ring="2"] .background {
 .match.PROFILE {
     fill: darkorange;
 }
+
+.rotated_cell {
+    height: 100px;
+    vertical-align: bottom;
+}
+
+.rotate_text {
+    width: 15px;
+    -moz-transform: rotate(-60deg);
+    -moz-transform-origin: top left;
+    -webkit-transform: rotate(-60deg);
+    -webkit-transform-origin: top left;
+    -o-transform: rotate(-60deg);
+    -o-transform-origin: top left;
+}
