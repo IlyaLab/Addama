@@ -8,8 +8,19 @@ module.exports = View.extend({
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'afterRender', 'initControls', 'initFeatureSourcesSelect', 'initGeneTypeaheads', 'initGraph', 'initSubtypeDropdown', 'updateSubtype', 'updateGraph', 'parseFeatureData', 'buildFeatureQuery', 'loadFeatureData');
-
+        _.bindAll(this,
+            'afterRender',
+            'initControls',
+            'initFeatureLabelTypeahead',
+            'initFeatureSourcesSelect',
+            'initGeneTypeaheads',
+            'initGraph',
+            'initSubtypeDropdown',
+            'updateSubtype',
+            'updateGraph',
+            'parseFeatureData',
+            'buildFeatureQuery',
+            'loadFeatureData');
         
         $.ajax({
             url:"svc/data/lookups/genes",
@@ -33,6 +44,17 @@ module.exports = View.extend({
         });
 
         this.drawGraph = _.once(this.initGraph);
+
+        this.feature_matrix = 'fmx_newMerge_05nov';
+        this.feature_label_field = 'id';
+
+        this.data = {
+            subtype: 'BRCA',
+            gene1: 'TP53',
+            gene2: 'TP53',
+            source1: 'GNAB',
+            source2: 'GNAB'
+        }
     },
 
     afterRender: function () {
@@ -40,11 +62,7 @@ module.exports = View.extend({
     },
 
     initControls: function () {
-        var cancer = "brca";
-        var id1 = "N:CNVR:10p15.1:chr10:5921000:6393999::";
-        var id2 = "N:GNAB:TP53:chr17:7565097:7590863:-:binding_delta_abs_somatic";
 
-        this.loadFeatureData('fmx_newMerge_05nov', id1, id2, cancer);
     },
 
     initSubtypeDropdown: function(txt) {
@@ -57,7 +75,7 @@ module.exports = View.extend({
         });
 
         this.$el.find(".subtype-select").change(function(e) {
-            var subtype = that.$el.find(".subtype-select").val()
+            var subtype = that.$el.find(".subtype-select").val();
             that.updateSubtype(subtype);
         });
     },
@@ -84,9 +102,14 @@ module.exports = View.extend({
             that.$el.find(".featuresource-select").append(html);
         });
 
-        this.$el.find(".featuresource-select").change(function(e) {
-            var subtype = that.$el.find(".subtype-select").val()
-            that.updateSubtype(subtype);
+        this.$el.find(".feature1-options .featuresource-select").change(function() {
+            that.data.source1 = that.$el.find(".feature1-options .featuresource-select").val();
+            that.loadFeatures1();
+        });
+
+        this.$el.find(".feature2-options .featuresource-select").change(function() {
+            that.data.source2 = that.$el.find(".feature2-options .featuresource-select").val();
+            that.loadFeatures2();
         });
     },
 
@@ -105,6 +128,8 @@ module.exports = View.extend({
         this.$el.find(".genes-typeahead").typeahead({
             source: source_fn
         });
+
+        this.$el.find(".genes-typeahead").val(this.data.gene1);
     },
 
     initGraph: function () {
@@ -125,7 +150,7 @@ module.exports = View.extend({
                 tick_font :"20px helvetica",
                 stroke_width: 2,
                 radius: 6,
-                data_array: this.data.values,
+                data_array: this.data.plot_array,
                 regression: 'none',
                 xcolumnid: 'x',
                 ycolumnid: 'y',
@@ -139,34 +164,40 @@ module.exports = View.extend({
 
     updateGraph: function() {
         this.drawGraph();
+
+        this.$el.find(".scatterplot-container").scatterplot('reset_data', this.data.plot_array);
     },
 
     updateSubtype: function(subtype) {
-        console.log(subtype);
-
+        this.data.subtype = subtype;
     },
-
 
     // Functions for loading parsing the feature values
     // ------------------------------------------------
-    parseFeatureData: function(feature_data) {
-        var that = this;
-        this.data = {
-            values: []
-        };
+    parseFeatureData: function() {
+        var that = this,
+            data = this.data;
 
-        _.each(feature_data.f1.values, function(v1, key) {
-            var v2 = feature_data.f2.values[key];
+        if (data.feature_id_1 === undefined || data.feature_id_2 === undefined) {
+            return;
+        }
+
+        var values1 = data.feature_map_1[data.feature_id_1].values;
+        var values2 = data.feature_map_2[data.feature_id_2].values;
+
+        data.plot_array = [];
+
+        _.each(values1, function(v1, key) {
+            var v2 = values2[key];
 
             if (v1 != 'NA' && v2 != 'NA')
-            that.data.values.push({
+            that.data.plot_array.push({
                 x: v1,
                 y: v2,
                 id: key
             });
         });
 
-        console.log(this.data);
         this.updateGraph();
     },
 
@@ -202,6 +233,108 @@ module.exports = View.extend({
             success: function(json) {
                 data.f2 = json.items[0];
                 successFn();
+            }
+        });
+    },
+
+    initFeatureLabelTypeahead: function(feature_number) {
+        var that = this,
+            options_selector,
+            features,
+            feature_labels;
+
+        if (feature_number == 1) {
+            options_selector = ".feature1-options";
+            features = this.data.features1;
+        }
+        else {
+            options_selector = ".feature2-options";
+            features = this.data.features2;
+        }
+
+        feature_labels = _
+            .chain(features)
+            .pluck(this.feature_label_field)
+            .value();
+
+        var source_fn = function (q, p) {
+            p(_.compact(_.flatten(_.map(q.toLowerCase().split(" "), function (qi) {
+                return _.map(feature_labels, function (fl) {
+                    if (fl.toLowerCase().indexOf(qi) >= 0) return fl;
+                });
+            }))));
+        };
+
+        var key = feature_number == 1 ? 'feature_id_1' : 'feature_id_2';
+
+        this.$el.find(options_selector + " .feature-label-input").data('typeahead', false).val('');
+        this.$el.find(options_selector + " .feature-label-input").typeahead({
+            source: source_fn,
+            updater: function(label) {
+                that.data[key] = label;
+                that.parseFeatureData();
+            }
+        });
+
+        this.$el.find(options_selector + " .feature-label-input").val(feature_labels[0]);
+    },
+
+    buildAllFeaturesQuery: function(subtype, source, gene) {
+        var feature_query = "?cancer=" + subtype.toLowerCase() + "&source=" + source + "&gene=" + gene;
+        return "/svc/lookups/qed_lookups/" + this.feature_matrix + "/" + feature_query;
+    },
+
+    buildFeatureMap: function(features) {
+        return _.reduce(features, function(memo, f) {
+            memo[f.id] = f;
+            return memo;
+        }, {});
+    },
+
+    loadFeatures1: function() {
+        var that = this,
+            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.source1, this.data.gene1);
+
+        $.ajax({
+            type: 'GET',
+            url: query,
+            context: this,
+            success: function(json) {
+                var features = json.items;
+                if (features.length > 0) {
+                    that.data.features1 = features;
+                    that.data.feature_map_1 = that.buildFeatureMap(features);
+                    that.initFeatureLabelTypeahead(1);
+                }
+                else {
+                    that.data.features1 = undefined;
+                    that.data.feature_map_1 = undefined;
+                    that.data.feature_id_1 = undefined;
+                }
+            }
+        });
+    },
+
+    loadFeatures2: function() {
+        var that = this,
+            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.source2, this.data.gene2);
+
+        $.ajax({
+            type: 'GET',
+            url: query,
+            context: this,
+            success: function(json) {
+                var features = json.items;
+                if (features.length > 0) {
+                    that.data.features2 = features;
+                    that.data.feature_map_2 = that.buildFeatureMap(features);
+                    that.initFeatureLabelTypeahead(2);
+                }
+                else {
+                    that.data.features2 = undefined;
+                    that.data.feature_map_2 = undefined;
+                    that.data.feature_id_2 = undefined;
+                }
             }
         });
     }
