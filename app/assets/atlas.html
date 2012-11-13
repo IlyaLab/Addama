@@ -25,6 +25,23 @@
 
 <div class="navbar navbar-fixed-top" id="navigation-container"></div>
 
+<div class="cancer-items">
+    <ul class="nav nav-pills cancer-selector"></ul>
+</div>
+
+<div class="pull-right gene-items">
+    <ul class="nav nav-list">
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Genes <b class="caret"></b></a>
+            <input class="genes-typeahead" type="text" placeholder="Add a gene..."/>
+            <ul class="dropdown-menu gene-selector">
+                <li><a href='#' onclick='return false;' class='item-remover' data-id='TP53'>TP53 <i class='icon-trash'></i> </a></li>
+                <li><a href='#' onclick='return false;' class='item-remover' data-id='CTCF'>CTCF <i class='icon-trash'></i> </a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
 <div class="atlas-body">
     <div class="atlas-canvas">
         <div class="atlas-container">

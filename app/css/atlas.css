@@ -31,10 +31,8 @@
     transition: height 1s;
     transition: width 1s;
 
-    position: relative;
+    position: absolute;
 }
-
-.atlas-map
 
 .atlas-map label {
     margin-top: 5px;
@@ -55,8 +53,59 @@
     width: 100%;
     height: 100%;
     z-index: 1;
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 .atlas-map:not(.big) {
     z-index: 100;
+}
+
+.showing-border {
+    border: 1px solid black;
+}
+
+.atlas-body {
+    left: 50px;
+    top: 100px;
+    position: absolute;
+    width: 90%;
+    height: 85%;
+    overflow: auto;
+}
+
+.cancer-items {
+    left: 100px;
+    position: absolute;
+}
+
+.gene-items {
+    top: 100px;
+    width: 250px;
+}
+
+#map-aberrations {
+    top: 50px;
+    left: 300px;
+}
+
+#map-features {
+    top: 40px;
+    left: 900px;
+}
+
+#map-associations {
+    top: 500px;
+    left: 550px;
+}
+
+#map-literature {
+    top: 400px;
+    left: 100px;
+}
+
+#map-clinical {
+    top: 400px;
+    left: 1000px;
 }
