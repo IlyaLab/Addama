@@ -57,13 +57,17 @@ module.exports = Backbone.View.extend({
     },
 
     navigate: function(target, route) {
-        if (route) {
-            var route = route.replace("#v/", "");
+        if (target && route) {
+            route = route.replace("#v/", "");
             var uri = route.substring(0, route.lastIndexOf("/"));
             var view_name = route.substring(route.lastIndexOf("/") + 1);
 
+            var afn = function(link) { return $(link).data("id")};
             var router = new QEDRouter({"targetEl": $(target)});
-            router.viewsByUri(uri, view_name);
+            router.viewsByUri(uri, view_name, {
+                "cancers": _.map($(".cancer-selector .active a"), afn),
+                "genes": _.map($(".gene-selector .item-remover"), afn)
+            });
         }
     },
 
