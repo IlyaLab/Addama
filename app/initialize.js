@@ -1,5 +1,6 @@
 $(function () {
     qed = {
+        Events: _.extend(Backbone.Events),
         Models:{
             "Catalogs":require("models/catalog"),
             "Annotations":require("models/annotations"),
@@ -57,6 +58,7 @@ $(function () {
         qed.Router = new QEDRouter();
         qed.Router.initTopNavBar();
         Backbone.history.start();
+        qed.Events.trigger("ready");
     };
 
     qed.Datamodel.fetch({
