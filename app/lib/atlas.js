@@ -1,7 +1,6 @@
 !function ($) {
     var DataMap = function (element) {
         this.$el = $(element);
-        console.log("DataMap(" + element[0].id + ")");
     };
 
     DataMap.prototype = {
@@ -13,20 +12,19 @@
         transitionDuration:1000,
 
         stepsData:{},
-        roots:{},
 
         init:function (options) {
             if (options) _.extend(this, options);
             console.log("DataMap.init");
 
             _.bindAll(this, "_initStep", "_computeWindowScale", "_perspective", "_scale", "_translate", "_rotate");
-            _.bindAll(this, "_onStepEnter", "_onStepLeave");
+            _.bindAll(this, "_onMaximize", "_onMinimize");
 
             this.windowScale = this._computeWindowScale();
 
             this.$el.css({
 //                height: "90%",
-                border:"1px solid black",
+//                border:"1px solid black",
                 overflow:"hidden"
             });
 
@@ -37,17 +35,17 @@
                 transformStyle:"preserve-3d"
             };
 
-            this.$canvas = this.$el.find(".impress-canvas");
+            this.$canvas = this.$el.find(".datamap-canvas");
             this.$canvas.css(rootStyles);
 
-            this.$stepWrap = this.$canvas.find("#impress");
+            this.$stepWrap = this.$canvas.find(".datamap-container");
             this.$stepWrap.css(_.extend(rootStyles, {
                 top:"50%",
                 left:"50%",
                 transform:this._perspective(this.perspective / this.windowScale) + this._scale(this.windowScale)
             }));
 
-            _.each(this.$stepWrap.find(".step"), this._initStep);
+            _.each(this.$stepWrap.find(".atlas-map"), this._initStep);
 
             // set a default initial state of the canvas
             this.currentState = {
@@ -56,7 +54,7 @@
                 scale:1
             };
 
-            this.$el.trigger("impress:init", { api:this });
+            this.$el.trigger("datamap:init", { api:this });
         },
 
         goto:function (options) {
@@ -64,15 +62,7 @@
             var stepId = $step[0].id;
             console.log("DataMap.goto:" + stepId);
 
-//            window.scrollTo(0, 0);
-
-            if (this.activeStep) {
-                this.activeStep.removeClass("impress-active");
-                this.$el.removeClass("impress-on-" + this.activeStep[0].id);
-            }
-            $step.addClass("impress-active");
-
-            this.$el.addClass("impress-on-" + stepId);
+            window.scrollTo(0, 0);
 
             // compute target state of the canvas based on given step
             var stepData = this.stepsData[stepId];
@@ -111,7 +101,7 @@
 
             // trigger leave of currently active element (if it's not the same step again)
             if (this.activeStep && this.activeStep !== $step) {
-                this._onStepLeave(this.activeStep);
+                this._onMinimize(this.activeStep);
             }
 
             // Now we alter transforms of `root` and `canvas` to trigger transitions.
@@ -130,11 +120,11 @@
                 transitionDelay:(zoomin ? delay : 0) + "ms"
             });
 
-            this.$canvas.css({
-                transform:this._rotate(target.rotate, true) + this._translate(target.translate),
-                transitionDuration:duration + "ms",
-                transitionDelay:(zoomin ? 0 : delay) + "ms"
-            });
+//            this.$canvas.css({
+//                transform:this._rotate(target.rotate, true) + this._translate(target.translate),
+//                transitionDuration:duration + "ms",
+//                transitionDelay:(zoomin ? 0 : delay) + "ms"
+//            });
 
             if (this.currentState.scale === target.scale ||
                 (this.currentState.rotate.x === target.rotate.x && this.currentState.rotate.y === target.rotate.y &&
@@ -147,46 +137,60 @@
             this.currentState = target;
             this.activeStep = $step;
 
-            // And here is where we trigger `impress:stepenter` event.
-            // We simply set up a timeout to fire it taking transition duration (and possible delay) into account.
-            //
-            // I really wanted to make it in more elegant way. The `transitionend` event seemed to be the best way
-            // to do it, but the fact that I'm using transitions on two separate elements and that the `transitionend`
-            // event is only triggered when there was a transition (change in the values) caused some bugs and
-            // made the code really complicated, cause I had to handle all the conditions separately. And it still
-            // needed a `setTimeout` fallback for the situations when there is no transition at all.
-            // So I decided that I'd rather make the code simpler than use shiny new `transitionend`.
-            //
-            // If you want learn something interesting and see how it was done with `transitionend` go back to
-            // version 0.5.2 of impress.js: http://github.com/bartaz/impress.js/blob/0.5.2/js/impress.js
             var _this = this;
             _.defer(function () {
-                _this._onStepEnter(_this.activeStep);
+                _this._onMaximize(_this.activeStep);
             });
         },
 
-        prev:function () {
-            console.log("DataMap.prev");
+        maximize:function (options) {
+            var $step = $(options.step);
+
+            window.scrollTo(0, 0);
+
+            var duration = options.duration || this.transitionDuration;
+            var delay = (duration / 2);
+
+            if ($step === this.activeStep) {
+                this.windowScale = this._computeWindowScale();
+            }
+
+            this.$stepWrap.css({
+                transform:this._perspective(this.perspective / this.windowScale) + this._scale(this.windowScale),
+                transitionDuration:duration + "ms",
+                transitionDelay:delay + "ms"
+            });
+
+            this.activeStep = $step;
+
+            var _this = this;
+            _.defer(function () {
+                _.each(_.values(_this.stepsData), function(step) {
+                    $(step.el).trigger("minimize", { "step":step });
+                });
+                _this._onMaximize(_this.activeStep);
+            });
         },
 
-        next:function () {
-            console.log("DataMap.next");
+        minimize:function (options) {
+            console.log("DataMap.minimize");
         },
 
         _initStep:function (el, idx) {
             var $stepEl = $(el);
-            if (!el.id) el.id = "step-" + (idx + 1);
+            if (!el.id) el.id = "datamap_item_" + (idx + 1);
 
+            console.log("_initStep(" + idx + "):" + el.id);
             var step = {
                 translate:{
-                    x:($stepEl.data("x")),
-                    y:($stepEl.data("y")),
-                    z:($stepEl.data("z"))
+                    x:($stepEl.data("x") || 0),
+                    y:($stepEl.data("y") || 0),
+                    z:($stepEl.data("z") || 0)
                 },
                 rotate:{
-                    x:($stepEl.data("rotateX")),
-                    y:($stepEl.data("rotateY")),
-                    z:($stepEl.data("rotateZ") || $stepEl.data("rotate"))
+                    x:($stepEl.data("rotateX") || 0),
+                    y:($stepEl.data("rotateY") || 0),
+                    z:($stepEl.data("rotateZ") || $stepEl.data("rotate") || 0)
                 },
                 scale:($stepEl.data("scale") || 1),
                 el:el
@@ -195,9 +199,8 @@
             this.stepsData[el.id] = step;
 
             $(el).css({
-                position:"absolute",
-                transform:"translate(-50%,-50%)" + this._translate(step.translate) + this._rotate(step.rotate) + this._scale(step.scale),
-                transformStyle:"preserve-3d"
+                transform: " scale(1) "
+//                transform: " rotateX(180deg) " + this._rotate(step.rotate) + this._scale(step.scale)
             });
         },
 
@@ -228,22 +231,22 @@
         },
 
         _rotate:function (r, revert) {
-            var rX = " rotateX(" + r.x + "deg) ";
-            var rY = " rotateY(" + r.y + "deg) ";
-            var rZ = " rotateZ(" + r.z + "deg) ";
+            var rX = r.x ? " rotateX(" + r.x + "deg) " : "";
+            var rY = r.y ? " rotateY(" + r.y + "deg) " : "";
+            var rZ = r.z ? " rotateZ(" + r.z + "deg) " : "";
             return revert ? rZ + rY + rX : rX + rY + rZ;
         },
 
-        _onStepEnter:function (step) {
+        _onMaximize:function (step) {
             if (this.lastEntered !== step) {
-                this.$el.trigger("impress:stepenter", { "step":step });
+                step.trigger("maximize", { "step":step });
                 this.lastEntered = step;
             }
         },
 
-        _onStepLeave:function (step) {
+        _onMinimize:function (step) {
             if (this.lastEntered === step) {
-                this.$el.trigger("impress:stepleave", { "step":step });
+                step.trigger("minimize", { "step":step });
                 this.lastEntered = null;
             }
         }
@@ -258,10 +261,9 @@
         }
 
         if (typeof data == "string") {
-            if (data == "init") datamap.init(options);
             if (data == "goto") datamap.goto(options);
-            if (data == "prev") datamap.prev(options);
-            if (data == "next") datamap.next(options);
+            if (data == "maximize") datamap.maximize(options);
+            if (data == "minimize") datamap.minimize(options);
         }
     };
 }(window.jQuery);

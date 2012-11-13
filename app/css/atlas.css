@@ -1,0 +1,57 @@
+.atlas-map {
+    border: 1px solid #87cefa;
+
+    padding: 10px;
+    margin: 10px auto;
+
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, .3);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+    color: rgb(102, 102, 102);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, .1);
+
+    -webkit-transition: opacity 1s;
+    -webkit-transition: height 1s;
+    -webkit-transition: width 1s;
+
+    -moz-transition: opacity 1s;
+    -moz-transition: height 1s;
+    -moz-transition: width 1s;
+
+    -ms-transition: opacity 1s;
+    -ms-transition: height 1s;
+    -ms-transition: width 1s;
+
+    -o-transition: opacity 1s;
+    -o-transition: height 1s;
+    -o-transition: width 1s;
+
+    transition: opacity 1s;
+    transition: height 1s;
+    transition: width 1s;
+
+    position: relative;
+}
+
+.atlas-map.small {
+    width: 100px;
+    height: 100px;
+}
+
+.atlas-map.medium {
+    width: 250px;
+    height: 250px;
+}
+
+.atlas-map.big {
+    width: 500px;
+    height: 500px;
+    z-index: 1;
+    /*-webkit-transform: "perspective(10px) scale(2)";*/
+    position: absolute; -webkit-transform: translate(-50%, -50%) translate3d(1000px, -1500px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1); -webkit-transform-style: preserve-3d;
+}
+
+.atlas-map:not(.big) {
+    z-index: 100;
+}
