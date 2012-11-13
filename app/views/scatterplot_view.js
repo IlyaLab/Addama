@@ -16,11 +16,12 @@ module.exports = View.extend({
             'initGeneTypeaheads',
             'initGraph',
             'initSubtypeDropdown',
+            'isFeatureOfInterest',
             'updateSubtype',
             'updateGraph',
             'parseFeatureData',
-            'buildFeatureQuery',
-            'loadFeatureData');
+            'loadFeatures1',
+            'loadFeatures2');
         
         $.ajax({
             url:"svc/data/lookups/genes",
@@ -62,7 +63,19 @@ module.exports = View.extend({
     },
 
     initControls: function () {
+        var that = this;
+        
+        this.$el.find(".feature1-options .feature-label-select").change(function() {
+            that.data.feature_id_1 = that.$el.find(".feature1-options .feature-label-select").val();
+            that.loadFeatures1();
+            that.parseFeatureData();
+        });
 
+        this.$el.find(".feature2-options .feature-label-select").change(function() {
+            that.data.feature_id_2 = that.$el.find(".feature2-options .feature-label-select").val();
+            that.loadFeatures2();
+            that.parseFeatureData();
+        });
     },
 
     initSubtypeDropdown: function(txt) {
@@ -81,24 +94,16 @@ module.exports = View.extend({
     },
 
     initFeatureSourcesSelect: function(txt) {
-        var that = this;
-        var sources = _
-            .chain(txt.split(/\s+/))
-            .filter(function(label) {
-                return !label.length == 0;
-            })
-            .reduce(function(memo, label) {
-                if (!_.has(memo, label)) {
-                    memo[label] = 1;
-                }
+        var that = this,
+            items = txt.trim().split("\n");
 
-                return memo;
-            }, {})
-            .keys()
-            .value();
-        
-        _.each(sources, function(s) {
-            var html = '<option>' + s + '</option>';
+        this.features_of_interest = _.map(items, function (line) {
+            var split = line.split("\t");
+            return { "label":split[0], "regexp":split[1]};
+        });
+
+        _.each(this.features_of_interest, function(s) {
+            var html = '<option>' + s.label + '</option>';
             that.$el.find(".featuresource-select").append(html);
         });
 
@@ -146,10 +151,10 @@ module.exports = View.extend({
                     x_tick_displacement: 20,
                     enable_transitions: true
                 },
-                axis_font :"20px helvetica",
-                tick_font :"20px helvetica",
-                stroke_width: 2,
-                radius: 6,
+                axis_font :"14px helvetica",
+                tick_font :"14px helvetica",
+                stroke_width: 1,
+                radius: 4,
                 data_array: this.data.plot_array,
                 regression: 'none',
                 xcolumnid: 'x',
@@ -166,14 +171,13 @@ module.exports = View.extend({
         this.drawGraph();
 
         this.$el.find(".scatterplot-container").scatterplot('reset_data', this.data.plot_array);
+        this.$el.find(".scatterplot-container").scatterplot("enable_zoom");
     },
 
     updateSubtype: function(subtype) {
         this.data.subtype = subtype;
     },
 
-    // Functions for loading parsing the feature values
-    // ------------------------------------------------
     parseFeatureData: function() {
         var that = this,
             data = this.data;
@@ -201,39 +205,11 @@ module.exports = View.extend({
         this.updateGraph();
     },
 
-    buildFeatureQuery: function(collection, subtype, feature_id) {
-        var feature_query = "?cancer=" + subtype + "&id=" + feature_id;
-        return "/svc/lookups/qed_lookups/" + collection + "/" + feature_query;
-    },
-
-    loadFeatureData: function(collection, feature_1, feature_2, cancer_subtype) {
-        var that = this,
-            data = {},
-            query_1 = this.buildFeatureQuery(collection, cancer_subtype, feature_1),
-            query_2 = this.buildFeatureQuery(collection, cancer_subtype, feature_2);
-
-        var successFn = _.after(2, function() {
-            that.parseFeatureData(data);
-        });
-
-        $.ajax({
-            type: 'GET',
-            url: query_1,
-            context: this,
-            success: function(json) {
-                data.f1 = json.items[0];
-                successFn();
-            }
-        });
-
-        $.ajax({
-            type: 'GET',
-            url: query_2,
-            context: this,
-            success: function(json) {
-                data.f2 = json.items[0];
-                successFn();
-            }
+    isFeatureOfInterest:function (feature_id) {
+        return _.any(this.features_of_interest, function (foi) {
+            var queryPattern = foi.regexp.replace(/\*/g, ".*?");
+            var queryRegex = new RegExp(queryPattern, 'gi');
+            return queryRegex.test(feature_id);
         });
     },
 
@@ -257,30 +233,18 @@ module.exports = View.extend({
             .pluck(this.feature_label_field)
             .value();
 
-        var source_fn = function (q, p) {
-            p(_.compact(_.flatten(_.map(q.toLowerCase().split(" "), function (qi) {
-                return _.map(feature_labels, function (fl) {
-                    if (fl.toLowerCase().indexOf(qi) >= 0) return fl;
-                });
-            }))));
-        };
+        var selector = options_selector + " .feature-label-select";
+        this.$el.find(selector + " option").remove();
 
-        var key = feature_number == 1 ? 'feature_id_1' : 'feature_id_2';
-
-        this.$el.find(options_selector + " .feature-label-input").data('typeahead', false).val('');
-        this.$el.find(options_selector + " .feature-label-input").typeahead({
-            source: source_fn,
-            updater: function(label) {
-                that.data[key] = label;
-                that.parseFeatureData();
-            }
+        that.$el.find(selector).append('<option value="-1">select feature ... </option>');
+        _.each(feature_labels, function(label) {
+            var html = '<option>' + label + '</option>';
+            that.$el.find(selector).append(html);
         });
-
-        this.$el.find(options_selector + " .feature-label-input").val(feature_labels[0]);
     },
 
-    buildAllFeaturesQuery: function(subtype, source, gene) {
-        var feature_query = "?cancer=" + subtype.toLowerCase() + "&source=" + source + "&gene=" + gene;
+    buildAllFeaturesQuery: function(subtype, gene) {
+        var feature_query = "?cancer=" + subtype.toLowerCase() + "&gene=" + gene;
         return "/svc/lookups/qed_lookups/" + this.feature_matrix + "/" + feature_query;
     },
 
@@ -293,14 +257,17 @@ module.exports = View.extend({
 
     loadFeatures1: function() {
         var that = this,
-            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.source1, this.data.gene1);
+            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.gene1);
 
         $.ajax({
             type: 'GET',
             url: query,
             context: this,
             success: function(json) {
-                var features = json.items;
+                var features = _.filter(json.items, function(f) {
+                    return that.isFeatureOfInterest(f.id);
+                });
+
                 if (features.length > 0) {
                     that.data.features1 = features;
                     that.data.feature_map_1 = that.buildFeatureMap(features);
@@ -317,14 +284,17 @@ module.exports = View.extend({
 
     loadFeatures2: function() {
         var that = this,
-            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.source2, this.data.gene2);
+            query = this.buildAllFeaturesQuery(this.data.subtype, this.data.gene2);
 
         $.ajax({
             type: 'GET',
             url: query,
             context: this,
             success: function(json) {
-                var features = json.items;
+                var features = _.filter(json.items, function(f) {
+                    return that.isFeatureOfInterest(f.id);
+                });
+
                 if (features.length > 0) {
                     that.data.features2 = features;
                     that.data.feature_map_2 = that.buildFeatureMap(features);
