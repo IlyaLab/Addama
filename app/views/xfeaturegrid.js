@@ -55,7 +55,6 @@ module.exports = View.extend({
     },
 
     isFeatureOfInterest:function (feature_id) {
-        var str = "GEXP:TP43:y_n_somatic";
         return _.any(this.features_of_interest, function (foi) {
             var queryPattern = foi.regexp.replace(/\*/g, ".*?");
             var queryRegex = new RegExp(queryPattern, 'gi');
@@ -63,10 +62,20 @@ module.exports = View.extend({
         });
     },
 
+    getFeatureOfInterest: function(feature_id) {
+        return _.first(_.map(this.features_of_interest, function (foi) {
+            var queryPattern = foi.regexp.replace(/\*/g, ".*?");
+            var queryRegex = new RegExp(queryPattern, 'gi');
+            if (queryRegex.test(feature_id)) {
+                return foi;
+            }
+        }));
+    },
+
     loadData:function () {
-        var gene_a = this.geneA;
-        var gene_b = this.geneB;
-        var cancer = this.cancer;
+        var gene_a = this.genes[0];
+        var gene_b = this.genes[1];
+        var cancer = this.cancers[0];
 
         var _this = this;
         var rows = this.model.get("ROWS");
@@ -86,20 +95,20 @@ module.exports = View.extend({
         // TODO : lookup values for gene associations in pairwise analysis
         var targetFeatures = _.map(this.features_of_interest, function (foi) {
             return { "label":foi.label, "featureValues":[
-                {"value":"BLUE"},
-                {"value":"GREEN"},
-                {"value":"YELLOW"}
+                {"value":"blue"},
+                {"value":"green"},
+                {"value":"yellow"}
             ]};
         });
 
         var fn = function (ci) {
             return {"id":ci};
         };
-        var genelist = _.isEmpty(this.geneList) ? [this.geneA, this.geneB] : this.geneList;
+        var genelist = _.isEmpty(this.genes) ? [this.geneA, this.geneB] : this.genes;
         this.$el.html(this.template({
             "targetFeatures":targetFeatures,
             "geneList":_.map(genelist, fn),
-            "cancerList":_.map(this.cancerList, fn)
+            "cancerList":_.map(_this.cancers, fn)
         }));
     }
 });

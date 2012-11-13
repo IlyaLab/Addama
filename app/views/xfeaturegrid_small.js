@@ -39,6 +39,16 @@ module.exports = View.extend({
         });
     },
 
+    getFeatureOfInterest: function(feature_id) {
+        return _.first(_.map(this.features_of_interest, function (foi) {
+            var queryPattern = foi.regexp.replace(/\*/g, ".*?");
+            var queryRegex = new RegExp(queryPattern, 'gi');
+            if (queryRegex.test(feature_id)) {
+                return foi;
+            }
+        }));
+    },
+
     loadData:function () {
         var gene_a = this.genes[0];
         var gene_b = this.genes[1];
