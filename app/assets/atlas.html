@@ -48,9 +48,7 @@
             <div id="map-aberrations" class="atlas-map small">
                 <label>Aberrations</label>
                 <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="big"> <i class="icon-resize-full"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="medium"> <i class="icon-resize-vertical"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="small"> <i class="icon-resize-small"></i> </a></li>
+                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
                 </ul>
                 <div class="map-contents container-fluid outer-container"></div>
             </div>
@@ -62,9 +60,7 @@
                 <div>
                     <label>Features</label>
                     <ul class="nav nav-pills pull-right">
-                        <li><a href="#" onclick="return false;" class="big"> <i class="icon-resize-full"/></i> </a></li>
-                        <li><a href="#" onclick="return false;" class="medium"> <i class="icon-resize-vertical"/></i> </a></li>
-                        <li><a href="#" onclick="return false;" class="small"> <i class="icon-resize-small"></i> </a></li>
+                        <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
                     </ul>
                 </div>
                 <div class="map-contents container-fluid outer-container"></div>
@@ -73,9 +69,7 @@
             <div id="map-associations" class="atlas-map small">
                 <label>Associations</label>
                 <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="big"> <i class="icon-resize-full"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="medium"> <i class="icon-resize-vertical"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="small"> <i class="icon-resize-small"></i> </a></li>
+                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
                 </ul>
                 <div class="map-contents container-fluid outer-container"></div>
             </div>
@@ -83,9 +77,7 @@
             <div id="map-literature" class="atlas-map small">
                 <label>Literature</label>
                 <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="big"> <i class="icon-resize-full"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="medium"> <i class="icon-resize-vertical"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="small"> <i class="icon-resize-small"></i> </a></li>
+                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
                 </ul>
                 <div class="map-contents container-fluid outer-container"></div>
             </div>
@@ -93,12 +85,29 @@
             <div id="map-clinical" class="atlas-map small">
                 <label>Clinical</label>
                 <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="big"> <i class="icon-resize-full"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="medium"> <i class="icon-resize-vertical"/></i> </a></li>
-                    <li><a href="#" onclick="return false;" class="small"> <i class="icon-resize-small"></i> </a></li>
+                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
                 </ul>
                 <div class="map-contents container-fluid outer-container"></div>
             </div>
+            <div class="atlas-inner"></div>
+        </div>
+        <div class="atlas-summary">
+            <label>Summary</label>
+            <ul class="nav nav-list pull-right">
+                <li><a href="#" onclick="return false;" class="goto-container"> <i class="icon-home"/></i> </a></li>
+                <li><a href="#" onclick="return false;" class="goto-details"> <i class="icon-zoom-in"/></i> </a></li>
+                <li><a href="#" onclick="return false;" class="goto-container"> <i class="icon-zoom-out"/></i> </a></li>
+            </ul>
+            <div class="map-contents container-fluid outer-container"></div>
+        </div>
+        <div class="atlas-details">
+            <label>Details</label>
+            <ul class="nav nav-list pull-right">
+                <li><a href="#" onclick="return false;" class="goto-container"> <i class="icon-home"/></i> </a></li>
+                <li class="disabled"><a href="#" onclick="return false;"> <i class="icon-zoom-in"/></i> </a></li>
+                <li><a href="#" onclick="return false;" class="goback-summary"> <i class="icon-zoom-out"/></i> </a></li>
+            </ul>
+            <div class="map-contents container-fluid outer-container"></div>
         </div>
     </div>
 </div>
@@ -107,29 +116,79 @@
     $(function () {
         var Atlas = require("lib/atlas");
         var atlas = new Atlas($(".atlas-body"));
-        qed.Events.on("ready", atlas.minimize_all);
 
-        $(".atlas-map a.big").click(function(e) {
-            atlas.maximize({"$el": $(e.target).parents(".atlas-map")});
+        var readyContainerFn = function() {
+            _.each($(".atlas-container").find(".atlas-map"), function(atlasMap) {
+                atlas.navigate($(atlasMap).find(".map-contents"), $(atlasMap).data("small"));
+            });
+        };
+
+        qed.Events.on("ready", readyContainerFn);
+
+        $(".goto-summary").click(function(e) {
+            var target = $(e.target).parents(".atlas-map");
+            $(".atlas-summary").data("big", target.data("big"));
+            $(".atlas-summary").data("medium", target.data("medium"));
+            target.effect('transfer', { "to":$(".atlas-body") }, 1000, function() {
+                $(".atlas-container").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-details").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-summary").show({
+                    "mode":"fade", "duration": 500,
+                    "complete": function() {
+                        atlas.navigate($(".atlas-summary").find(".map-contents"), target.data("medium"));
+                    }
+                });
+            });
         });
 
-        $(".atlas-map a.medium").click(function(e) {
-            atlas.emphasize({"$el": $(e.target).parents(".atlas-map")});
+        $(".goback-summary").click(function(e) {
+            var medium = $(".atlas-details").data("medium");
+            $(".atlas-details").effect('transfer', { "to":$(".atlas-body") }, 1000, function() {
+                $(".atlas-container").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-details").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-summary").show({
+                    "mode":"fade", "duration": 500,
+                    "complete": function() {
+                        atlas.navigate($(".atlas-summary").find(".map-contents"), medium);
+                    }
+                });
+            });
         });
 
-        $(".atlas-map a.small").click(function(e) {
-            atlas.minimize({"$el": $(e.target).parents(".atlas-map")});
+        $(".goto-details").click(function(e) {
+            $(".atlas-summary").effect('transfer', { "to":$(".atlas-body") }, 1000, function() {
+                $(".atlas-container").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-container").find(".map-contents").empty();
+                $(".atlas-summary").hide({"mode":"fade", "duration": 500 });
+                $(".atlas-details").show({
+                    "mode":"fade", "duration": 500,
+                    "complete": function() {
+                        $(".atlas-details").data("medium", $(".atlas-summary").data("medium"));
+                        atlas.navigate($(".atlas-details").find(".map-contents"), $(".atlas-summary").data("big"));
+                    }
+                });
+            });
         });
 
-        $(".atlas-map .map-contents").click(function(e) {
-            var atlasMap = $(e.target).parents(".atlas-map");
-            if (atlasMap.hasClass("small")) {
-                atlas.emphasize({"$el": atlasMap});
-            }
+        $(".goto-container").click(function(e) {
+            $(".atlas-details").hide({
+                "mode":"fade", "duration": 500,
+                "complete": function() {
+                    $(".atlas-details").find(".map-contents").empty();
+                }
+            });
+            $(".atlas-summary").hide({
+                "mode":"fade", "duration": 500,
+                "complete": function() {
+                    $(".atlas-summary").find(".map-contents").empty();
+                }
+            });
+            $(".atlas-container").show({ "mode":"fade", "duration": 500, "complete": readyContainerFn });
         });
 
         $(".atlas-map").draggable({ "scroll": true });
         $(".atlas-map").resizable({ "animate": false });
+        $(".atlas-inner").position({ "of": ".atlas-container" });
     });
 </script>
 
@@ -139,3 +198,4 @@
 
 </body>
 </html>
+

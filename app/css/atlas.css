@@ -1,9 +1,58 @@
-.atlas-map {
-    border: 1px solid #87cefa;
+.atlas-body {
+    margin: 5px;
+    padding: 5px;
+    top: 100px;
+    position: absolute;
+    width: 97%;
+    height: 85%;
+    z-index: -3;
+}
 
+.atlas-canvas {
+    margin: 5px;
+    width: 98%;
+    height: 98%;
+    z-index: -2;
+    overflow: hidden;
+}
+
+.atlas-container {
+    margin: 5px;
+    width: 97%;
+    height: 97%;
+    overflow: hidden;
+}
+
+.atlas-summary {
+    display: none;
+    margin: 5px;
+    padding: 5px;
+    width: 97%;
+    height: 97%;
+    overflow: hidden;
+}
+
+.atlas-details {
+    display: none;
+    margin: 5px;
+    padding: 5px;
+    width: 97%;
+    height: 97%;
+    overflow: hidden;
+}
+
+.ui-effects-transfer {
+    border: 1px dotted black;
+}
+
+.atlas-map {
+    /*float:left;*/
+    position: absolute;
+    z-index: 10;
+
+    border: 1px solid #87cefa;
     padding: 10px;
     margin: 10px auto;
-
     background-color: white;
     border: 1px solid rgba(0, 0, 0, .3);
     border-radius: 10px;
@@ -30,8 +79,6 @@
     transition: opacity 1s;
     transition: height 1s;
     transition: width 1s;
-
-    position: absolute;
 }
 
 .atlas-map label {
@@ -66,13 +113,12 @@
     border: 1px solid black;
 }
 
-.atlas-body {
-    left: 50px;
-    top: 100px;
-    position: absolute;
-    width: 90%;
-    height: 85%;
-    overflow: auto;
+.showing-border-dotted {
+    border: 1px dotted black;
+}
+
+.showing-border-dashed {
+    border: 1px dashed black;
 }
 
 .cancer-items {
@@ -106,8 +152,9 @@
 }
 
 #map-literature {
+    float: left;
     top: 400px;
-    left: 100px;
+    left: 50px;
 }
 
 #map-clinical {
