@@ -125,31 +125,33 @@
 
         qed.Events.on("ready", readyContainerFn);
 
+        var data_medium;
+        var data_big;
         $(".goto-summary").click(function(e) {
             var target = $(e.target).parents(".atlas-map");
-            $(".atlas-summary").data("big", target.data("big"));
-            $(".atlas-summary").data("medium", target.data("medium"));
+            data_medium = target.data("medium");
+            data_big = target.data("big");
+
             target.effect('transfer', { "to":$(".atlas-body") }, 1000, function() {
                 $(".atlas-container").hide({"mode":"fade", "duration": 500 });
                 $(".atlas-details").hide({"mode":"fade", "duration": 500 });
                 $(".atlas-summary").show({
                     "mode":"fade", "duration": 500,
                     "complete": function() {
-                        atlas.navigate($(".atlas-summary").find(".map-contents"), target.data("medium"));
+                        atlas.navigate($(".atlas-summary").find(".map-contents"), data_medium);
                     }
                 });
             });
         });
 
         $(".goback-summary").click(function(e) {
-            var medium = $(".atlas-details").data("medium");
             $(".atlas-details").effect('transfer', { "to":$(".atlas-body") }, 1000, function() {
                 $(".atlas-container").hide({"mode":"fade", "duration": 500 });
                 $(".atlas-details").hide({"mode":"fade", "duration": 500 });
                 $(".atlas-summary").show({
                     "mode":"fade", "duration": 500,
                     "complete": function() {
-                        atlas.navigate($(".atlas-summary").find(".map-contents"), medium);
+                        atlas.navigate($(".atlas-summary").find(".map-contents"), data_medium);
                     }
                 });
             });
@@ -163,8 +165,7 @@
                 $(".atlas-details").show({
                     "mode":"fade", "duration": 500,
                     "complete": function() {
-                        $(".atlas-details").data("medium", $(".atlas-summary").data("medium"));
-                        atlas.navigate($(".atlas-details").find(".map-contents"), $(".atlas-summary").data("big"));
+                        atlas.navigate($(".atlas-details").find(".map-contents"), data_big);
                     }
                 });
             });
