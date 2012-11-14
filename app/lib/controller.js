@@ -166,7 +166,11 @@ Controller = {
         }
 
         if (analysis_type === 'branches') {
-            return Controller.ModelAndView(view_name || 'branch', BranchMatrix, {analysis_id:analysis_type, dataset_id:dataset_id});
+            var cutoff = "0.0";
+            if (len>1) {
+                cutoff = arg_array[1];
+            }
+            return Controller.ModelAndView(view_name || 'branch', BranchMatrix, {analysis_id:analysis_type, dataset_id:dataset_id,cutoff:cutoff});
         }
 
         //tabular data like /feature_matrices
