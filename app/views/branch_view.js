@@ -35,9 +35,9 @@ module.exports = View.extend({
     var colors = ["#D7191C", "#FDAE61", "#FFFFBF", "#ABD9E9", "#2C7BB6"]
     var color = function(d){
         if ( ! colors.hasOwnProperty(d.termcat)){
-          console.log("bad color "+ d.termcat);
+          console.log("bad color "+ (d.termcat-1));
         }
-        return colors[d.termcat];
+        return colors[d.termcat-1];
       };
     console.log("scatter");
     var svg = d3.select(".scat-container")
