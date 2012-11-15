@@ -70,7 +70,6 @@ module.exports = View.extend({
             output = output + "<br/> " + features[i][0] + ", " + features[i][1];
           }
           me.pc.highlight(me.model.filterFeatures(highlight));
-          console.log(features);
           $(".branch-output").html(output);
           d3.event.stopPropagation();
         });
@@ -101,9 +100,9 @@ module.exports = View.extend({
 
     me.pc.dimensions(keys)
       .data(pcdata)
-      .render()
-      .color("#000")
-      .alpha(0.3)
+      //.render()
+      .color("#447")
+      //.alpha(0.8)
       .margin({ top: 0, left: 0, bottom: 0, right: 0 })
       .render()/*
       .reorderable()
