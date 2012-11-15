@@ -72,43 +72,95 @@ module.exports = View.extend({
         }));
     },
 
-    loadData:function () {
+    loadData: function() {
+        if (this.model.get("features") === undefined) {
+            return;
+        }
+        
+        this.updateGrid();
+    },
+
+    buildGridLabel: function(feature) {
+        if (feature.source === 'METH') {
+            return "METH:" + feature.modifier;
+        }
+        else {
+            return feature.source;
+        }
+    },
+
+    updateGrid: function() {
+        var that = this;
+
         var gene_a = this.genes[0];
         var gene_b = this.genes[1];
-        var cancer = this.cancers[0];
 
-        var _this = this;
-        var rows = this.model.get("ROWS");
-        var genea_rows = _.map(rows, function (row) {
-            return row.indexOf(gene_a) >= 0 && _this.isFeatureOfInterest(row);
-        });
-        var geneb_rows = _.compact(_.map(rows, function (row, rowIdx) {
-            if (row.indexOf(gene_b) >= 0) {
-                var featureOfInterest = _this.getFeatureOfInterest(row);
-                if (!_.isEmpty(featureOfInterest)) {
-                    return { "rowIdx": rowIdx, "row": row, "foi": featureOfInterest };
-                }
+        var pwpv = this.model.get("pwpv");
+        var get_pairwise_data = function(id1, id2) {
+            if (_.has(pwpv, id1)) {
+                return pwpv[id1][id2];
             }
-            return null;
-        }));
+            else if (_.has(pwpv, id2)) {
+                return pwpv[id2][id1];
+            }
 
-        // TODO : lookup values for gene associations in pairwise analysis
-        var targetFeatures = _.map(this.features_of_interest, function (foi) {
-            return { "label":foi.label, "featureValues":[
-                {"value":"blue"},
-                {"value":"green"},
-                {"value":"yellow"}
-            ]};
-        });
+            return undefined;
+        };
+
+        var negative_color = d3.scale.linear().domain([-32.0, 0.0]).range(["blue", "white"]);
+        var positive_color = d3.scale.linear().domain([0.0, 32.0]).range(["white", "red"]);
+
+        var color_fn = function(id1, id2) {
+            var pw = get_pairwise_data(id1, id2);
+
+            if (pw === undefined) {
+                return "gray";
+            }
+
+            if (pw.corr < 0) {
+                return negative_color(-pw.mlog10p);
+            }
+            else {
+                return positive_color(pw.mlog10p);
+            }
+        };
+
+        var gene_a_model_features = this.model.get("features")[gene_a];
+        var gene_a_features = _
+            .chain(gene_a_model_features)
+            .map(function(feature) {
+                return {
+                    d: feature,
+                    grid_label: that.buildGridLabel(feature)
+
+                };
+            })
+            .value();
+
+        var gene_b_features = _
+            .chain(this.model.get("features")[gene_b])
+            .map(function(feature) {
+                return {
+                    d: feature,
+                    grid_label: that.buildGridLabel(feature),
+                    row:_.map(gene_a_features, function(af) {
+                        return _.extend(af, {
+                            color: color_fn(feature.id, af.d.id)
+                        });
+                    })
+                };
+            })
+            .value();
 
         var fn = function (ci) {
             return {"id":ci};
         };
         var genelist = _.isEmpty(this.genes) ? [this.geneA, this.geneB] : this.genes;
         this.$el.html(this.template({
-            "targetFeatures":targetFeatures,
+            "gene_a_features": gene_a_features,
+            "gene_b_features": gene_b_features,
             "geneList":_.map(genelist, fn),
-            "cancerList":_.map(_this.cancers, fn)
+            "cancerList":_.map(that.cancers, fn)
         }));
     }
 });

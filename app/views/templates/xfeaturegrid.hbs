@@ -40,17 +40,17 @@
     <thead>
     <tr>
         <td>&nbsp;</td>
-        {{#each targetFeatures}}
-            <td><a href="#" onclick="return false;" data-id="{{label}}">{{label}}</a></td>
+        {{#each gene_a_features}}
+            <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{grid_label}}</a></td>
         {{/each}}
     </tr>
     </thead>
     <tbody>
-    {{#each targetFeatures}}
+    {{#each gene_b_features}}
         <tr>
-            <td><a href="#" onclick="return false;" data-id="{{label}}">{{label}}</a></td>
-            {{#each featureValues}}
-                <td>{{value}}</td>
+            <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{grid_label}}</a></td>
+            {{#each row}}
+                <td style="background-color: {{color}}"></td>
             {{/each}}
         </tr>
     {{/each}}
