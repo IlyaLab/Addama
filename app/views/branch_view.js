@@ -21,6 +21,7 @@ module.exports = View.extend({
   },
 
   renderGrid : function(){
+    var me = this;
     var scatdata = this.model.getD3Data();
     var length = scatdata.length;
     var height = 400;
@@ -43,7 +44,10 @@ module.exports = View.extend({
     var svg = d3.select(".scat-container")
       .append("svg")
       .attr("width", width)
-      .attr("height", height);
+      .attr("height", height)
+      .on("click", function(){
+        me.pc.clear("highlight");
+      });
       //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
     
     svg.selectAll("circle")
@@ -55,10 +59,23 @@ module.exports = View.extend({
       .attr("r", 10)
       .attr("fill",color)
       .attr("stroke",color)
-      .style('stroke-opacity',.8)
-      .style('fill-opacity',.8);
+      .style('stroke-opacity', 0.8)
+      .style('fill-opacity', 0.8)
+      .on("click", function(d){
+          var features = me.model.getTopFeaturs(d.n);
+          var output = d.n + " : ";
+          var highlight = [];
+          for (var i = 0; i < Math.min(features.length, 5); i++) {
+            highlight.push(features[i][0]);
+            output = output + "<br/> " + features[i][0] + ", " + features[i][1];
+          }
+          me.pc.highlight(me.model.filterFeatures(highlight));
+          console.log(features);
+          $(".branch-output").html(output);
+          d3.event.stopPropagation();
+        });
 
-    svg.selectAll("text")
+    /*svg.selectAll("text")
       .data(scatdata)
       .enter()
       .append("text")
@@ -71,7 +88,7 @@ module.exports = View.extend({
       .attr("font-size", "10px")
       .style('stroke-opacity',.8)
       .style('fill-opacity',.8)
-      .attr("fill", "grey");
+      .attr("fill", "grey");*/
 
 
 
@@ -80,9 +97,9 @@ module.exports = View.extend({
     var ignore_keys = ['label','type','source','feature_id','nByi',"feature"];
     var keys = _.difference(Object.keys(pcdata[0]),ignore_keys);
 
-    var pc = d3.parcoords()(".pc-container");
+    me.pc = d3.parcoords()(".pc-container");
 
-    pc.dimensions(keys)
+    me.pc.dimensions(keys)
       .data(pcdata)
       .render()
       .color("#000")
