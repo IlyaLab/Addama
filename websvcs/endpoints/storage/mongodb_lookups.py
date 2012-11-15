@@ -103,9 +103,11 @@ class MongoDbPairwiseLookupHandler(tornado.web.RequestHandler):
 
     def feature_filter_fn(self, feature):
         fields = feature['id'].split(':')
-        if fields[1] == 'METH' or fields[1] == 'CNVR':
+        source = fields[1]
+
+        if source == 'METH' or source == 'CNVR' or source == 'GEXP':
             return True
-        elif fields[1] == 'GNAB' and fields[-1] == 'y_n_somatic':
+        elif source == 'GNAB' and fields[-1] == 'y_n_somatic':
             return True
         else:
             return False

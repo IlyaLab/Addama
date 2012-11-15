@@ -6,6 +6,7 @@ $(function () {
             "Annotations":require("models/annotations"),
             "Mappings":require("models/mappings"),
             "FeatureMatrix":require("models/featureMatrix2"),
+            "FeatureMatrix3":require("models/featureMatrix3"),
             "GraphLayouts":require("models/graph_layouts"),
             "Mutations":require("models/mutations")
         },
