@@ -5,7 +5,7 @@ module.exports = Backbone.View.extend({
     initialize: function(element, options) {
         this.$el = $(element);
         if (options) _.extend(this, options);
-        _.bindAll(this, "navigate", "loadCancerList", "initGeneTypeahead");
+        _.bindAll(this, "navigate", "loadCancerList", "initGeneTypeahead", "transitions");
 
         $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.loadCancerList });
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeahead });
@@ -17,7 +17,9 @@ module.exports = Backbone.View.extend({
             var uri = route.substring(0, route.lastIndexOf("/"));
             var view_name = route.substring(route.lastIndexOf("/") + 1);
 
-            var afn = function(link) { return $(link).data("id")};
+            var afn = function(link) {
+                return $(link).data("id")
+            };
             var router = new QEDRouter({"targetEl": $(target)});
             router.viewsByUri(uri, view_name, {
                 "cancers": _.map($(".cancer-selector .active a"), afn),
@@ -63,5 +65,40 @@ module.exports = Backbone.View.extend({
         UL.find(".item-remover").click(function(e) {
             $(e.target).parent().remove();
         });
+    },
+
+    transitions: function(directive, elfrom, elto, completeFn) {
+        if (_.isFunction(completeFn)) _.defer(completeFn);
+
+        var $elfrom = $(elfrom);
+        var $elto = $(elto);
+
+        var defaultZoom = {
+            "duration":800,
+            "scalemode": "both",
+            "easing": "ease",
+            "nativeanimation": true,
+            "root": $(".atlas-canvas"),
+            "closeclick": false
+        };
+
+
+        if (directive == "zoomin") {
+            $elfrom.zoomTo(_.extend(defaultZoom, { "targetsize":0.1 }));
+            _.delay(function() {
+                $elfrom.hide("fade");
+                $elto.show();
+                $elto.zoomTo(_.extend(defaultZoom, { "targetsize": 0.9 }));
+            }, 1200);
+        }
+        else if (directive == "zoomout") {
+            $elfrom.zoomTo(_.extend(defaultZoom, { "targetsize": 5 }));
+
+            _.delay(function() {
+                $elfrom.hide("fade");
+                $elto.show();
+                $elto.zoomTo(_.extend(defaultZoom, { "targetsize":0.9 }));
+            }, 1200);
+        }
     }
 });

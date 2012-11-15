@@ -10,8 +10,8 @@
 
 .atlas-canvas {
     margin: 5px;
-    width: 98%;
-    height: 98%;
+    width: 97%;
+    height: 97%;
     z-index: -2;
     overflow: hidden;
 }
@@ -20,33 +20,29 @@
     margin: 5px;
     width: 97%;
     height: 97%;
+    position: absolute;
     overflow: hidden;
 }
 
 .atlas-summary {
     display: none;
     margin: 5px;
-    padding: 5px;
     width: 97%;
     height: 97%;
+    position: absolute;
     overflow: hidden;
 }
 
 .atlas-details {
     display: none;
     margin: 5px;
-    padding: 5px;
     width: 97%;
     height: 97%;
+    position: absolute;
     overflow: hidden;
 }
 
-.ui-effects-transfer {
-    border: 1px dotted black;
-}
-
 .atlas-map {
-    /*float:left;*/
     position: absolute;
     z-index: 10;
 
