@@ -33,7 +33,7 @@ module.exports = View.extend({
           return d.r2*(height/length);
       };
    
-    var colors = ["#D7191C", "#FDAE61", "#FFFFBF", "#ABD9E9", "#2C7BB6"]
+    var colors = ["#D7191C", "#FDAE61", "#FFFFBF", "#ABD9E9", "#2C7BB6"];
     var color = function(d){
         if ( ! colors.hasOwnProperty(d.termcat)){
           console.log("bad color "+ (d.termcat-1));
@@ -41,8 +41,16 @@ module.exports = View.extend({
         return colors[d.termcat-1];
       };
 
+    var clearstate = function ()
+    {
+      $(".case-name").html("");
+        $(".branch-output").html("");
+        $(".pathway-output").html("");
+        me.pc.color("#447");
+        me.pc.clear("highlight");
+        me.pc.render();
+    }
     var showpathways=function(data){
-      console.log(data)
       if (data.length==0){
         $(".pathway-output").html("No Pathways Found.");
         return;
@@ -61,14 +69,7 @@ module.exports = View.extend({
       .append("svg")
       .attr("width", width)
       .attr("height", height)
-      .on("click", function(){
-        $(".case-name").html("");
-        $(".branch-output").html("");
-        $(".pathway-output").html("");
-        me.pc.color("#447");
-        me.pc.clear("highlight");
-        me.pc.render();
-      });
+      .on("click", clearstate);
       //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
     
     svg.selectAll("circle")
@@ -83,6 +84,7 @@ module.exports = View.extend({
       .style('stroke-opacity', 0.8)
       .style('fill-opacity', 0.8)
       .on("click", function(d,i){
+          clearstate();
           var features = me.model.getTopFeaturs(d.n);
           var blue_to_brown = d3.scale.pow()
             .exponent(3.5)
@@ -109,6 +111,7 @@ module.exports = View.extend({
             .text(function(d){return d[0]+", "+d[1];})
             .style("color",function(d){ return blue_to_brown(d[1]); })
             .on("click", function(d){
+              $(".pathway-output").html("");
               highlightf(d);
               d3.tsv("/svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
               })
@@ -137,7 +140,6 @@ module.exports = View.extend({
 
 
 
-    var me = this;
     var pcdata = this.model.get('branches');
     var ignore_keys = ['label','type','source','feature_id','nByi',"feature"];
     var keys = _.difference(Object.keys(pcdata[0]),ignore_keys);
