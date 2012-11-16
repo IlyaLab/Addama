@@ -1,0 +1,20 @@
+<table border="1" style="text-align: center;">
+    <thead>
+    <tr>
+        <td>RANK</td>
+        {{#each cancers}}
+            <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{id}}</a></td>
+        {{/each}}
+    </tr>
+    </thead>
+    <tbody>
+    {{#each genes}}
+        <tr>
+            <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{id}}</a></td>
+            {{#each rank_by_cancer}}
+                <td>{{rank}}</td>
+            {{/each}}
+        </tr>
+    {{/each}}
+    </tbody>
+</table>
