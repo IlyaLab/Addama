@@ -40,13 +40,31 @@ module.exports = View.extend({
         }
         return colors[d.termcat-1];
       };
+
+    var showpathways=function(data){
+      console.log(data)
+      if (data.length==0){
+        $(".pathway-output").html("No Pathways Found.");
+        return;
+      }
+      $(".pathway-output").html("<div style='font-size: 14px;'>Pathways Containing "+data[0].GENE+"</div>");
+      var grid = d3.select(".pathway-output");
+      grid.selectAll("div")
+        .data(data)
+        .enter()
+        .append("div")
+        .text(function(d){ return d.PATHWAY;});
+
+    };
     console.log("scatter");
     var svg = d3.select(".scat-container")
       .append("svg")
       .attr("width", width)
       .attr("height", height)
       .on("click", function(){
+        $(".case-name").html("");
         $(".branch-output").html("");
+        $(".pathway-output").html("");
         me.pc.color("#447");
         me.pc.clear("highlight");
         me.pc.render();
@@ -72,15 +90,33 @@ module.exports = View.extend({
             .range(["#447", "red"])
             .interpolate(d3.interpolateLab);
           me.pc.color(function(d){ return blue_to_brown(d[i]); });
+          $(".case-name").html("Top Features for "+ d.n);
           var output = d.n + " : ";
           var highlight = [];
-          for (var j = 0; j < Math.min(features.length, 26); j++) {
-            highlight.push(features[j][0]);
-            output = output + "<br/> " + features[j][0] + ", " + features[j][1];
+          for (var j = 0; j < Math.min(features.length, 20); j++) {
+            highlight.push([features[j][0],features[j][1]]);
+            
           }
           //me.pc.highlight(me.model.filterFeatures(highlight));
+          var grid = d3.select(".branch-output");
+
+          var highlightf = function(d){me.pc.highlight(me.model.filterFeatures([d[0]]));};
+          
+          grid.selectAll("div")
+            .data(highlight)
+            .enter()
+            .append("div")
+            .text(function(d){return d[0]+", "+d[1];})
+            .style("color",function(d){ return blue_to_brown(d[1]); })
+            .on("click", function(d){
+              highlightf(d);
+              d3.tsv("/svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
+              })
+            .on("mouseover",highlightf)
+            .on("mouseout",function(){me.pc.clear("highlight");});
+
+          //$(".branch-output").html(output);
           me.pc.render();
-          $(".branch-output").html(output);
           d3.event.stopPropagation();
         });
 
