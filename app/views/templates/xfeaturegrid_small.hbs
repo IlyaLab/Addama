@@ -1,19 +1,19 @@
 <table>
     <tr>
-    {{#each cancers}}
+    {{#each data}}
         <td class='rotated_cell'>
-            <div class='rotate_text'>{{id}}</div>
+            <div class='rotate_text'>{{label}}</div>
         </td>
     {{/each}}
     </tr>
     <tr>
-    {{#each cancers}}
+    {{#each data}}
         <td>
             <table border="1" style="text-align: center;">
-                {{#each targetFeatures}}
+                {{#each data}}
                 <tr>
-                    {{#each featureValues}}
-                    <td style="background-color: {{value}}; width: 2px; height: 2px;">&nbsp;</td>
+                    {{#each row}}
+                    <td style="background-color: {{color}}; width: 2px; height: 2px;">&nbsp;</td>
                     {{/each}}
                 </tr>
                 {{/each}}

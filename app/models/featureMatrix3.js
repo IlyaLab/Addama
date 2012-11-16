@@ -1,23 +1,68 @@
-var Model = require('./model');
-var REQUIRED = null;
+var PerCancer = Backbone.Model.extend({
+    url:function () {
+        return this.get("data_uri") + "?gene1=" + this.get("gene1") + "&gene2=" + this.get("gene2") + "&cancer=" + this.get("cancer");
+    },
 
-module.exports = Model.extend({
-    analysis_id:REQUIRED,
-    dataset_id:REQUIRED,
+    parse: function(data) {
+        if (_.isEmpty(data.pairwise_results)) {
+            return { "features": data.features, "pwpv": [] }
+        }
+        
+        var pairwise_map = _.reduce(data.pairwise_results, function(memo, result) {
+            var id1 = result.predictor;
+            var id2 = result.target;
+
+            if (!_.has(memo, id1)) {
+                memo[id1] = {};
+            }
+
+            memo[id1][id2] = {
+                corr: result.values[0],
+                nonNAs: result.values[1],
+                mlog10p: result.values[2],
+                corrected_mlog10p: result.values[4]
+            };
+
+            return memo;
+        }, {});
+
+        return {
+            "features": data.features,
+            "pwpv": pairwise_map
+        };
+    },
+
+    fetch:function (options) {
+        return Backbone.Model.prototype.fetch.call(this, options);
+    }
+});
+
+module.exports = Backbone.Model.extend({
 
     initialize: function (options) {
         _.extend(this, options);
     },
 
     url: function () {
-        return this.data_uri;
-    },
-
-    parse: function() {
-        return {};
+        return "svc" + this.data_uri;
     },
 
     fetch: function (options) {
+        _.extend(this, options);
 
+        // TODO :: Fetch all gene combinations a priori?
+        var gene1 = this.genes[0];
+        var gene2 = this.genes[1];
+        var data_uri = this.data_uri;
+        var perCancers = _.map(this.cancers, function(cancer) {
+            return new PerCancer(_.extend(options, { "data_uri": data_uri, "gene1": gene1, "gene2": gene2, "cancer": cancer }));
+        });
+
+        this.set("data", perCancers);
+
+        var successFn = _.after(perCancers.length, options.success || function(){});
+        _.each(perCancers, function(perCancer) {
+            perCancer.fetch({ "success": successFn, "error": successFn });
+        });
     }
 });
