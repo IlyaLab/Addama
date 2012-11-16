@@ -1,10 +1,16 @@
 {
     "proxy":[
         {
-            "url":"/svc",
+            "url":"/svc/pw_lookups",
             "rewrite_url":"http://genespot.cancerregulome.org",
             "host":"genespot.cancerregulome.org",
-            "port": 80
+            "port": 80,
+            "keep_url": true
+        },
+        {
+            "url":"/svc",
+            "host":"localhost",
+            "port": 8000
         },
         {
             "url":"/graph_layout",

@@ -48,6 +48,9 @@ exports.startServer = function(port, path) {
                 target["port"] = proxyConfig.port;
 
                 if (proxyConfig.rewrite_url) {
+                    if (!proxyConfig.keep_url) {
+                        req.url = req.url.slice(proxyConfig.url.length);
+                    }
                     req.url = proxyConfig.rewrite_url + req.url;
                     proxy.proxyRequest(req, res, target);
                     return;
