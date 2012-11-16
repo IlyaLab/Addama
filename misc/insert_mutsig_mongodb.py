@@ -32,7 +32,7 @@ def connect_database(hostname, port):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Firehose MutSig output to MongoDB import utility")
+    parser = argparse.ArgumentParser(description="MutSig to MongoDB import utility")
     parser.add_argument('--mutsig-file', required=True, help='Path to MutSig output file')
     parser.add_argument('--cancer-type', required=True, help='Cancer type')
     parser.add_argument('--host', required=True, help='Hostname')

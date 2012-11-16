@@ -3,6 +3,7 @@ module.exports = Backbone.Router.extend({
     routes:{
         '':'home_view',
         'twoD/:f1/:f2':'twod_view',
+        'mutsig_grid':'mutsig_grid_view',
         'scatterplot':'scatterplot_view',
         'seqpeek':'seqpeek_view',
         'v/*uri/:view_name':'viewsByUri'
@@ -23,6 +24,7 @@ module.exports = Backbone.Router.extend({
         "twoD": require("../views/2D_Distribution_view"),
         "kde": null,
         "parcoords": require("../views/parcoords_view"),
+        "mutsig_grid_view": require("../views/mutsig_grid_view"),
         "scatterplot": require("../views/scatterplot_view"),
         "seqpeek": require("../views/seqpeek_view")
     },
@@ -48,6 +50,12 @@ module.exports = Backbone.Router.extend({
         var CloudStorageView = require("../views/cloud_storage_view");
         var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
         $(document.body).append(csview.render().el);
+    },
+
+    mutsig_grid_view:function () {
+        var MutSigGrid = require('../views/mutsig_grid_view');
+        var mutsigGridView = new MutSigGrid();
+        this.$el.html(mutsigGridView.render().el);
     },
 
     scatterplot_view:function () {
