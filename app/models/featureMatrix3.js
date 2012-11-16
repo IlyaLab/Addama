@@ -49,7 +49,8 @@ module.exports = Backbone.Model.extend({
 
     fetch: function (options) {
         _.extend(this, options);
-        
+
+        // TODO :: Fetch all gene combinations a priori?
         var gene1 = this.genes[0];
         var gene2 = this.genes[1];
         var data_uri = this.data_uri;
