@@ -46,7 +46,10 @@ module.exports = View.extend({
       .attr("width", width)
       .attr("height", height)
       .on("click", function(){
+        $(".branch-output").html("");
+        me.pc.color("#447");
         me.pc.clear("highlight");
+        me.pc.render();
       });
       //.margin({ top: 120, left: 80, bottom: 80, right: 80 });
     
@@ -61,15 +64,22 @@ module.exports = View.extend({
       .attr("stroke",color)
       .style('stroke-opacity', 0.8)
       .style('fill-opacity', 0.8)
-      .on("click", function(d){
+      .on("click", function(d,i){
           var features = me.model.getTopFeaturs(d.n);
+          var blue_to_brown = d3.scale.pow()
+            .exponent(3.5)
+            .domain([features[features.length-1][1], features[0][1]])
+            .range(["#447", "red"])
+            .interpolate(d3.interpolateLab);
+          me.pc.color(function(d){ return blue_to_brown(d[i]); });
           var output = d.n + " : ";
           var highlight = [];
-          for (var i = 0; i < Math.min(features.length, 5); i++) {
-            highlight.push(features[i][0]);
-            output = output + "<br/> " + features[i][0] + ", " + features[i][1];
+          for (var j = 0; j < Math.min(features.length, 26); j++) {
+            highlight.push(features[j][0]);
+            output = output + "<br/> " + features[j][0] + ", " + features[j][1];
           }
-          me.pc.highlight(me.model.filterFeatures(highlight));
+          //me.pc.highlight(me.model.filterFeatures(highlight));
+          me.pc.render();
           $(".branch-output").html(output);
           d3.event.stopPropagation();
         });
