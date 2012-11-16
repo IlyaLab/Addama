@@ -15,10 +15,6 @@ module.exports = Backbone.View.extend({
         
         var negative_color_scale = d3.scale.linear().domain([-16.0, 0.0]).range(["blue", "white"]);
         var positive_color_scale = d3.scale.linear().domain([0.0, 16.0]).range(["white", "red"]);
-        var buildGridLabel = function(feature) {
-            if (feature.source === 'METH') return "METH:" + feature.modifier;
-            return feature.source;
-        };
 
         var cancerData = _.map(this.model.get("data"), function(perCancerData) {
             var features = perCancerData.get("features");
