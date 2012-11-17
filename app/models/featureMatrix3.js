@@ -64,5 +64,31 @@ module.exports = Backbone.Model.extend({
         _.each(perCancers, function(perCancer) {
             perCancer.fetch({ "success": successFn, "error": successFn });
         });
+    },
+
+    allFeatures: function() {
+        if (!this.get("allFeatures")) {
+            var allFeatures = {};
+            _.each(this.cancers, function(cancer) {
+                allFeatures[cancer] = {};
+            });
+
+            _.each(this.get("data"), function(perCancer) {
+                var featuresByGene = perCancer.get("features");
+                var cancer = perCancer.get("cancer");
+                _.each(featuresByGene, function(fByGene) {
+                    _.each(fByGene, function(feature) {
+                        if (allFeatures[cancer][feature.id]) {
+                            console.log("duplicate!" + feature.id);
+                        }
+                        allFeatures[cancer][feature.id] = feature;
+                    });
+                });
+            });
+
+            this.set("allFeatures", allFeatures);
+        }
+
+        return this.get("allFeatures");
     }
 });

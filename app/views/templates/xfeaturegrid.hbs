@@ -49,14 +49,14 @@
                     <tr>
                         <td>&nbsp;</td>
                         {{#each headers}}
-                        <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{grid_label}}</a></td>
+                        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
                         {{/each}}
                     </tr>
                     </thead>
                     <tbody>
                     {{#each data}}
                     <tr>
-                        <td><a href="#" onclick="return false;" data-id="{{d.id}}">{{grid_label}}</a></td>
+                        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
                         {{#each row}}
                         <td style="background-color: {{color}}"></td>
                         {{/each}}

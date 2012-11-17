@@ -17,7 +17,7 @@ module.exports = Backbone.View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, "loadData");
+        _.bindAll(this, "loadData", "handleGridClicks");
 
         this.model.on("load", this.loadData);
     },
@@ -75,5 +75,15 @@ module.exports = Backbone.View.extend({
             "geneList": _.map(this.genes, fn),
             "cancerList": _.map(this.cancers, fn)
         }));
+
+        this.$el.find(".grid-label").click(this.handleGridClicks);
+    },
+
+    handleGridClicks: function(e) {
+        var featureId = $(e.target).data("id");
+        var grouping = $(e.target).data("grouping");
+        var allFeatures = this.model.allFeatures();
+        var selectedFeature = allFeatures[grouping][featureId];
+        this.trigger("selected", selectedFeature);
     }
 });
