@@ -1,5 +1,8 @@
+body {
+    background-color: #ffefd5;
+}
+
 .atlas-body {
-    margin: 5px;
     padding: 5px;
     top: 100px;
     position: absolute;
@@ -9,37 +12,31 @@
 }
 
 .atlas-canvas {
-    margin: 5px;
+    padding: 5px;
     width: 97%;
     height: 97%;
     z-index: -2;
-    overflow: hidden;
+    position: absolute;
 }
 
-.atlas-container {
-    margin: 5px;
+.atlas-zoom {
+    padding: 5px;
     width: 97%;
     height: 97%;
+    z-index: -1;
     position: absolute;
-    overflow: hidden;
 }
 
-.atlas-summary {
-    display: none;
-    margin: 5px;
-    width: 97%;
-    height: 97%;
+.atlas-navigator {
+    float: left;
+    left: 5px;
+    top: 200px;
     position: absolute;
-    overflow: hidden;
-}
-
-.atlas-details {
-    display: none;
-    margin: 5px;
-    width: 97%;
-    height: 97%;
-    position: absolute;
-    overflow: hidden;
+    border: 1px solid #87cefa;
+    border-radius: 15px;
+    background: #ffffff;
+    height: 150px;
+    padding-top: 15px;
 }
 
 .atlas-map {
@@ -47,8 +44,7 @@
     z-index: 10;
 
     border: 1px solid #87cefa;
-    padding: 10px;
-    margin: 10px auto;
+    padding: 10px auto;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, .3);
     border-radius: 10px;
@@ -77,34 +73,6 @@
     transition: width 1s;
 }
 
-.atlas-map label {
-    margin-top: 5px;
-    float: left;
-}
-
-.atlas-map.small {
-    width: 200px;
-    height: 200px;
-}
-
-.atlas-map.medium {
-    width: 250px;
-    height: 250px;
-}
-
-.atlas-map.big {
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-}
-
-.atlas-map:not(.big) {
-    z-index: 100;
-}
-
 .showing-border {
     border: 1px solid black;
 }
@@ -125,35 +93,4 @@
 .gene-items {
     top: 100px;
     width: 250px;
-}
-
-#map-aberrations {
-    top: 50px;
-    left: 300px;
-}
-
-#map-features {
-    top: 40px;
-    left: 900px;
-}
-
-#map-features.small {
-    width: 300px;
-    height: 250px;
-}
-
-#map-associations {
-    top: 500px;
-    left: 550px;
-}
-
-#map-literature {
-    float: left;
-    top: 400px;
-    left: 50px;
-}
-
-#map-clinical {
-    top: 400px;
-    left: 1000px;
 }

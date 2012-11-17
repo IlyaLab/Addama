@@ -1,9 +1,13 @@
 <!doctype html>
 <!--<html lang="en">-->
-<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
-<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en"> <![endif]-->
-<!--[if gt IE 8]><!--><html class="no-js" lang="en"> <!--<![endif]-->
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en"> <!--<![endif]-->
 <head>
     <link rel="shortcut icon" href="img/isbfavicon.ico" type="image/x-icon"/>
     <meta charset="utf-8"/>
@@ -23,6 +27,16 @@
 
 <div class="navbar navbar-fixed-top" id="navigation-container"></div>
 
+<div class="atlas-navigator">
+    <ul class="nav nav-list">
+        <li><a href="#" onclick="return false;" class="zoom-home"> <i class="icon-home"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="zoom-in"> <i class="icon-zoom-in"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="move-item"> <i class="icon-move"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
+    </ul>
+</div>
+
 <div class="cancer-items">
     <ul class="nav nav-pills cancer-selector"></ul>
 </div>
@@ -41,70 +55,68 @@
 </div>
 
 <div class="atlas-body">
-    <div class="atlas-canvas zoomContainer">
-        <div class="atlas-container">
-            <div id="map-aberrations" class="atlas-map small">
-                <label>Aberrations</label>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                </ul>
-                <div class="map-contents container-fluid outer-container"></div>
+    <div class="atlas-canvas">
+        <div class="atlas-zoom">
+            <div class="atlas-map" style="top: 50px; left: 100px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Mutations</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="lookups/qed_lookups/mutations" data-view="seqpeek_mini">SeqPeek (mini)</div>
             </div>
 
-            <div id="map-features" class="atlas-map small"
-                 data-small="#v/domains/newMerge.05nov/brca.newMerge.05nov.tsv/xfeaturegrid_small"
-                 data-medium="#v/domains/newMerge.05nov/brca.newMerge.05nov.tsv/xfeaturegrid"
-                 data-big="#v/domains/newMerge.05nov/brca.newMerge.05nov.tsv/heat">
-                <div>
-                    <label>Features</label>
-                    <ul class="nav nav-pills pull-right">
-                        <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                    </ul>
-                </div>
-                <div class="map-contents container-fluid outer-container"></div>
+            <div class="atlas-map load-first" style="top: 20px; left: 520px;" data-scale="100">
+                <h4><a href="#mutsig_grid" onclick="return false;">MutSig</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="domains/mutations/mutsig_rankings" data-view="mutsig_grid">MutSig (mini)</div>
             </div>
 
-            <div id="map-associations" class="atlas-map small">
-                <label>Associations</label>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                </ul>
-                <div class="map-contents container-fluid outer-container"></div>
+            <div class="atlas-map" style="top: 180px; left: 140px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Clusters</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov">StacksVis (mini)</div>
             </div>
 
-            <div id="map-literature" class="atlas-map small">
-                <label>Literature</label>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                </ul>
-                <div class="map-contents container-fluid outer-container"></div>
+            <div class="atlas-map" style="top: 150px; left: 450px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Copy Number (GISTIC)</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov">Linear Browser (mini)</div>
             </div>
 
-            <div id="map-clinical" class="atlas-map small">
-                <label>Clinical</label>
-                <ul class="nav nav-pills pull-right">
-                    <li><a href="#" onclick="return false;" class="goto-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                </ul>
+            <div class="atlas-map load-first" style="top: 200px; left: 750px;" data-scale="100"
+                 data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small">
+                <h4><a href="#xfeaturegrid" class="load-map" onclick="return false;">Multi-Feature</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small"></div>
+            </div>
+
+            <div class="atlas-map" style="top: 400px; left: 50px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Literature Search (Pubcrawl)</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="pubcrawl/search" data-view="pubcrawl_histogram">Histograms</div>
+            </div>
+
+            <div class="atlas-map" style="top: 500px; left: 550px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Associations (PairWise)</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="analysis/pairwise_newMerge.05nov" data-view="highlevel_associations"></div>
+            </div>
+
+            <div class="atlas-map" style="top: 400px; left: 1000px;" data-scale="100">
+                <h4><a href="#" onclick="return false;">Samples</a></h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="annotations/newMerge.05nov" data-view="circlepack"></div>
+            </div>
+
+            <div id="xfeaturegrid" class="atlas-map" style="top: 600px; left: 600px; width:800px; height: 400px;" data-scale="60">
+                <h4>Scale 60%</h4>
+
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid"></div>
+            </div>
+
+            <div class="atlas-map" style="top: 600px; left: 900px;" data-scale="20">
+                <h4>Scale 20%</h4>
+
                 <div class="map-contents container-fluid outer-container"></div>
             </div>
-        </div>
-        <div class="atlas-summary">
-            <label>Summary</label>
-            <ul class="nav nav-list pull-right">
-                <li><a href="#" onclick="return false;" class="goto-container-from-summary"> <i class="icon-home"/></i> </a></li>
-                <li><a href="#" onclick="return false;" class="goto-details-from-summary"> <i class="icon-zoom-in"/></i> </a></li>
-                <li><a href="#" onclick="return false;" class="goto-container-from-summary"> <i class="icon-zoom-out"/></i> </a></li>
-            </ul>
-            <div class="map-contents container-fluid outer-container"></div>
-        </div>
-        <div class="atlas-details">
-            <label>Details</label>
-            <ul class="nav nav-list pull-right">
-                <li><a href="#" onclick="return false;" class="goto-container-from-details"> <i class="icon-home"/></i> </a></li>
-                <li class="disabled"><a href="#" onclick="return false;"> <i class="icon-zoom-in"/></i> </a></li>
-                <li><a href="#" onclick="return false;" class="goto-summary-from-details"> <i class="icon-zoom-out"/></i> </a></li>
-            </ul>
-            <div class="map-contents container-fluid outer-container"></div>
         </div>
     </div>
 </div>
@@ -115,58 +127,69 @@
         var Atlas = require("lib/atlas");
         atlas = new Atlas($(".atlas-body"));
 
+        var currentZoomLevel = 1.0;
+
         var readyContainerFn = function() {
-            _.each($(".atlas-container").find(".atlas-map"), function(atlasMap) {
-                atlas.navigate($(atlasMap).find(".map-contents"), $(atlasMap).data("small"));
+            $(".atlas-zoom").draggable({ "scroll": true });
+
+            _.each($(".atlas-map.load-first"), function(atlasMap) {
+                var mapcontents = $(atlasMap).find(".map-contents");
+                atlas.navigate(mapcontents, mapcontents.data("source"), mapcontents.data("view"));
             });
         };
 
         qed.Events.on("ready", readyContainerFn);
 
-        var data_medium;
-        var data_big;
-        $(".goto-summary").click(function(e) {
-            var target = $(e.target).parents(".atlas-map");
-            data_medium = target.data("medium");
-            data_big = target.data("big");
-
-            atlas.transitions("zoomout", ".atlas-container", ".atlas-summary", function() {
-                $(".atlas-container").find(".map-contents").empty();
-                atlas.navigate($(".atlas-summary").find(".map-contents"), data_medium);
-            });
+        _.each($(".atlas-map"), function(atlasMap) {
+            var scaleLevel = $(atlasMap).data("scale");
+            if (scaleLevel && scaleLevel < 100) {
+                $(atlasMap).effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
+                $(atlasMap).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
+            }
         });
 
-        $(".goto-details-from-summary").click(function(e) {
-            atlas.transitions("zoomout", ".atlas-summary", ".atlas-details", function() {
-                $(".atlas-summary").find(".map-contents").empty();
-                _.delay(function() {
-                    atlas.navigate($(".atlas-details").find(".map-contents"), data_big);
-                }, 2000);
-            });
+        $(".zoom-in").click(function() {
+            currentZoomLevel += 0.20;
+            atlas.zoom(currentZoomLevel);
         });
 
-        $(".goto-container-from-summary").click(function(e) {
-            atlas.transitions("zoomin", ".atlas-summary", ".atlas-container", function() {
-                $(".atlas-summary").find(".map-contents").empty();
-                readyContainerFn();
-            });
+        $(".zoom-out").click(function() {
+            currentZoomLevel -= 0.20;
+            if (currentZoomLevel < 0.01) currentZoomLevel = 0.01;
+            atlas.zoom(currentZoomLevel);
         });
 
-        $(".goto-summary-from-details").click(function(e) {
-            atlas.transitions("zoomin", ".atlas-details", ".atlas-summary", function() {
-                atlas.navigate($(".atlas-summary").find(".map-contents"), data_medium);
-            });
+        $(".zoom-home").click(function() {
+            currentZoomLevel = 1.0;
+            atlas.zoom(currentZoomLevel);
         });
 
-        $(".goto-container-from-details").click(function(e) {
-            atlas.transitions("zoomin", ".atlas-details", ".atlas-container", function() {
-                $(".atlas-details").find(".map-contents").empty();
-                readyContainerFn();
-            });
+        $(".move-item").click(function() {
+            var li = $(this).parent();
+            if (li.hasClass("active")) {
+                $(".atlas-map").draggable("destroy");
+            } else {
+                $(".atlas-map").draggable({ "scroll": true });
+            }
+            $(".atlas-map").toggleClass("showing-border-dashed");
+            li.toggleClass("active");
         });
 
-        $(".atlas-map").draggable({ "scroll": true });
-        $(".atlas-map").resizable({ "animate": false });
+        $(".resize-item").click(function() {
+            var li = $(this).parent();
+            if (li.hasClass("active")) {
+                $(".atlas-map").resizable("destroy");
+            } else {
+                $(".atlas-map").resizable({ "ghost": true, "grid": [10,10], "animateEasing":"ease"});
+            }
+            li.toggleClass("active");
+        });
+
+        $(".load-map").click(function(e) {
+            var loadmap = $(e.target).attr("href");
+            var mapcontents = $(loadmap).find(".map-contents");
+            atlas.navigate(mapcontents, mapcontents.data("source"), mapcontents.data("view"));
+        });
     });
 </script>
 
