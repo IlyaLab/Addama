@@ -39,7 +39,8 @@ $(function () {
             "parcoords":require("views/parcoords_view"),
             "seqpeek":require("views/seqpeek_view"),
             "xfeaturegrid": require("views/xfeaturegrid"),
-            "xfeaturegrid_small": require("views/xfeaturegrid_small")
+            "xfeaturegrid_small": require("views/xfeaturegrid_small"),
+            "mutsig_grid": require("views/mutsig_grid_view")
         },
         Lookups:{
             Labels:{}
