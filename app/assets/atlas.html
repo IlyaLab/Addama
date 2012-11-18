@@ -33,6 +33,7 @@
         <li><a href="#" onclick="return false;" class="zoom-in"> <i class="icon-zoom-in"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="scale-item"> <i class="icon-fullscreen"/></i> </a></li>
     </ul>
 </div>
 
@@ -63,7 +64,7 @@
             </div>
 
             <div class="atlas-map load-first" style="top: 20px; left: 520px;" data-scale="100">
-                <h4><a href="#mutsig_grid" onclick="return false;">MutSig</a></h4>
+                <h4><a href="#mutsig_grid" onclick="return false;">MutSig Ranks</a></h4>
 
                 <div class="map-contents container-fluid outer-container" data-source="domains/mutations/mutsig_rankings" data-view="mutsig_grid">MutSig (mini)</div>
             </div>
@@ -82,8 +83,7 @@
 
             <div class="atlas-map load-first" style="top: 200px; left: 750px;" data-scale="100"
                  data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small">
-                <h4><a href="#xfeaturegrid" class="load-map" onclick="return false;">Multi-Feature</a></h4>
-
+                <h4>Multi-Feature <a href="#xfeaturegrid" class="load-map" onclick="return false;">(detail)</a></h4>
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small"></div>
             </div>
 
@@ -105,16 +105,9 @@
                 <div class="map-contents container-fluid outer-container" data-source="annotations/newMerge.05nov" data-view="circlepack"></div>
             </div>
 
-            <div id="xfeaturegrid" class="atlas-map" style="top: 600px; left: 600px; width:800px; height: 400px;" data-scale="60">
-                <h4>Scale 60%</h4>
-
+            <div id="xfeaturegrid" class="atlas-map" style="top: 600px; left: 600px; width:800px; height: 400px;" data-scale="100">
+                <h4>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h4>
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid"></div>
-            </div>
-
-            <div class="atlas-map" style="top: 600px; left: 900px;" data-scale="20">
-                <h4>Scale 20%</h4>
-
-                <div class="map-contents container-fluid outer-container"></div>
             </div>
         </div>
     </div>
@@ -140,14 +133,6 @@
 
         qed.Events.on("ready", readyContainerFn);
 
-        _.each($(".atlas-map"), function(atlasMap) {
-            var scaleLevel = $(atlasMap).data("scale");
-            if (scaleLevel && scaleLevel < 100) {
-                $(atlasMap).effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
-                $(atlasMap).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
-            }
-        });
-
         $(".zoom-in").click(function() {
             currentZoomLevel += 0.20;
             atlas.zoom(currentZoomLevel);
@@ -169,7 +154,25 @@
             if (li.hasClass("active")) {
                 $(".atlas-map").resizable("destroy");
             } else {
-                $(".atlas-map").resizable({ "ghost": true, "grid": [10,10], "animateEasing":"ease"});
+                $(".atlas-map").resizable({ "ghost": true});
+            }
+            li.toggleClass("active");
+        });
+
+        $(".scale-item").click(function() {
+            var li = $(this).parent();
+            if (li.hasClass("active")) {
+                $(".atlas-map").resizable("destroy");
+            } else {
+                $(".atlas-map").resizable({
+                    "handles": "n, e, s, w, ne, se, sw, nw",
+                    "aspectRatio": true,
+                    "animateEasing": "linear",
+                    "stop": function(e, ui) {
+                        var scaleLevel = (ui.size.width/ui.originalSize.width) * 90;
+                        $(e.target).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
+                    }
+                });
             }
             li.toggleClass("active");
         });
