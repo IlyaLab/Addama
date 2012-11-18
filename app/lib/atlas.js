@@ -96,7 +96,7 @@ module.exports = Backbone.View.extend({
                 UL.find(".item-remover").click(function(e) {
                     $(e.target).parent().remove();
                 });
-                return gene;
+                return "";
             }
         });
 

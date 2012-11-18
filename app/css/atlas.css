@@ -85,12 +85,8 @@ body {
     border: 1px dashed black;
 }
 
-.cancer-items {
+.cancer-selector {
+    margin-top: -10px;
     left: 100px;
     position: absolute;
-}
-
-.gene-items {
-    top: 100px;
-    width: 250px;
 }

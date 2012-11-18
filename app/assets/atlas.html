@@ -25,33 +25,27 @@
 
 <body>
 
-<div class="navbar navbar-fixed-top" id="navigation-container"></div>
+<div class="navbar-fixed-top">
+    <div class="navbar" id="navigation-container"></div>
 
-<div class="atlas-navigator">
-    <ul class="nav nav-list">
+    <ul class="atlas-navigator nav nav-list">
         <li><a href="#" onclick="return false;" class="zoom-home"> <i class="icon-home"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="zoom-in"> <i class="icon-zoom-in"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="scale-item"> <i class="icon-fullscreen"/></i> </a></li>
     </ul>
-</div>
 
-<div class="cancer-items">
     <ul class="nav nav-pills cancer-selector"></ul>
-</div>
 
-<div class="pull-right gene-items">
-    <ul class="nav nav-list">
-        <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Genes <b class="caret"></b></a>
-            <input class="genes-typeahead" type="text" placeholder="Add a gene..."/>
-            <ul class="dropdown-menu gene-selector">
-                <li><a href='#' onclick='return false;' class='item-remover' data-id='TP53'>TP53 <i class='icon-trash'></i> </a></li>
-                <li><a href='#' onclick='return false;' class='item-remover' data-id='CTCF'>CTCF <i class='icon-trash'></i> </a></li>
-            </ul>
-        </li>
-    </ul>
+    <div class="pull-right">
+        <input class="genes-typeahead" type="text" placeholder="Add a gene..."/>
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;"> <i class="icon-list"></i> </a>
+        <ul class="dropdown-menu gene-selector">
+            <li><a href='#' onclick='return false;' class='item-remover' data-id='TP53'>TP53 <i class='icon-trash'></i> </a></li>
+            <li><a href='#' onclick='return false;' class='item-remover' data-id='CTCF'>CTCF <i class='icon-trash'></i> </a></li>
+        </ul>
+    </div>
 </div>
 
 <div class="atlas-body">
@@ -124,6 +118,8 @@
         var readyContainerFn = function() {
             $(".atlas-zoom").draggable({ "scroll": true });
             $(".atlas-map").draggable({ "scroll": true });
+            $(".gene-selector").sortable();
+            $(".cancer-selector").sortable();
 
             _.each($(".atlas-map.load-first"), function(atlasMap) {
                 var mapcontents = $(atlasMap).find(".map-contents");
