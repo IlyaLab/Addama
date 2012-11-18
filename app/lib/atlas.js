@@ -42,13 +42,13 @@ module.exports = Backbone.View.extend({
         var serviceUri = model_unit.service || catalog_unit.service || "data/" + uri;
         var Model = qed.Models[modelName || "Default"];
 
-        var model_optns = {
+        var model_optns = _.extend(options, {
             "data_uri": "svc/" + serviceUri,
             "analysis_id": analysis_id,
             "dataset_id": dataset_id,
             "model_unit": model_unit,
             "catalog_unit": catalog_unit
-        };
+        });
         // TODO: Determine which views need annotations
         // qed.FetchAnnotations(dataset_id);
 
