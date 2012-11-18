@@ -2,17 +2,17 @@
     <thead>
     <tr>
         <td>&nbsp;</td>
-        {{#each cancers}}
+        {{#each headers}}
         <td>{{id}}</td>
         {{/each}}
     </tr>
     </thead>
     <tbody>
-    {{#each genes}}
+    {{#each rows}}
     <tr>
-        <td>{{id}}</td>
-        {{#each rank_by_cancer}}
-        <td>{{rank}}</td>
+        <td>{{label}}</td>
+        {{#each values}}
+        <td>{{cell_value}}</td>
         {{/each}}
     </tr>
     {{/each}}
