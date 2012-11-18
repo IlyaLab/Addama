@@ -19,6 +19,9 @@ module.exports = Backbone.View.extend({
             var view = this.viewsByUri($(target), source, view_name, {
                 "cancers": _.map($(".cancer-selector .active a"), afn),
                 "genes": _.map($(".gene-selector .item-remover"), afn)
+            }, {
+                "gene": _.map($(".gene-selector .item-remover"), afn),
+                "cancer": _.map($(".cancer-selector .active a"), afn),
             });
             view.on("selected", function(selected) {
                 console.log("selected=" + selected.id);
@@ -26,8 +29,8 @@ module.exports = Backbone.View.extend({
         }
     },
 
-    viewsByUri: function($el, uri, view_name, options) {
-        console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + ")");
+    viewsByUri: function($el, uri, view_name, options, query) {
+        console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + "," + JSON.stringify(query) + ")");
         var parts = uri.split("/");
         var data_root = parts[0];
         var analysis_id = parts[1];
@@ -37,21 +40,23 @@ module.exports = Backbone.View.extend({
         var catalog_unit = catalog[dataset_id];
         var modelName = model_unit.model || catalog_unit.model;
         var serviceUri = model_unit.service || catalog_unit.service || "data/" + uri;
-        var Model = qed.Models[modelName];
+        var Model = qed.Models[modelName || "Default"];
 
-        var model_optns = _.extend(options, {
+        var model_optns = {
             "data_uri": "svc/" + serviceUri,
             "analysis_id": analysis_id,
             "dataset_id": dataset_id,
             "model_unit": model_unit,
             "catalog_unit": catalog_unit
-        });
+        };
         // TODO: Determine which views need annotations
         // qed.FetchAnnotations(dataset_id);
 
         var model = new Model(model_optns);
         _.defer(function() {
             model.fetch({
+                "data": query,
+                "traditional": true,
                 success:function () {
                     model.trigger('load');
                 }
