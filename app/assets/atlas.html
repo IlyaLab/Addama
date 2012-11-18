@@ -34,6 +34,7 @@
         <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="scale-item"> <i class="icon-fullscreen"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="refresh-loaded"> <i class="icon-refresh"/></i> </a></li>
     </ul>
 
     <ul class="nav nav-pills cancer-selector"></ul>
@@ -115,19 +116,24 @@
 
         var currentZoomLevel = 1.0;
 
-        var readyContainerFn = function() {
-            $(".atlas-zoom").draggable({ "scroll": true });
-            $(".atlas-map").draggable({ "scroll": true });
-            $(".gene-selector").sortable();
-            $(".cancer-selector").sortable();
-
+        var loadFirst = function() {
             _.each($(".atlas-map.load-first"), function(atlasMap) {
                 var mapcontents = $(atlasMap).find(".map-contents");
                 atlas.navigate(mapcontents, mapcontents.data("source"), mapcontents.data("view"));
             });
         };
 
+        var readyContainerFn = function() {
+            $(".atlas-zoom").draggable({ "scroll": true });
+            $(".atlas-map").draggable({ "scroll": true });
+            $(".gene-selector").sortable();
+            $(".cancer-selector").sortable();
+        };
+
         qed.Events.on("ready", readyContainerFn);
+        qed.Events.on("ready", loadFirst);
+        
+        $(".refresh-loaded").click(loadFirst);
 
         $(".zoom-in").click(function() {
             currentZoomLevel += 0.20;
