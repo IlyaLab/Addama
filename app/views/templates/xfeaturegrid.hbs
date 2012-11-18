@@ -1,70 +1,51 @@
-<div class="tabbable tabs-left">
-    <ul class="nav nav-pills">
-        <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene A <b class="caret"></b></a>
-            <ul class="dropdown-menu gene-a-selector">
-                {{#each geneList}}
-                <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
-                {{/each}}
-            </ul>
-        </li>
-
-        <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene B <b class="caret"></b></a>
-            <ul class="dropdown-menu gene-b-selector">
-                {{#each geneList}}
-                <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
-                {{/each}}
-            </ul>
-        </li>
-
-        <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Color By<b class="caret"></b></a>
-            <ul class="dropdown-menu color-by-selector">
-                <li><a href="#" onclick="return false;" data-id="log-p-value">log p-value</a></li>
-                <li><a href="#" onclick="return false;" data-id="correlation-coefficient">correlation coefficient</a></li>
-                <li><a href="#" onclick="return false;" data-id="number-of-samples">number of samples</a></li>
-            </ul>
-        </li>
-    </ul>
-
-    <ul class="nav nav-tabs">
-        {{#each data}}
-        {{#if isFirst}}
-        <li class="active"><a href="#tab_{{label}}" data-toggle="tab">{{label}}</a></li>
-        {{else}}
-        <li><a href="#tab_{{label}}" data-toggle="tab">{{label}}</a></li>
-        {{/if}}
-        {{/each}}
-    </ul>
-    <div class="tab-content">
-        {{#each data}}
-        {{#if isFirst}}
-        <div class="tab-pane active" id="tab_{{label}}">
-            {{else}}
-            <div class="tab-pane" id="tab_{{label}}">
-                {{/if}}
-                <table border="1" style="text-align: center;">
-                    <thead>
-                    <tr>
-                        <td>&nbsp;</td>
-                        {{#each headers}}
-                        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
-                        {{/each}}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#each data}}
-                    <tr>
-                        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
-                        {{#each row}}
-                        <td style="background-color: {{color}}"></td>
-                        {{/each}}
-                    </tr>
-                    {{/each}}
-                    </tbody>
-                </table>
-            </div>
+<ul class="nav nav-pills">
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene A <b class="caret"></b></a>
+        <ul class="dropdown-menu gene-a-selector">
+            {{#each geneList}}
+            <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
             {{/each}}
-        </div>
-    </div>
+        </ul>
+    </li>
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene B <b class="caret"></b></a>
+        <ul class="dropdown-menu gene-b-selector">
+            {{#each geneList}}
+            <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
+            {{/each}}
+        </ul>
+    </li>
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Color By<b class="caret"></b></a>
+        <ul class="dropdown-menu color-by-selector">
+            <li><a href="#" onclick="return false;" data-id="log-p-value">log p-value</a></li>
+            <li><a href="#" onclick="return false;" data-id="correlation-coefficient">correlation coefficient</a></li>
+            <li><a href="#" onclick="return false;" data-id="number-of-samples">number of samples</a></li>
+        </ul>
+    </li>
+</ul>
+
+{{#each data}}
+<table class="table table-striped table-bordered table-hover table-condensed">
+    <thead>
+    <tr>
+        <td><b>{{label}}</b></td>
+        {{#each headers}}
+        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
+        {{/each}}
+    </tr>
+    </thead>
+    <tbody>
+    {{#each data}}
+    <tr>
+        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
+        {{#each row}}
+        <td style="background-color: {{color}}"></td>
+        {{/each}}
+    </tr>
+    {{/each}}
+    </tbody>
+</table>
+{{/each}}
