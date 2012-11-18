@@ -32,7 +32,6 @@
         <li><a href="#" onclick="return false;" class="zoom-home"> <i class="icon-home"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="zoom-in"> <i class="icon-zoom-in"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
-        <li><a href="#" onclick="return false;" class="move-item"> <i class="icon-move"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
     </ul>
 </div>
@@ -131,6 +130,7 @@
 
         var readyContainerFn = function() {
             $(".atlas-zoom").draggable({ "scroll": true });
+            $(".atlas-map").draggable({ "scroll": true });
 
             _.each($(".atlas-map.load-first"), function(atlasMap) {
                 var mapcontents = $(atlasMap).find(".map-contents");
@@ -162,17 +162,6 @@
         $(".zoom-home").click(function() {
             currentZoomLevel = 1.0;
             atlas.zoom(currentZoomLevel);
-        });
-
-        $(".move-item").click(function() {
-            var li = $(this).parent();
-            if (li.hasClass("active")) {
-                $(".atlas-map").draggable("destroy");
-            } else {
-                $(".atlas-map").draggable({ "scroll": true });
-            }
-            $(".atlas-map").toggleClass("showing-border-dashed");
-            li.toggleClass("active");
         });
 
         $(".resize-item").click(function() {
