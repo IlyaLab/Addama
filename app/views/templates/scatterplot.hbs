@@ -1,20 +1,17 @@
+<ul class="nav nav-pills cancer-selector"></ul>
 
-<select class="subtype-select">
-
-</select>
-
-<div class="feature1-options">
-    <select class="featuresource-select"></select>
-
-    <input class="input-small genes-typeahead" type="text" placeholder="gene 1 ...">
-    <select style="width: 300px" class="feature-label-select"></select>
-</div>
-
-<div class="feature2-options">
-    <select class="featuresource-select"></select>
-
-    <input class="input-small genes-typeahead" type="text" placeholder="gene 2 ...">
-    <select style="width: 300px" class="feature-label-select"></select>
+<div class="row pull-right">
+    <div class="span4">
+        <input class="input-small genes-typeahead-x" type="text" placeholder="Type a gene name (x-axis) ...">
+        <br/>
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">X-Axis Features <b class="caret"></b></a>
+        <ul class="dropdown-menu feature-selector-x"></ul>
+    </div>
+    <div class="span4">
+        <input class="input-small genes-typeahead-y" type="text" placeholder="Type a gene name (y-axis) ...">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">Y-Axis Features <b class="caret"></b></a>
+        <ul class="dropdown-menu feature-selector-y"></ul>
+    </div>
 </div>
 
 <div class="scatterplot-container"></div>
