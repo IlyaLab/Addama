@@ -100,9 +100,14 @@
                 <div class="map-contents container-fluid outer-container" data-source="annotations/newMerge.05nov" data-view="circlepack"></div>
             </div>
 
-            <div id="xfeaturegrid" class="atlas-map" style="top: 600px; left: 600px; width:800px; height: 400px;" data-scale="100">
+            <div id="xfeaturegrid" class="atlas-map load-first" style="top: 200px; left: 600px; width:800px; height: 400px;" data-scale="100">
                 <h4>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h4>
-                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid"></div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid" data-linked="#seqpeek"></div>
+            </div>
+
+            <div id="seqpeek" class="atlas-map load-first" style="top: 600px; left: 100px; width:1000px; height: 400px;" data-scale="100">
+                <h4>SeqPeek</h4>
+                <div class="map-contents container-fluid outer-container" data-source="domains/mutations/Protein_Mutations_Per_Cancer_Type" data-view="seqpeek"></div>
             </div>
         </div>
     </div>
@@ -119,7 +124,7 @@
         var loadFirst = function() {
             _.each($(".atlas-map.load-first"), function(atlasMap) {
                 var mapcontents = $(atlasMap).find(".map-contents");
-                atlas.navigate(mapcontents, mapcontents.data("source"), mapcontents.data("view"));
+                atlas.navigate(mapcontents);
             });
         };
 
@@ -182,7 +187,7 @@
         $(".load-map").click(function(e) {
             var loadmap = $(e.target).attr("href");
             var mapcontents = $(loadmap).find(".map-contents");
-            atlas.navigate(mapcontents, mapcontents.data("source"), mapcontents.data("view"));
+            atlas.navigate(mapcontents);
         });
     });
 </script>
