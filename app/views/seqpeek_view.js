@@ -26,7 +26,7 @@ module.exports = Backbone.View.extend({
 
         this.model.on("load", this.initGraph);
 
-        this.$el.html(Template({}));
+        this.$el.html(Template({ "title": this.current_gene }));
 
         this.initControls();
     },
@@ -81,8 +81,9 @@ module.exports = Backbone.View.extend({
                 }
 
                 _this.current_gene = txt;
+                _this.$el.find(".gene-title").html(_this.current_gene);
                 _.defer(_this.reloadModel);
-                return _this.current_gene;
+                return "";
             }
         });
     },
@@ -115,7 +116,6 @@ module.exports = Backbone.View.extend({
     },
 
     initGraph: function () {
-        console.log("initGraph");
         if (!this.current_gene) {
             return;
         }
@@ -174,7 +174,6 @@ module.exports = Backbone.View.extend({
     },
 
     updateGraph: function() {
-        console.log("updateGraph");
         var data = this.model.get("data");
 
         this.initGraph();

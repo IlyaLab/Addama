@@ -5,7 +5,6 @@ module.exports = Backbone.Model.extend({
     },
 
     parse: function(json) {
-        console.log("mutations_interpro.parse");
         var data = {};
         data["subtype_map"] = _.groupBy(json.items, "cancer");
         data["cancer_subtypes"] = _.map(data["subtype_map"], function(mutations, subtype_label) {
