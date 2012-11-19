@@ -4,28 +4,42 @@ module.exports = Backbone.View.extend({
     initialize: function(element, options) {
         this.$el = $(element);
         if (options) _.extend(this, options);
-        _.bindAll(this, "navigate", "loadCancerList", "initGeneTypeahead", "transitions");
+        _.bindAll(this, "navigate", "loadCancerList", "initGeneTypeahead");
 
         $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.loadCancerList });
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeahead });
     },
 
-    navigate: function(target, source, view_name) {
-        if (target && source && view_name) {
+    navigate: function(target, view_options, query_options) {
+        var source = target.data("source");
+        var view_name = target.data("view");
+        var linked_to = target.data("linked");
+        if (source && view_name) {
             var afn = function(link) {
                 return $(link).data("id")
             };
 
-            var view = this.viewsByUri($(target), source, view_name, {
-                "cancers": _.map($(".cancer-selector .active a"), afn),
-                "genes": _.map($(".gene-selector .item-remover"), afn)
-            }, {
-                "gene": _.map($(".gene-selector .item-remover"), afn),
-                "cancer": _.map($(".cancer-selector .active a"), afn),
+            var cancerList = _.map($(".cancer-selector .active a"), function(link) {
+                return $(link).data("id");
             });
-            view.on("selected", function(selected) {
-                console.log("selected=" + selected.id);
+            var geneList = _.map($(".gene-selector .item-remover"), function(link) {
+                return $(link).data("id");
             });
+
+            var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options);
+            var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options);
+            
+            var view = this.viewsByUri($(target), source, view_name, v_options, q_options);
+            if (linked_to) {
+                var _this = this;
+                view.on("selected", function(selected) {
+                    var gene = [selected.gene.toUpperCase()];
+                    var cancer = [selected.cancer.toUpperCase()];
+                    var qoptns = { "cancer": cancer, "gene": gene };
+                    var voptns = { "cancers": cancer, "genes": gene };
+                    _this.navigate($(linked_to).find(".map-contents"), voptns, qoptns);
+                });
+            }
         }
     },
 
@@ -74,8 +88,12 @@ module.exports = Backbone.View.extend({
     loadCancerList: function(txt) {
         var cancerList = txt.trim().split("\n");
         var UL = $(".cancer-selector");
-        _.each(cancerList, function(cancerItem) {
-            UL.append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
+        _.each(cancerList, function(cancerItem, idx) {
+            if (idx < 2) {
+                UL.append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
+            } else {
+                UL.append(LineItemTemplate({"a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
+            }
         });
 
         UL.find(".toggle-active").click(function(e) {
@@ -108,41 +126,6 @@ module.exports = Backbone.View.extend({
         UL.find(".item-remover").click(function(e) {
             $(e.target).parent().remove();
         });
-    },
-
-    transitions: function(directive, elfrom, elto, completeFn) {
-        if (_.isFunction(completeFn)) _.defer(completeFn);
-
-        var $elfrom = $(elfrom);
-        var $elto = $(elto);
-
-        var defaultZoom = {
-            "duration":800,
-            "scalemode": "both",
-            "easing": "ease",
-            "nativeanimation": true,
-            "root": $(".atlas-canvas"),
-            "closeclick": false
-        };
-
-
-        if (directive == "zoomin") {
-            $elfrom.zoomTo(_.extend(defaultZoom, { "targetsize":0.1 }));
-            _.delay(function() {
-                $elfrom.hide("fade");
-                $elto.show();
-                $elto.zoomTo(_.extend(defaultZoom, { "targetsize": 0.9 }));
-            }, 1200);
-        }
-        else if (directive == "zoomout") {
-            $elfrom.zoomTo(_.extend(defaultZoom, { "targetsize": 5 }));
-
-            _.delay(function() {
-                $elfrom.hide("fade");
-                $elto.show();
-                $elto.zoomTo(_.extend(defaultZoom, { "targetsize":0.9 }));
-            }, 1200);
-        }
     },
 
     zoom: function(level) {
