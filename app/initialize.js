@@ -8,7 +8,7 @@ $(function () {
             "FeatureMatrix":require("models/featureMatrix2"),
             "FeatureMatrix3":require("models/featureMatrix3"),
             "GraphLayouts":require("models/graph_layouts"),
-            "Mutations":require("models/mutations"),
+            "Mutations":require("models/mutations_interpro"),
             "Default":Backbone.Model.extend({
                 url: function() {
                     return this.get("data_uri");
