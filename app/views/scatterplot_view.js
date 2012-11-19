@@ -5,8 +5,8 @@ var LineItemTemplate = require("./templates/line_item");
 module.exports = View.extend({
     template: template,
     className: "row-fluid",
-    current_cancer: "BRCA",
-    selected_genes: { "x":"TP53", "y": "CTCF" },
+    current_cancer: null,
+    selected_genes: { "x":null, "y": null },
     selected_features: { "x":null, "y": null },
 
     initialize: function (options) {
@@ -15,32 +15,38 @@ module.exports = View.extend({
         _.bindAll(this, "loadData", "reloadModel", "initFeatureLabelSelector");
 
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeaheads });
-        $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
 
+        if (this.genes && this.genes.length >= 2) {
+            this.selected_genes.x = this.genes[0];
+            this.selected_genes.y = this.genes[1];
+        }
+        if (_.isEmpty(this.cancers)) {
+            $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
+        }
         this.model.on("load", this.loadData);
+    },
+
+    afterRender: function() {
+        if (!_.isEmpty(this.cancers)) {
+            this.initCancerSelector(this.cancers.join("\n"));
+        }
     },
 
     initCancerSelector: function(txt) {
         var cancers = txt.trim().split("\n");
-
-        var selected_cancers = this.cancers;
-        if (!_.isEmpty(selected_cancers)) {
-            cancers = _.filter(cancers, function(cancer) {
-                return selected_cancers.indexOf(cancer);
-            });
-        }
+        var _this = this;
         _.each(cancers, function(cancer, idx) {
             cancer = cancer.trim();
             if (idx == 0) {
-                $(".cancer-selector").append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancer,"label":cancer}));
+                _this.$el.find(".cancer-selector").append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancer,"label":cancer}));
             } else {
-                $(".cancer-selector").append(LineItemTemplate({"a_class":"toggle-active","id":cancer,"label":cancer}));
+                _this.$el.find(".cancer-selector").append(LineItemTemplate({"a_class":"toggle-active","id":cancer,"label":cancer}));
             }
         });
 
         var _this = this;
-        $(".cancer-selector").find(".toggle-active").click(function(e) {
-            $(".cancer-selector").find(".active").removeClass("active");
+        this.$el.find(".cancer-selector").find(".toggle-active").click(function(e) {
+            _this.$el.find(".cancer-selector").find(".active").removeClass("active");
             $(e.target).parent().addClass("active");
             _this.current_cancer = $(e.target).data("id");
             _.defer(_this.reloadModel);
