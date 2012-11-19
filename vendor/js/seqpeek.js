@@ -42,7 +42,7 @@
                     return 1;
                 }
                 else {
-                    return 0
+                    return 0;
                 }
             }
         },
@@ -605,37 +605,45 @@
             var mutationIdFn = this.mutationIdFn;
 
             var buildLocationGroups = function(mutations_by_loc) {
-                return _.map(mutations_by_loc, function(mutations, location) {
-                    var group,
-                        scale = d3.scale.ordinal();
+                return _
+                    .chain(mutations_by_loc)
+                    .map(function(mutations, location) {
+                        var group,
+                            scale = d3.scale.ordinal();
 
-                    mutations.sort(_.bind(that.mutationSortFn, that));
+                        mutations.sort(_.bind(that.mutationSortFn, that));
 
-                    var mutation_ids_sorted = _
-                        .chain(mutations)
-                        .map(mutationIdFn)
-                        .uniq()
-                        .value();
+                        var mutation_ids_sorted = _
+                            .chain(mutations)
+                            .map(mutationIdFn)
+                            .uniq()
+                            .value();
 
-                    scale.domain(mutation_ids_sorted);
-                    scale.rangeBands([0, mutation_ids_sorted.length * that.config.mutation_shape_width]);
+                        scale.domain(mutation_ids_sorted);
+                        scale.rangeBands([0, mutation_ids_sorted.length * that.config.mutation_shape_width]);
 
-                    var width = scale.rangeExtent()[1];
+                        var width = scale.rangeExtent()[1];
 
-                    group = {
-                        data: {
-                            location: location,
-                            mutations: mutations
-                        },
-                        scale: scale,
-                        left_extent: width / 2.0,
-                        right_extent: width / 2.0,
-                        start_loc: 0.0,
-                        width: width
-                    };
+                        group = {
+                            data: {
+                                // The "location" variable needs to be converted to a numerical type
+                                // for the sort below to work correctly.
+                                location: parseInt(location, 10),
+                                mutations: mutations
+                            },
+                            scale: scale,
+                            left_extent: width / 2.0,
+                            right_extent: width / 2.0,
+                            start_loc: 0.0,
+                            width: width
+                        };
 
-                    return group;
-                });
+                        return group;
+                    })
+                    .sortBy(function(group) {
+                        return group.data.location;
+                    })
+                    .value();
             };
 
             var buildLocationGroupsAcrossSubtypes = _.once(buildLocationGroups);
@@ -644,10 +652,10 @@
                 var layout = {};
                 var location_groups;
 
-                if (that.config.mutation_layout == 'by_subtype') {
+                if (that.config.mutation_layout === 'by_subtype') {
                     location_groups = buildLocationGroups(subtype.mutations_by_loc);
                 }
-                else if (that.config.mutation_layout == 'all_subtypes') {
+                else if (that.config.mutation_layout === 'all_subtypes') {
                     location_groups = buildLocationGroupsAcrossSubtypes(that.data.all_mutations_by_loc);
                 }
 
@@ -803,7 +811,13 @@
                     var location_to_node_map = mutation_data.mutation_layout.location_to_node_map;
                     var location_to_node_index_map = mutation_data.mutation_layout.location_to_node_index_map;
 
-                    var node_locations = _.keys(location_to_node_map);
+                    var node_locations = _
+                        .chain(location_to_node_map)
+                        .keys()
+                        .map(function(d) {return parseInt(d, 10);})
+                        .sortBy(function(d) {return d;})
+                        .value();
+
                     var pivot_location = node_locations[Math.floor(node_locations.length / 2)];
 
                     var x_scale = that.vis.x_scale;
