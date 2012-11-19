@@ -1,9 +1,7 @@
-var View = require('./view');
-var template = require('./templates/scatterplot');
+var Template = require('../views/templates/scatterplot');
 var LineItemTemplate = require("./templates/line_item");
 
-module.exports = View.extend({
-    template: template,
+module.exports = Backbone.View.extend({
     className: "row-fluid",
     current_cancer: null,
     selected_genes: { "x":null, "y": null },
@@ -20,16 +18,15 @@ module.exports = View.extend({
             this.selected_genes.x = this.genes[0];
             this.selected_genes.y = this.genes[1];
         }
+
+        this.$el.html(Template({}));
         if (_.isEmpty(this.cancers)) {
             $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
-        }
-        this.model.on("load", this.loadData);
-    },
-
-    afterRender: function() {
-        if (!_.isEmpty(this.cancers)) {
+        } else {
             this.initCancerSelector(this.cancers.join("\n"));
         }
+
+        this.model.on("load", this.loadData);
     },
 
     initCancerSelector: function(txt) {
