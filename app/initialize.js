@@ -45,7 +45,8 @@ $(function () {
             "seqpeek":require("views/seqpeek_view"),
             "xfeaturegrid": require("views/xfeaturegrid"),
             "xfeaturegrid_small": require("views/xfeaturegrid_small"),
-            "mutsig_grid": require("views/mutsig_grid_view")
+            "mutsig_grid": require("views/mutsig_grid_view"),
+            "scatterplot": require("views/scatterplot_view")
         },
         Lookups:{
             Labels:{}
