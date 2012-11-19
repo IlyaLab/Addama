@@ -67,19 +67,19 @@
             <div class="atlas-map" style="top: 180px; left: 140px;" data-scale="100">
                 <h4><a href="#" onclick="return false;">Clusters</a></h4>
 
-                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov">StacksVis (mini)</div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features">StacksVis (mini)</div>
             </div>
 
             <div class="atlas-map" style="top: 150px; left: 450px;" data-scale="100">
                 <h4><a href="#" onclick="return false;">Copy Number (GISTIC)</a></h4>
 
-                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov">Linear Browser (mini)</div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features">Linear Browser (mini)</div>
             </div>
 
             <div class="atlas-map load-first" style="top: 200px; left: 750px;" data-scale="100"
-                 data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small">
+                 data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small">
                 <h4>Multi-Feature <a href="#xfeaturegrid" class="load-map" onclick="return false;">(detail)</a></h4>
-                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid_small"></div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small"></div>
             </div>
 
             <div class="atlas-map" style="top: 400px; left: 50px;" data-scale="100">
@@ -97,17 +97,22 @@
             <div class="atlas-map" style="top: 400px; left: 1000px;" data-scale="100">
                 <h4><a href="#" onclick="return false;">Samples</a></h4>
 
-                <div class="map-contents container-fluid outer-container" data-source="annotations/newMerge.05nov" data-view="circlepack"></div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features" data-view="circlepack"></div>
             </div>
 
             <div id="xfeaturegrid" class="atlas-map load-first" style="top: 200px; left: 600px; width:800px; height: 400px;" data-scale="100">
                 <h4>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h4>
-                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov" data-view="xfeaturegrid" data-linked="#seqpeek"></div>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid" data-linked="#seqpeek"></div>
             </div>
 
             <div id="seqpeek" class="atlas-map load-first" style="top: 600px; left: 100px; width:1000px; height: 400px;" data-scale="100">
                 <h4>SeqPeek</h4>
                 <div class="map-contents container-fluid outer-container" data-source="domains/mutations/Protein_Mutations_Per_Cancer_Type" data-view="seqpeek"></div>
+            </div>
+
+            <div class="atlas-map load-first" style="top: 600px; left: 100px; width:1000px; height: 400px;" data-scale="100">
+                <h4>Scatterplot</h4>
+                <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features" data-view="scatterplot" data-lowercase="true"></div>
             </div>
         </div>
     </div>

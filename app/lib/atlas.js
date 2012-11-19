@@ -26,8 +26,15 @@ module.exports = Backbone.View.extend({
                 return $(link).data("id");
             });
 
+            // TODO : Standardize how we store and lookup cancers
+            var qCancerList = cancerList;
+            if (target.data("lowercase") && target.data("lowercase") == true) {
+                qCancerList = _.map(cancerList, function(cancerItem) {
+                    return cancerItem.toLowerCase();
+                });
+            }
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options);
-            var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options);
+            var q_options = _.extend({ "gene": geneList, "cancer": qCancerList }, query_options);
             
             var view = this.viewsByUri($(target), source, view_name, v_options, q_options);
             if (linked_to) {
@@ -53,7 +60,7 @@ module.exports = Backbone.View.extend({
         var catalog = model_unit.catalog;
         var catalog_unit = catalog[dataset_id];
         var modelName = model_unit.model || catalog_unit.model;
-        var serviceUri = model_unit.service || catalog_unit.service || "data/" + uri;
+        var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
         var Model = qed.Models[modelName || "Default"];
 
         var model_optns = _.extend(options, {
