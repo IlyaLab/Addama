@@ -63,6 +63,10 @@ module.exports = Backbone.View.extend({
     },
 
     getColumnModel:function () {
+        if (_.isEmpty(this.model.get("ROWS"))) return {};
+        if (_.isEmpty(this.model.get("COLUMNS"))) return {};
+        if (_.isEmpty(this.model.get("DATA"))) return {};
+
         var _this = this;
         var unsorted_columns = [];
         var cluster_property = this.clusterProperty || ALL_COLUMNS;
@@ -111,6 +115,9 @@ module.exports = Backbone.View.extend({
 
     renderGraph:function () {
         this.initControls();
+        if (_.isEmpty(this.model.get("ROWS"))) return;
+        if (_.isEmpty(this.model.get("COLUMNS"))) return;
+        if (_.isEmpty(this.model.get("DATA"))) return;
 
         if (_.isEmpty(this.rowLabels)) {
             var rows = this.model.get("ROWS");
@@ -185,6 +192,8 @@ module.exports = Backbone.View.extend({
 
     onNewRows:function (genelist) {
         if (genelist && genelist.values) {
+            if (_.isEmpty(this.model.get("ROWS"))) return;
+
             var _this = this;
             _.defer(function () {
                 _this.rowLabels = _.filter(_this.model.get("ROWS"), function (row) {
