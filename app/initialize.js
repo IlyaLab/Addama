@@ -25,6 +25,10 @@ $(function () {
                 { "id":"stacksvis", label:"Stacks" },
                 { "id":"xfeaturegrid", label:"Cross-Feature Summary" }
             ],
+            "FeatureMatrixAsTable":[
+                { "id":"grid", label:"Grid" },
+                { "id":"stacksvis", label:"Stacks" }
+            ],
             "GraphLayouts":[
                 { "id":"circ", label:"CircVis" },
                 { "id":"grid", label:"Grid" },
