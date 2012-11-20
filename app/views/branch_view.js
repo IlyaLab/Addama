@@ -64,7 +64,9 @@ module.exports = View.extend({
         .text(function(d){ return d.PATHWAY;});
 
     };
-    console.log("scatter");
+
+    var highlightf = function(d){me.pc.highlight(me.model.filterFeatures([d[0]]));};
+
     var svg = d3.select(".scat-container")
       .append("svg")
       .attr("width", width)
@@ -95,14 +97,14 @@ module.exports = View.extend({
           $(".case-name").html("Top Features for "+ d.n);
           var output = d.n + " : ";
           var highlight = [];
-          for (var j = 0; j < Math.min(features.length, 20); j++) {
+          for (var j = 0; j < features.length; j++) {
             highlight.push([features[j][0],features[j][1]]);
             
           }
           //me.pc.highlight(me.model.filterFeatures(highlight));
           var grid = d3.select(".branch-output");
 
-          var highlightf = function(d){me.pc.highlight(me.model.filterFeatures([d[0]]));};
+          
           
           grid.selectAll("div")
             .data(highlight)
@@ -139,8 +141,23 @@ module.exports = View.extend({
       .attr("fill", "grey");*/
 
 
-
     var pcdata = this.model.get('branches');
+    var fnames = [];
+
+    for (var i = 0; i < pcdata.length; i++) {
+      fnames.push(pcdata[i][0]);
+    };
+
+    $(".feature-search").typeahead({
+      source:fnames,
+      updater:function (item) {
+          highlightf([item]);
+          showpathways([items]);
+          return item;
+      }});
+
+    
+    
     var ignore_keys = ['label','type','source','feature_id','nByi',"feature"];
     var keys = _.difference(Object.keys(pcdata[0]),ignore_keys);
 
