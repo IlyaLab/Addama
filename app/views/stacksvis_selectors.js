@@ -1,9 +1,7 @@
-var View = require("./view");
-var template = require("../views/templates/stacksvis_selectors");
+var Template = require("../views/templates/stacksvis_selectors");
 var LineItem = require("../views/templates/line_item");
 
-module.exports = View.extend({
-    template:template,
+module.exports = Backbone.View.extend({
 
     events:{
         "click .selector-apply":function () {
@@ -27,9 +25,9 @@ module.exports = View.extend({
         _.bindAll(this, "initTypeahead");
 
         this.model.on("load", this.initTypeahead);
-    },
 
-    afterRender: function() {
+        this.$el.html(Template({}));
+
         this.$el.find(".selected-rows ul, li").disableSelection();
         this.$el.find(".selected-rows").sortable({ revert:true });
     },

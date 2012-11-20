@@ -1,8 +1,6 @@
-var View = require('./view');
-var template = require('../views/templates/stacksvis_controls');
+var Template = require("../views/templates/stacksvis_controls");
 
-module.exports = View.extend({
-    template:template,
+module.exports = Backbone.View.extend({
 
     events:{
         "click .reset-sliders": function() {
@@ -18,10 +16,10 @@ module.exports = View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initialValue');
-    },
+        _.bindAll(this, "initialValue");
 
-    afterRender: function() {
+        this.$el.html(Template({}));
+
         this.$el.find(".slider_barheight").range_slider_control({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
         this.$el.find(".slider_rowspacing").range_slider_control({ storageId:"slider_rowspacing", min:10, max:50, initialStep:10 });
         this.$el.find(".slider_barwidth").range_slider_control({ storageId:"slider_barwidth", min:1, max:10, initialStep:3 });

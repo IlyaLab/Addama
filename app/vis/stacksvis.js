@@ -159,29 +159,29 @@
         update:function (options) {
             if (options) _.extend(this, options);
 
-            if (_.has(options, 'bar_height')) this._updateVerticalScales();
-            if (_.has(options, 'row_spacing')) this._updateVerticalScales();
-            if (_.has(options, 'row_labels')) this._updateVerticalScales();
+            if (_.has(options, "bar_height")) this._updateVerticalScales();
+            if (_.has(options, "row_spacing")) this._updateVerticalScales();
+            if (_.has(options, "row_labels")) this._updateVerticalScales();
 
-            if (_.has(options, 'bar_width')) {
+            if (_.has(options, "bar_width")) {
                 this._resetClusterScaleRanges();
                 this._updateClusterPositions();
                 this._updateHorizontalScales();
             }
 
-            if (_.has(options, 'column_spacing')) {
+            if (_.has(options, "column_spacing")) {
                 this._resetClusterScaleRanges();
                 this._updateClusterPositions();
                 this._updateHorizontalScales();
             }
 
-            if (_.has(options, 'cluster_spacing')) {
+            if (_.has(options, "cluster_spacing")) {
                 this._resetClusterScaleRanges();
                 this._updateClusterPositions();
                 this._updateHorizontalScales();
             }
 
-            if (_.has(options, 'label_fontsize')) {
+            if (_.has(options, "label_fontsize")) {
                 this.rows.selectAll("text.row-label").style("font-size", this.label_fontsize + "px");
             }
 

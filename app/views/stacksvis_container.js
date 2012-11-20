@@ -1,24 +1,19 @@
-var View = require('./view');
-var template = require('../views/templates/stacksvis_container');
+var Template = require("../views/templates/stacksvis_container");
 var ControlsView = require("../views/stacksvis_controls");
 var SelectorsView = require("../views/stacksvis_selectors");
 var GeneListView = require("../views/genelist_view");
 require("../../vis/stacksvis");
 var ALL_COLUMNS = "_";
 
-module.exports = View.extend({
-    template:template,
-    className:"row-fluid",
+module.exports = Backbone.View.extend({
     clusterProperty: null,
-    showGeneLists: true,
+    hideSelector: false,
     defaultRows: 30,
     rowLabels:[],
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'renderGraph', 'initControls', 'onNewRows');
-
-        this.showGeneLists = !this.hideSelector;
+        _.bindAll(this, "renderGraph", "initControls", "initSelectors", "getColumnModel", "onNewRows");
 
         this.storageKeys = {
             cluster: "stacksvis_container." + this.model.get("dataset_id") + ".cluster_property",
@@ -31,13 +26,9 @@ module.exports = View.extend({
         if (localRows && localRows.length) this.rowLabels = localRows.split(",");
 
         this.model.on("load", this.renderGraph);
-    },
 
-    getRenderData: function() {
-        return { "showGeneLists": this.showGeneLists };
-    },
+        this.$el.html(Template({ "showGeneLists": !this.hideSelector }))
 
-    afterRender:function () {
         this.initSelectors();
 
         if (!this.hideSelector) {
@@ -48,14 +39,14 @@ module.exports = View.extend({
     initSelectors: function() {
         var cluster = this.clusterProperty;
         if (cluster && cluster == ALL_COLUMNS) cluster = null;
-        this.$el.find('.selected-cluster').html(cluster);
+        this.$el.find(".selected-cluster").html(cluster);
 
         var selectorView = new SelectorsView({
             model: this.model,
             cluster: cluster,
             rows: this.rowLabels
         });
-        this.$el.find('.selector-modal').html(selectorView.render().el);
+        this.$el.find(".selector-modal").html(selectorView.render().el);
 
         var _this = this;
         selectorView.on("selected", function(data) {
@@ -65,8 +56,8 @@ module.exports = View.extend({
             localStorage.setItem(_this.storageKeys.cluster, _this.clusterProperty);
             localStorage.setItem(_this.storageKeys.rows, _this.rowLabels.join(","));
 
-            _this.$el.find('.selected-cluster').html(data.cluster);
-            _this.$el.find('.selector-modal').modal("hide");
+            _this.$el.find(".selected-cluster").html(data.cluster);
+            _this.$el.find(".selector-modal").modal("hide");
             _this.model.trigger("load");
         });
     },
@@ -133,7 +124,7 @@ module.exports = View.extend({
 
         if (!this.hideSelector) {
             if (!this.rowLabels || !this.rowLabels.length) {
-                this.$el.find('.selector-modal').modal("show");
+                this.$el.find(".selector-modal").modal("show");
                 return;
             }
         }
@@ -184,7 +175,7 @@ module.exports = View.extend({
 
     initControls:function () {
         this.controls = new ControlsView();
-        this.$el.find('.controls-modal').html(this.controls.render().el);
+        this.$el.find(".controls-modal").html(this.controls.render().el);
 
         var vis_container = this.$el.find(".stacksvis-container");
         this.controls.on("updated", function(dim) {
@@ -201,7 +192,7 @@ module.exports = View.extend({
                         return (row.toLowerCase().indexOf(gene.toLowerCase()) >= 0);
                     });
                 });
-                _this.model.trigger('load');
+                _this.model.trigger("load");
             });
         }
     }
