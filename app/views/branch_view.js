@@ -33,7 +33,7 @@ module.exports = View.extend({
           return d.r2*(height/length);
       };
    
-    var colors = ["#D7191C", "#FDAE61", "#FFFFBF", "#ABD9E9", "#2C7BB6"];
+    var colors = ["#D7191C", "#FDAE61", "#CCCCAC", "#ABD9E9", "#2C7BB6"];
     var color = function(d){
         if ( ! colors.hasOwnProperty(d.termcat)){
           console.log("bad color "+ (d.termcat-1));
