@@ -46,6 +46,7 @@ module.exports = View.extend({
       $(".case-name").html("");
         $(".branch-output").html("");
         $(".pathway-output").html("");
+        $(".admix-output").html("");
         me.pc.color("#447");
         me.pc.clear("highlight");
         me.pc.render();
@@ -67,6 +68,24 @@ module.exports = View.extend({
 
     var highlightf = function(d){me.pc.highlight(me.model.filterFeatures([d[0]]));};
 
+    var admixcolor = d3.scale.linear()
+      .domain([0, 1])
+      .range(["steelblue", "brown"])
+      .interpolate(d3.interpolateLab);
+
+    var loadAdMix = function(name){
+      d3.tsv("/svc/data/analysis/admix4.txt?cols="+name,function(data){
+        var grid = d3.select(".admix-output");
+        grid.selectAll("span")
+          .data(data)
+          .enter()
+          .append("span")
+          .text(function(d){ return d.SAMPLE+":"+d[name]+" ";})
+          .style("color",function(d){ return admixcolor(d[name]); });
+
+      });
+    };
+
     var svg = d3.select(".scat-container")
       .append("svg")
       .attr("width", width)
@@ -87,6 +106,7 @@ module.exports = View.extend({
       .style('fill-opacity', 0.8)
       .on("click", function(d,i){
           clearstate();
+          loadAdMix(d.n);
           var features = me.model.getTopFeaturs(d.n);
           var blue_to_brown = d3.scale.pow()
             .exponent(3.5)
@@ -94,7 +114,7 @@ module.exports = View.extend({
             .range(["#447", "red"])
             .interpolate(d3.interpolateLab);
           me.pc.color(function(d){ return blue_to_brown(d[i]); });
-          $(".case-name").html("Top Features for "+ d.n);
+          $(".case-name").html("Admixture and Top Features for "+ d.n);
           var output = d.n + " : ";
           var highlight = [];
           for (var j = 0; j < features.length; j++) {
