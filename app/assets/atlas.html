@@ -63,10 +63,10 @@
                 <div class="map-contents container-fluid" data-source="domains/mutations/mutsig_rankings" data-view="mutsig_grid">MutSig (mini)</div>
             </div>
 
-            <div class="atlas-map" style="top: 180px; left: 140px;" data-scale="100">
-                <h5><a href="#" onclick="return false;">Clusters</a></h5>
+            <div class="atlas-map" style="top: 900px; left: 1600px;" data-scale="100">
+                <h5><a href="#" onclick="return false;" class="load-stacks">StacksVis</a></h5>
 
-                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features">StacksVis (mini)</div>
+                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features" data-view="stacksvis" data-lowercase="true">StacksVis (mini)</div>
             </div>
 
             <div class="atlas-map" style="top: 150px; left: 450px;" data-scale="100">
@@ -190,6 +190,11 @@
 
         $(".load-map").click(function(e) {
             var loadmap = $(e.target).attr("href");
+            var mapcontents = $(loadmap).find(".map-contents");
+            atlas.navigate(mapcontents);
+        });
+        $(".load-stacks").click(function(e) {
+            var loadmap = $(e.target).parents(".atlas-map");
             var mapcontents = $(loadmap).find(".map-contents");
             atlas.navigate(mapcontents);
         });
