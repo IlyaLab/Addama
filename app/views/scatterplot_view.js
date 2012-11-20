@@ -4,13 +4,13 @@ var LineItemTemplate = require("./templates/line_item");
 module.exports = Backbone.View.extend({
     className: "row-fluid",
     current_cancer: null,
-    selected_genes: { "x":null, "y": null },
+    selected_genes: { "x":"TP53", "y": "CTCF" },
     selected_features: { "x":null, "y": null },
 
     initialize: function (options) {
         _.extend(this, options);
         _.bindAll(this, "initCancerSelector", "initGeneTypeaheads", "drawGraph", "selectedFeatureData");
-        _.bindAll(this, "loadData", "reloadModel", "initFeatureLabelSelector");
+        _.bindAll(this, "loadData", "reloadModel", "initFeatureLabelSelector", "getFeatureAxisLabel");
 
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeaheads });
 
@@ -23,6 +23,7 @@ module.exports = Backbone.View.extend({
         if (_.isEmpty(this.cancers)) {
             $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
         } else {
+            this.current_cancer = _.first(this.cancers);
             this.initCancerSelector(this.cancers.join("\n"));
         }
 
@@ -34,14 +35,13 @@ module.exports = Backbone.View.extend({
         var _this = this;
         _.each(cancers, function(cancer, idx) {
             cancer = cancer.trim();
-            if (idx == 0) {
+            if (_.isEqual(_this.current_cancer, cancer)) {
                 _this.$el.find(".cancer-selector").append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancer,"label":cancer}));
             } else {
                 _this.$el.find(".cancer-selector").append(LineItemTemplate({"a_class":"toggle-active","id":cancer,"label":cancer}));
             }
         });
 
-        var _this = this;
         this.$el.find(".cancer-selector").find(".toggle-active").click(function(e) {
             _this.$el.find(".cancer-selector").find(".active").removeClass("active");
             $(e.target).parent().addClass("active");
@@ -122,6 +122,10 @@ module.exports = Backbone.View.extend({
                 UL.append(LineItemTemplate({ "label":feature.id, "id":feature.id, "a_class":"selector" }));
             });
 
+            if (!_.isEmpty(selected_features)) {
+                this.selected_features[axis] = _.first(selected_features).id;
+            }
+
             var _this = this;
             UL.find(".selector").click(function(e) {
                 _this.selected_features[axis] = $(e.target).data("id");
@@ -138,33 +142,33 @@ module.exports = Backbone.View.extend({
             DATATYPE : "vq.models.ScatterPlotData",
             CONTENTS : {
                 PLOT : {
-                    width : 768, height: 768,
-                    dblclick_notifier : function() {
-                    },
-                    vertical_padding : 80,
+                    width : 600,
+                    height: 600,
+                    vertical_padding : 40,
                     horizontal_padding: 80,
-                    x_label_displacement: 40,
-                    y_label_displacement: -70,
-                    x_tick_displacement: 20,
                     enable_transitions: true
                 },
                 axis_font :"14px helvetica",
-                tick_font :"14px helvetica",
+                tick_font :"8px helvetica",
                 stroke_width: 1,
-                radius: 4,
+                radius: 3,
                 data_array: data_array,
                 regression: "none",
-                xcolumnid: this.selected_genes["x"],
-                ycolumnid: this.selected_genes["y"],
+                xcolumnid: this.getFeatureAxisLabel("x"),
+                ycolumnid: this.getFeatureAxisLabel("y"),
                 valuecolumnid: "id"
             }
         };
 
         console.log("drawGraph");
-        this.$el.find(".scatterplot-container").empty();
-        this.$el.find(".scatterplot-container").scatterplot(plot_data);
+        if (!this.isPastFirstTime) {
+//            this.$el.find(".scatterplot-container").empty();
+            this.$el.find(".scatterplot-container").scatterplot(plot_data);
+            this.isPastFirstTime = true;
+        } else {
+            this.$el.find(".scatterplot-container").scatterplot("reset_data", data_array);
+        }
 
-//        this.$el.find(".scatterplot-container").scatterplot("reset_data", data_array);
         this.$el.find(".scatterplot-container").scatterplot("enable_zoom");
     },
 
@@ -180,8 +184,8 @@ module.exports = Backbone.View.extend({
         var x_values = _.first(x_features).values || {};
         var y_values = _.first(y_features).values || {};
 
-        var x_axis = this.selected_genes["x"];
-        var y_axis = this.selected_genes["y"];
+        var x_axis = this.getFeatureAxisLabel("x");
+        var y_axis = this.getFeatureAxisLabel("y");
 
         var datapoints = _.map(x_values, function(x_val, point_id) {
             var y_val = y_values[point_id];
@@ -193,5 +197,17 @@ module.exports = Backbone.View.extend({
             }
         });
         return _.compact(datapoints);
+    },
+
+    getFeatureAxisLabel: function(axis) {
+        var features = this.feature_map[this.selected_features[axis]];
+        if (features) {
+            var featureArray = _.groupBy(features, "cancer")[this.current_cancer.toLowerCase()];
+            if (!_.isEmpty(featureArray)) {
+                var feature = _.first(featureArray);
+                return feature.label + " " + feature.source + " (" + feature.modifier + ")";
+            }
+        }
+        return this.selected_features[axis];
     }
 });
