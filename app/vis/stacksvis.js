@@ -1,12 +1,12 @@
 !function ($) {
     // Definition
-    var OncoVis = function (element, options) {
+    var StacksVis = function (element, options) {
         this.element = $(element);
         if (options) _.extend(this, options);
     };
 
-    OncoVis.prototype = {
-        constructor:OncoVis,
+    StacksVis.prototype = {
+        constructor:StacksVis,
 
         vertical_padding:30,
         horizontal_padding:30,
@@ -19,7 +19,7 @@
         cluster_legend_height:20,
         cluster_spacing:10,
         highlight_bar_height:7,
-        plot_height:512,
+        plot_height:1000,
         plot_width:1540,
         row_labels:[],
         cluster_labels:[],
@@ -35,8 +35,8 @@
 
             var vis = d3.select(this.element[0])
                 .append("svg")
-                .attr("width", this.plot_width + 2 * this.horizontal_padding)
-                .attr("height", this.plot_height + 2 * this.vertical_padding);
+                .attr("width", this.plot_width + (2 * this.horizontal_padding))
+                .attr("height", this.plot_height + (2 * this.vertical_padding));
 
             var data_area = vis
                 .append("g")
@@ -72,7 +72,7 @@
             this.cluster_g.append("text").attr("y", -5)
                 .text(function (d) {
                     return d.label;
-                });
+                }).attr("class", "cluster-label");
 
             // Display label on each row
             this.rows = data_area.selectAll("g.row-info")
@@ -351,23 +351,22 @@
 
         _updateRowLabelVisibility:function() {
             var that = this;
-            this.rows
-                .style("display", function() {
-                    if (that.row_labels_enabled == true) {
-                        return "inline";
-                    }
-                    else {
-                        return "none";
-                    }
-                });
+            this.rows.style("display", function() {
+                if (that.row_labels_enabled == true) {
+                    return "inline";
+                }
+                else {
+                    return "none";
+                }
+            });
         }
     };
 
     // jQuery Plugin
-    $.fn.oncovis = function (data, options) {
+    $.fn.stacksvis = function (data, options) {
         var $this = $(this);
-        var vis = $this.data("OncoVis");
-        if (!vis) $this.data("OncoVis", (vis = new OncoVis(this, options)));
+        var vis = $this.data("StacksVis");
+        if (!vis) $this.data("StacksVis", (vis = new StacksVis(this, options)));
 
         if (typeof data == "string") {
             if (data == "update") vis.update(options);

@@ -1,18 +1,18 @@
 var View = require('./view');
-var template = require('./templates/oncovis_controls');
+var template = require('../views/templates/stacksvis_controls');
 
 module.exports = View.extend({
     template:template,
 
     events:{
         "click .reset-sliders": function() {
-            this.$el.find(".slider_barheight").oncovis_range("reset");
-            this.$el.find(".slider_rowspacing").oncovis_range("reset");
-            this.$el.find(".slider_barwidth").oncovis_range("reset");
-            this.$el.find(".slider_barspacing").oncovis_range("reset");
-            this.$el.find(".slider_clusterspacing").oncovis_range("reset");
-            this.$el.find(".slider_fontsize").oncovis_range("reset");
-            this.$el.find(".slider_label_width").oncovis_range("reset");
+            this.$el.find(".slider_barheight").range_slider_control("reset");
+            this.$el.find(".slider_rowspacing").range_slider_control("reset");
+            this.$el.find(".slider_barwidth").range_slider_control("reset");
+            this.$el.find(".slider_barspacing").range_slider_control("reset");
+            this.$el.find(".slider_clusterspacing").range_slider_control("reset");
+            this.$el.find(".slider_fontsize").range_slider_control("reset");
+            this.$el.find(".slider_label_width").range_slider_control("reset");
         }
     },
 
@@ -22,13 +22,13 @@ module.exports = View.extend({
     },
 
     afterRender: function() {
-        this.$el.find(".slider_barheight").oncovis_range({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
-        this.$el.find(".slider_rowspacing").oncovis_range({ storageId:"slider_rowspacing", min:10, max:50, initialStep:10 });
-        this.$el.find(".slider_barwidth").oncovis_range({ storageId:"slider_barwidth", min:1, max:10, initialStep:3 });
-        this.$el.find(".slider_barspacing").oncovis_range({ storageId:"slider_barspacing", min:0, max:10, initialStep:1 });
-        this.$el.find(".slider_clusterspacing").oncovis_range({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
-        this.$el.find(".slider_fontsize").oncovis_range({ storageId:"slider_fontsize", min:5, max:21, initialStep:10 });
-        this.$el.find(".slider_label_width").oncovis_range({ storageId:"slider_label_width", min:20, max:200, initialStep:100 });
+        this.$el.find(".slider_barheight").range_slider_control({ storageId:"slider_barheight", min:10, max:50, initialStep:20 });
+        this.$el.find(".slider_rowspacing").range_slider_control({ storageId:"slider_rowspacing", min:10, max:50, initialStep:10 });
+        this.$el.find(".slider_barwidth").range_slider_control({ storageId:"slider_barwidth", min:1, max:10, initialStep:3 });
+        this.$el.find(".slider_barspacing").range_slider_control({ storageId:"slider_barspacing", min:0, max:10, initialStep:1 });
+        this.$el.find(".slider_clusterspacing").range_slider_control({ storageId:"slider_clusterspacing", min:0, max:50, initialStep:10 });
+        this.$el.find(".slider_fontsize").range_slider_control({ storageId:"slider_fontsize", min:5, max:21, initialStep:10 });
+        this.$el.find(".slider_label_width").range_slider_control({ storageId:"slider_label_width", min:20, max:200, initialStep:100 });
 
         var _this = this;
 

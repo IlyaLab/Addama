@@ -1,6 +1,6 @@
-var View = require('./view');
-var template = require('./templates/oncovis_selectors');
-var LineItem = require("./templates/line_item");
+var View = require("./view");
+var template = require("../views/templates/stacksvis_selectors");
+var LineItem = require("../views/templates/line_item");
 
 module.exports = View.extend({
     template:template,
@@ -26,7 +26,7 @@ module.exports = View.extend({
         _.extend(this, options);
         _.bindAll(this, "initTypeahead");
 
-        this.model.on('load', this.initTypeahead);
+        this.model.on("load", this.initTypeahead);
     },
 
     afterRender: function() {

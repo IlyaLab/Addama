@@ -1,5 +1,5 @@
 !function ($) {
-    var OncovisSlider = function(element) {
+    var RangeSliderControl = function(element) {
         return {
             $el: element,
             storageId: null,
@@ -43,11 +43,11 @@
         }
     };
 
-    $.fn.oncovis_range = function (options) {
-        var ovr = this.data("OncovisSlider");
+    $.fn.range_slider_control = function (options) {
+        var ovr = this.data("RangeSliderControl");
         if (!ovr) {
-            ovr = OncovisSlider(this);
-            this.data("OncovisSlider", ovr);
+            ovr = RangeSliderControl(this);
+            this.data("RangeSliderControl", ovr);
             ovr.init(options);
         }
 

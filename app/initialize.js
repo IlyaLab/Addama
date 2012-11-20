@@ -6,6 +6,7 @@ $(function () {
             "Annotations":require("models/annotations"),
             "Mappings":require("models/mappings"),
             "FeatureMatrix":require("models/featureMatrix2"),
+            "FeatureMatrixAsTable":require("models/featureMatrix2asTable"),
             "FeatureMatrix3":require("models/featureMatrix3"),
             "GraphLayouts":require("models/graph_layouts"),
             "Mutations":require("models/mutations_interpro"),
@@ -21,7 +22,7 @@ $(function () {
             ],
             "FeatureMatrix":[
                 { "id":"grid", label:"Grid" },
-                { "id":"heat", label:"Heatmap" },
+                { "id":"stacksvis", label:"Stacks" },
                 { "id":"xfeaturegrid", label:"Cross-Feature Summary" }
             ],
             "GraphLayouts":[
@@ -36,7 +37,7 @@ $(function () {
         Views:{
             "grid":require("views/grid_view"),
             "circ":require("views/circvis_view"),
-            "heat":require("views/oncovis_view"),
+            "stacksvis":require("views/stacksvis_container"),
             "graph":require("views/graphtree_view"),
             "pwpv":require("views/pwpv_view"),
             "twoD":require("views/2D_Distribution_view"),

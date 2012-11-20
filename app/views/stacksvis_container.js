@@ -1,23 +1,28 @@
 var View = require('./view');
-var template = require('./templates/oncovis');
-var ControlsView = require("../views/oncovis_controls");
-var SelectorsView = require("../views/oncovis_selectors");
+var template = require('../views/templates/stacksvis_container');
+var ControlsView = require("../views/stacksvis_controls");
+var SelectorsView = require("../views/stacksvis_selectors");
 var GeneListView = require("../views/genelist_view");
-var ALL_COLUMNS = "All Columns";
+require("../../vis/stacksvis");
+var ALL_COLUMNS = "_";
 
 module.exports = View.extend({
     template:template,
     className:"row-fluid",
     clusterProperty: null,
+    showGeneLists: true,
+    defaultRows: 30,
     rowLabels:[],
 
     initialize:function (options) {
         _.extend(this, options);
         _.bindAll(this, 'renderGraph', 'initControls', 'onNewRows');
 
+        this.showGeneLists = !this.hideSelector;
+
         this.storageKeys = {
-            cluster: "oncovis_view." + this.model.get("dataset_id") + ".cluster_property",
-            rows: "oncovis_view." + this.model.get("dataset_id") + ".row_labels"
+            cluster: "stacksvis_container." + this.model.get("dataset_id") + ".cluster_property",
+            rows: "stacksvis_container." + this.model.get("dataset_id") + ".row_labels"
         };
 
         this.clusterProperty = localStorage.getItem(this.storageKeys.cluster);
@@ -28,10 +33,16 @@ module.exports = View.extend({
         this.model.on("load", this.renderGraph);
     },
 
+    getRenderData: function() {
+        return { "showGeneLists": this.showGeneLists };
+    },
+
     afterRender:function () {
         this.initSelectors();
 
-        new GeneListView({ $el: this.$el }).on("genelist-selected", this.onNewRows);
+        if (!this.hideSelector) {
+            new GeneListView({ $el: this.$el }).on("genelist-selected", this.onNewRows);
+        }
     },
 
     initSelectors: function() {
@@ -69,7 +80,11 @@ module.exports = View.extend({
                 var column = { "name":column_name.trim(), "cluster":ALL_COLUMNS, "values":[] };
                 _.each(_this.rowLabels, function (row_label) {
                     var row_idx = _this.model.get("ROWS").indexOf(row_label);
-                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                    var value = _this.model.get("DATA")[row_idx][col_idx];
+                    if (_.isString(value)) {
+                        value = value.trim().toLowerCase();
+                    }
+                    column.values.push(value);
                 });
                 unsorted_columns.push(column);
             });
@@ -80,7 +95,11 @@ module.exports = View.extend({
                 var column = { "name":column_name.trim(), "cluster":cluster_value, "values":[cluster_value] };
                 _.each(_this.rowLabels, function (row_label) {
                     var row_idx = _this.model.get("ROWS").indexOf(row_label);
-                    column.values.push(_this.model.get("DATA")[row_idx][col_idx].trim().toLowerCase());
+                    var value = _this.model.get("DATA")[row_idx][col_idx];
+                    if (_.isString(value)) {
+                        value = value.trim().toLowerCase();
+                    }
+                    column.values.push(value);
                 });
                 unsorted_columns.push(column);
             });
@@ -104,17 +123,19 @@ module.exports = View.extend({
 
         if (_.isEmpty(this.rowLabels)) {
             var rows = this.model.get("ROWS");
-            this.rowLabels = _.first(rows, (rows.length < 50) ? rows.length : 50);
+            this.rowLabels = _.first(rows, (rows.length < this.defaultRows) ? rows.length : this.defaultRows);
         }
 
         if (this.clusterProperty) {
             var removeIdx = _.indexOf(this.rowLabels, this.clusterProperty);
-            if (removeIdx >= 0) this.rowLabels.splice(removeIdx,1);
+            if (removeIdx >= 0) this.rowLabels.splice(removeIdx, 1);
         }
 
-        if (!this.rowLabels || !this.rowLabels.length) {
-            this.$el.find('.selector-modal').modal("show");
-            return;
+        if (!this.hideSelector) {
+            if (!this.rowLabels || !this.rowLabels.length) {
+                this.$el.find('.selector-modal').modal("show");
+                return;
+            }
         }
 
         var columns_by_cluster = this.getColumnModel();
@@ -132,7 +153,7 @@ module.exports = View.extend({
                 var colorscaleFn = d3.scale.ordinal().domain(categories)
                     .range(d3.range(categories.length)
                     .map(d3.scale.linear().domain([0, categories.length - 1])
-                    .range(["yellow", "green"])
+                    .range(["forestgreen", "lightgreen"])
                     .interpolate(d3.interpolateLab)));
                 colorscales = function (cell) {
                     return colorscaleFn(categories.indexOf(cell));
@@ -140,7 +161,7 @@ module.exports = View.extend({
             }
 
             _.each(_this.model.get("DATA")[row_idx], function (cell, cellIdx) {
-                cell = cell.trim();
+                if (_.isString(cell)) cell = cell.trim();
                 var columnLabel = _this.model.get("COLUMNS")[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
                 data[columnLabel][rowLabel] = { "value":cell, "row":rowLabel, "colorscale":colorscales(cell), "label":columnLabel + "\n" + rowLabel + "\n" + cell };
@@ -148,8 +169,7 @@ module.exports = View.extend({
         });
 
         var optns = {
-            plot_width:1500,
-            plot_height:700,
+            vertical_padding: 100,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
                 return d ? d.colorscale : "white";
@@ -159,16 +179,16 @@ module.exports = View.extend({
             row_labels:this.rowLabels
         };
 
-        this.$el.find(".oncovis-container").oncovis(data, _.extend(optns, this.controls.initialValue()));
+        this.$el.find(".stacksvis-container").stacksvis(data, _.extend(optns, this.controls.initialValue()));
     },
 
     initControls:function () {
         this.controls = new ControlsView();
         this.$el.find('.controls-modal').html(this.controls.render().el);
 
-        var oncovis_container = this.$el.find(".oncovis-container");
+        var vis_container = this.$el.find(".stacksvis-container");
         this.controls.on("updated", function(dim) {
-            oncovis_container.oncovis("update", dim);
+            vis_container.stacksvis("update", dim);
         });
     },
 
