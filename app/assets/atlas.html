@@ -11,11 +11,10 @@
 <head>
     <link rel="shortcut icon" href="img/isbfavicon.ico" type="image/x-icon"/>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=1024">
+    <!--<meta name="viewport" content="width=1024">-->
     <meta name="viewport" content="initial-scale=1.0, width=device-width, height=device-height, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>QED: Atlas</title>
-    <meta name="viewport" content="width=1024"/>
 
     <link rel="stylesheet" href="css/app.css">
     <script src="js/vendor.js"></script>
@@ -53,65 +52,65 @@
     <div class="atlas-canvas">
         <div class="atlas-zoom">
             <div class="atlas-map" style="top: 50px; left: 100px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Mutations</a></h4>
+                <h5><a href="#" onclick="return false;">Mutations</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="lookups/qed_lookups/mutations" data-view="seqpeek_mini">SeqPeek (mini)</div>
             </div>
 
             <div class="atlas-map load-first" style="top: 20px; left: 520px;" data-scale="100">
-                <h4><a href="#mutsig_grid" onclick="return false;">MutSig Ranks</a></h4>
+                <h5><a href="#mutsig_grid" onclick="return false;">MutSig Ranks</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="domains/mutations/mutsig_rankings" data-view="mutsig_grid">MutSig (mini)</div>
             </div>
 
             <div class="atlas-map" style="top: 180px; left: 140px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Clusters</a></h4>
+                <h5><a href="#" onclick="return false;">Clusters</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features">StacksVis (mini)</div>
             </div>
 
             <div class="atlas-map" style="top: 150px; left: 450px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Copy Number (GISTIC)</a></h4>
+                <h5><a href="#" onclick="return false;">Copy Number (GISTIC)</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features">Linear Browser (mini)</div>
             </div>
 
             <div class="atlas-map load-first" style="top: 200px; left: 750px;" data-scale="100"
                  data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small">
-                <h4>Multi-Feature <a href="#xfeaturegrid" class="load-map" onclick="return false;">(detail)</a></h4>
+                <h5>Multi-Feature <a href="#xfeaturegrid" class="load-map" onclick="return false;">(detail)</a></h5>
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small"></div>
             </div>
 
             <div class="atlas-map" style="top: 400px; left: 50px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Literature Search (Pubcrawl)</a></h4>
+                <h5><a href="#" onclick="return false;">Literature Search (Pubcrawl)</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="pubcrawl/search" data-view="pubcrawl_histogram">Histograms</div>
             </div>
 
             <div class="atlas-map" style="top: 500px; left: 550px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Associations (PairWise)</a></h4>
+                <h5><a href="#" onclick="return false;">Associations (PairWise)</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="analysis/pairwise_newMerge.05nov" data-view="highlevel_associations"></div>
             </div>
 
             <div class="atlas-map" style="top: 400px; left: 1000px;" data-scale="100">
-                <h4><a href="#" onclick="return false;">Samples</a></h4>
+                <h5><a href="#" onclick="return false;">Samples</a></h5>
 
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features" data-view="circlepack"></div>
             </div>
 
-            <div id="xfeaturegrid" class="atlas-map load-first" style="top: 200px; left: 600px; width:800px; height: 400px;" data-scale="100">
-                <h4>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h4>
+            <div id="xfeaturegrid" class="atlas-map load-first" style="top: 200px; left: 600px;" data-scale="100">
+                <h5>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h5>
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid" data-linked="#seqpeek"></div>
             </div>
 
-            <div id="seqpeek" class="atlas-map load-first" style="top: 600px; left: 100px; width:1000px; height: 400px;" data-scale="100">
-                <h4>SeqPeek</h4>
+            <div id="seqpeek" class="atlas-map load-first" style="top: 600px; left: 100px;" data-scale="100">
+                <h5>SeqPeek</h5>
                 <div class="map-contents container-fluid outer-container" data-source="domains/mutations/Protein_Mutations_Per_Cancer_Type" data-view="seqpeek"></div>
             </div>
 
-            <div class="atlas-map load-first" style="top: 600px; left: 100px; width:1000px; height: 400px;" data-scale="100">
-                <h4>Scatterplot</h4>
+            <div class="atlas-map load-first" style="top: 600px; left: 100px;" data-scale="100">
+                <h5>Scatterplot</h5>
                 <div class="map-contents container-fluid outer-container" data-source="domains/newMerge.05nov/annotated_features" data-view="scatterplot" data-lowercase="true"></div>
             </div>
         </div>
