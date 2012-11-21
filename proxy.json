@@ -15,13 +15,32 @@
             "keep_url": true
         },
         {
-            "url":"/svc",
+            "url":"/svc/data/lookups",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port": 80,
+            "keep_url": true
+        },
+        {
+          "url":"/svc/graphs/pubcrawl",
+            "rewrite_url":"http://pubcrawl.systemsbiology.net/hukilau-svc",
+            "host": "pubcrawl.systemsbiology.net",
+            "port": 4080,
+            "keep_url": false
+        },
+        {
+            "url":"/svc/data",
             "host":"localhost",
+            "port": 8080
+        },
+        {
+            "url":"/svc",
+            "host":"breve",
             "port": 8000
         },
         {
             "url":"/graph_layout",
-            "host":"localhost",
+            "host":"breve",
             "port":8010
         }
     ]
