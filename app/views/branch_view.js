@@ -24,6 +24,7 @@ module.exports = View.extend({
     var me = this;
     var scatdata = this.model.getD3Data();
     var length = scatdata.length;
+    var ignore_keys = ['label','type','source','feature_id','nByi',"feature","featureID"];
     var height = 400;
     var width = 1000;
     var x = function(d) {
@@ -37,6 +38,7 @@ module.exports = View.extend({
     var color = function(d){
         if ( ! colors.hasOwnProperty(d.termcat)){
           console.log("bad color "+ (d.termcat-1));
+          return "#000000";
         }
         return colors[d.termcat-1];
       };
@@ -83,6 +85,44 @@ module.exports = View.extend({
           .text(function(d){ return d.SAMPLE+":"+d[name]+" ";})
           .style("color",function(d){ return admixcolor(d[name]); });
 
+      });
+    };
+
+    var fmsvcbase = "/svc/data/domains/feature_matrices/"+ me.model.get("dataset_id")
+      .replace("_preterm","")
+      .replace("_unblacklisted","")
+      .replace("_blacklisted","");
+
+    var showFvsT = function (selector,data) {
+      $(selector).html("");
+      var grid = d3.select(selector);
+        grid.selectAll("div")
+          .data(data)
+          .enter()
+          .append("div")
+          .text(function(d){ return d[1];})
+          .style("width",function(d){return d[1]+"px";})
+          .style("float","left")
+          .style("background-color",function(d){ return color({termcat:d[0]}); });
+    };
+
+    var loadFvsTermCat = function(name){
+      d3.tsv(fmsvcbase+"?rows=N:CLIN:TermCategory:NB::::,"+name,function(data){
+        var truevs = [];
+        var falsevs = [];
+        var keys = _.difference(Object.keys(data[0]),ignore_keys);
+        for (var i = 0; i < keys.length; i++) {
+          if( data[1][keys[i]]==1 ) {
+            truevs.push(data[0][keys[i]]);
+          } else {
+            falsevs.push(data[0][keys[i]]);
+          }
+        }
+
+        truevs = _.pairs(_.countBy(truevs,function(v){ return v; }));
+        falsevs = _.pairs(_.countBy(falsevs,function(v){ return v; }));
+        showFvsT(".true-output",truevs);
+        showFvsT(".false-output",falsevs);
       });
     };
 
@@ -135,6 +175,7 @@ module.exports = View.extend({
             .on("click", function(d){
               $(".pathway-output").html("");
               highlightf(d);
+              loadFvsTermCat(d[0]);
               d3.tsv("/svc/data/analysis/genesets/genesets?rows="+d[0].split(":")[2], showpathways);
               })
             .on("mouseover",highlightf)
@@ -178,7 +219,7 @@ module.exports = View.extend({
 
     
     
-    var ignore_keys = ['label','type','source','feature_id','nByi',"feature"];
+    
     var keys = _.difference(Object.keys(pcdata[0]),ignore_keys);
 
     me.pc = d3.parcoords()(".pc-container");
