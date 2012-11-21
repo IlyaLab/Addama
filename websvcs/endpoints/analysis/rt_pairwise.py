@@ -1,9 +1,12 @@
 from tornado.options import options, logging, define
+from tornado.escape import url_unescape
 import tornado.web
+import os
 
 define("data_path", default=".", help="Path to pre-processed files")
 define("executable", default=".", help="Path to executable")
 define("port", default=8321, help="run on the given port", type=int)
+define("verbose", default=False, help="Prints debugging statements")
 
 from subprocess import Popen, PIPE, STDOUT
 import json
@@ -19,29 +22,46 @@ settings = {
 
 class RealtimePairwise(tornado.web.RequestHandler):
     def get(self):
-        logging.info("[%s] [%s]" % (self.request.uri, self.request.arguments))
+        if options.verbose:
+            logging.info("[%s] [%s]" % (self.request.uri, self.request.arguments))
+            logging.info("query=[%s]" % (self.request.query))
 
-        args = self.request.arguments
+        query = {}
+        for qarg in self.request.query.split("&"):
+            argsplit = qarg.split("=")
+            key = argsplit[0]
+            val = argsplit[1]
+            if not key in query:
+                query[key] = []
+            query[key].append(val)
 
-        cancer = args["cancer"]
-        feature1 = args["feature1"]
-        feature2 = args["feature2"]
+        cancer = query["cancer"]
+        feature1 = query["feature1"]
+        feature2 = query["feature2"]
 
-        print "feature1=%s" % str(feature1)
-        print "feature2=%s" % str(feature2)
-        print "cancer=%s" % cancer
+        if options.verbose:  logging.info("query=%s" % str(query))
 
-        p = Popen([options.executable, options.data_path], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        c = cancer[0]
+        f = os.path.join(options.data_path, c.upper())
+
+        p = Popen([options.executable, f], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
         for f1 in feature1:
             for f2 in feature2:
-                p.stdin.write("%s\t%s\n" % (f1,f2))
+                pairstr = "%s\t%s\n" % (self.decode_argument(f1),self.decode_argument(f2))
+                if options.verbose:  logging.info(pairstr)
+                p.stdin.write(pairstr)
 
         rtpw_result = p.communicate()[0]
-        print(rtpw_result)
+        if options.verbose: logging.info("results=%s" % rtpw_result)
+
+        if "error" in rtpw_result:
+            self.write(rtpw_result)
+            self.set_status(500)
+            return
 
         edges = []
         for line in rtpw_result.split("\n"):
-            print "line=%s" % line
+            if options.verbose: logging.info("line=%s" % line)
             if len(line) > 0:
                 parts = line.split("\t")
                 edge = {
@@ -54,7 +74,7 @@ class RealtimePairwise(tornado.web.RequestHandler):
                 }
                 edges.append(edge)
 
-        self.write({ "edges": edges, "cancer": cancer })
+        self.write({ "edges": edges, "cancer": c })
         self.set_status(200)
 
 def main():
