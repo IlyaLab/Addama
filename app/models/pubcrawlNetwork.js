@@ -187,7 +187,7 @@ module.exports = Backbone.Model.extend({
     fetch: function (options) {
         _.extend(this, options);
 
-        var nodeQuery = new NodeQuery({data_uri: "http://pubcrawl.systemsbiology.net/hukilau-svc",searchTerm: this.genes[0].toLowerCase()});
+        var nodeQuery = new NodeQuery({data_uri: this.get("data_uri"),searchTerm: this.genes[0].toLowerCase()});
                 that = this;
                 nodeQuery.fetch({
                     success: function(model, response){
@@ -204,7 +204,7 @@ module.exports = Backbone.Model.extend({
                                 return false;
                         });
                         that.selectedNodes.push(model.searchData);
-                        that.networkData = new NetworkModel({data_uri: "http://pubcrawl.systemsbiology.net/hukilau-svc",nodes: that.selectedNodes, searchterm: that.searchTerm});
+                        that.networkData = new NetworkModel({data_uri: that.get("data_uri"),nodes: that.selectedNodes, searchterm: that.searchTerm});
                         that.networkData.fetch({success: function(model,response) {
                             options.success(model,response);
                         }});

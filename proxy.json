@@ -25,7 +25,7 @@
           "url":"/svc/graphs/pubcrawl",
             "rewrite_url":"http://pubcrawl.systemsbiology.net/hukilau-svc",
             "host": "pubcrawl.systemsbiology.net",
-            "port": 4080,
+            "port":80,
             "keep_url": false
         },
         {
