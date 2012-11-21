@@ -13,7 +13,7 @@ exports.config =
           'vendor/js/console-helper.js',
           'vendor/js/jquery-1.8.0.js',
           'vendor/js/bootstrap.js',
-          'vendor/js/underscore-1.3.3.js',
+          'vendor/js/underscore-1.4.2.js',
           'vendor/js/backbone-0.9.2.js',
           'vendor/js/backbone-mediator.js',
           'vendor/js/d3.v2.js',
@@ -40,7 +40,7 @@ exports.config =
 
   server:
     path: 'server.js'
-    port: 3333
+    port: 3335
     run: yes
 
   # minify: true

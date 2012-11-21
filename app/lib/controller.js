@@ -7,12 +7,14 @@ var MutationsModel = require('../models/mutations');
 var GenomicFeatureListModel = require('../models/genomic_featureList');
 var FeatureMatrix2Model = require('../models/featureMatrix2');
 var FeatureMatrixModel = require('../models/featureMatrix');
+var BranchMatrix = require('../models/branchMatrix')
 
 var DataMenuView = require("../views/data_menu");
 var MenuItemsView = require("../views/menu_items");
 
 var VisViewClasses = {
     "graph": require("../views/graph_view"),
+    "branch": require("../views/branch_view"),
     "grid": require("../views/grid_view"),
     "circ": require("../views/circ_view"),
     "heat": require("../views/oncovis_view"),
@@ -39,6 +41,17 @@ Controller = {
             var WinView = require('../views/window_view');
             var winView = new WinView();
             $('#mainDiv').html(winView.render().el);
+        }
+    },
+
+    branch:{
+        view:function () {
+            console.log("branch view");
+            var BranchView = require('../views/branch_view');
+            var branchView = new BranchView();
+            $('#mainDiv').html(branchView.render().el);
+            console.log("render grid");
+            branchView.renderGrid();
         }
     },
 
@@ -152,12 +165,22 @@ Controller = {
             return Controller.ModelAndView(view_name, GenomicFeatureListModel, {analysis_id:analysis_type, dataset_id:dataset_id });
         }
 
+        if (analysis_type === 'branches') {
+            var cutoff = "0.0";
+            if (len>1) {
+                cutoff = arg_array[1];
+            }
+            return Controller.ModelAndView(view_name || 'branch', BranchMatrix, {analysis_id:analysis_type, dataset_id:dataset_id,cutoff:cutoff});
+        }
+
         //tabular data like /feature_matrices
         if (view_name == 'heat') {
             var oncovisView = Controller.ModelAndView(view_name, FeatureMatrix2Model, {analysis_id:analysis_type, dataset_id:dataset_id }, {dataset_id:dataset_id });
             Controller.InitGeneListViews(oncovisView);
             return oncovisView;
         }
+
+        
 
         return Controller.ModelAndView(view_name, FeatureMatrixModel, {analysis_id:analysis_type, dataset_id:dataset_id, features:features});
     },

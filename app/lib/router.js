@@ -3,6 +3,7 @@ var Controller = require('./controller');
 module.exports = Backbone.Router.extend({
     routes:{
         '':'home',
+        'branch':'branch',
         'grid':'grid',
         'graph':'graph',
         'pwpv':'pwpv',
@@ -12,6 +13,10 @@ module.exports = Backbone.Router.extend({
         'oncovis/p:p1':'oncovis',
         ':analysis_id/:model_id/*remainder':'route_analysis'  //    url -> rf_ace/dataset_1/
     },
+
+  branch: function() {
+      Controller.branch.view();
+  },
 
   graph: function() {
       Controller.graph.view();
