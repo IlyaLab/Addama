@@ -40,7 +40,7 @@ exports.config =
 
   server:
     path: 'server.js'
-    port: 3335
+    port: 3333
     run: yes
 
   # minify: true
