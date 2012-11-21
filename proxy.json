@@ -15,6 +15,13 @@
             "keep_url": true
         },
         {
+            "url":"/svc/rt_pairwise",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port": 80,
+            "keep_url": true
+        },
+        {
             "url":"/svc",
             "host":"localhost",
             "port": 8000
