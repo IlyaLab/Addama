@@ -44,7 +44,7 @@ body {
     z-index: 10;
 
     border: 1px solid #87cefa;
-    padding: 10px auto;
+    padding: 10px;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, .3);
     border-radius: 10px;
@@ -71,6 +71,13 @@ body {
     transition: opacity 1s;
     transition: height 1s;
     transition: width 1s;
+
+    height: auto;
+    width: auto;
+}
+
+.atlas-map h5 {
+    padding-left: 10px;
 }
 
 .showing-border {

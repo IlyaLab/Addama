@@ -192,9 +192,8 @@ svg .wedge[data-ring="2"] .background {
     cursor:pointer;
 }
 
-.oncovis-container {
-    /*width:1200px;*/
-    height:700px;
+.stacksvis-container {
+    /*height:700px;*/
     overflow: auto;
 }
 
@@ -217,6 +216,15 @@ svg .wedge[data-ring="2"] .background {
 
 .rotate_text {
     width: 15px;
+    -moz-transform: rotate(-60deg);
+    -moz-transform-origin: top left;
+    -webkit-transform: rotate(-60deg);
+    -webkit-transform-origin: top left;
+    -o-transform: rotate(-60deg);
+    -o-transform-origin: top left;
+}
+
+.cluster-label {
     -moz-transform: rotate(-60deg);
     -moz-transform-origin: top left;
     -webkit-transform: rotate(-60deg);

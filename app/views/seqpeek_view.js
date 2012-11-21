@@ -32,8 +32,8 @@ module.exports = Backbone.View.extend({
     },
 
     initControls: function () {
-        this.$el.find(".slider_scale_width").oncovis_range({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
-        this.$el.find(".slider_label_width").oncovis_range({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
+        this.$el.find(".slider_scale_width").range_slider_control({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
+        this.$el.find(".slider_label_width").range_slider_control({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
 
         var lastLabelWidth = 70;
         this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
@@ -89,8 +89,8 @@ module.exports = Backbone.View.extend({
     },
 
     resetSliders: function () {
-        this.$el.find(".slider_scale_width").oncovis_range("reset");
-        this.$el.find(".slider_label_width").oncovis_range("reset");
+        this.$el.find(".slider_scale_width").range_slider_control("reset");
+        this.$el.find(".slider_label_width").range_slider_control("reset");
     },
 
     reloadModel: function() {
@@ -166,8 +166,8 @@ module.exports = Backbone.View.extend({
             },
 
             // initial values based on slider defaults
-            scale_width: this.$el.find(".slider_scale_width").oncovis_range("value"),
-            band_label_width: this.$el.find(".slider_label_width").oncovis_range("value")
+            scale_width: this.$el.find(".slider_scale_width").range_slider_control("value"),
+            band_label_width: this.$el.find(".slider_label_width").range_slider_control("value")
         };
 
         this.$el.find(".seqpeek-container").seqpeek(data, options);

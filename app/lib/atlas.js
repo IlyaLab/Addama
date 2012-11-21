@@ -35,7 +35,7 @@ module.exports = Backbone.View.extend({
             }
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options);
             var q_options = _.extend({ "gene": geneList, "cancer": qCancerList }, query_options);
-            
+
             var view = this.viewsByUri($(target), source, view_name, v_options, q_options);
             if (linked_to) {
                 var _this = this;
@@ -96,11 +96,7 @@ module.exports = Backbone.View.extend({
         var cancerList = txt.trim().split("\n");
         var UL = $(".cancer-selector");
         _.each(cancerList, function(cancerItem, idx) {
-            if (idx < 2) {
-                UL.append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
-            } else {
-                UL.append(LineItemTemplate({"a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
-            }
+            UL.append(LineItemTemplate({"li_class":"active","a_class":"toggle-active","id":cancerItem,"label":cancerItem}));
         });
 
         UL.find(".toggle-active").click(function(e) {
