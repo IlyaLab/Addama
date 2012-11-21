@@ -24,21 +24,18 @@ class RealtimePairwise(tornado.web.RequestHandler):
         args = self.request.arguments
 
         cancer = args["cancer"]
+        feature1 = args["feature1"]
+        feature2 = args["feature2"]
 
-        jsonin = self.request.arguments
-        print "json=%s" % str(jsonin)
+        print "feature1=%s" % str(feature1)
+        print "feature2=%s" % str(feature2)
         print "cancer=%s" % cancer
-        print "jsonin=%s" % str(jsonin)
 
         p = Popen([options.executable, options.data_path], stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        for f1 in feature1:
+            for f2 in feature2:
+                p.stdin.write("%s\t%s\n" % (f1,f2))
 
-        feature_ids = self.request.arguments["feature_ids"]
-        print feature_ids
-        fids = json.load(feature_ids)
-        print fids['pairs']
-
-        for pair in pairs:
-            p.stdin.write('%s\t%s\n' % (pair.node1, pair.node2))
         rtpw_result = p.communicate()[0]
         print(rtpw_result)
 
