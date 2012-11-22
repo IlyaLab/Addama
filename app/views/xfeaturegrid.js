@@ -82,8 +82,6 @@ module.exports = Backbone.View.extend({
     handleGridClicks: function(e) {
         var featureId = $(e.target).data("id");
         var grouping = $(e.target).data("grouping");
-        var allFeatures = this.model.allFeatures();
-        var selectedFeature = allFeatures[grouping][featureId];
-        this.trigger("selected", selectedFeature);
+        this.trigger("selected", this.model.get("nodesByCancer")[grouping][featureId]);
     }
 });
