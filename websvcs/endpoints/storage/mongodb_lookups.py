@@ -5,36 +5,45 @@ import json
 import tornado.web
 import pymongo
 
+
 class MongoDbLookupHandler(tornado.web.RequestHandler):
 
     def get(self, identity):
         logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
 
+        ids = identity.split("/")
+        db_name = ids[1]
+        collection = self.open_collection(db_name, ids[2])
+
         # TODO : Improve this logic to correctly parse arguments and convert to a proper mongo DB query
         args = self.request.arguments
         query = {}
+
+        case_sensitive_lookups = frozenset(options.case_sensitive_lookups)
+        normalize_fn = None
+        if db_name in case_sensitive_lookups:
+            normalize_fn = lambda x: x
+        else:
+            normalize_fn = lambda x: x.lower()
+
         for key in args.keys():
             iargs = args[key]
             if len(iargs) == 1:
-                query[key] = args[key][0].lower()
+                query[key] = normalize_fn(args[key][0])
             else:
-                query[key] = {"$in": map(lambda x: x.lower(), args[key])}
-
-        ids = identity.split("/")
-
-        db_name = ids[1]
-        collection = self.open_collection(db_name, ids[2])
+                query[key] = {"$in": map(normalize_fn, args[key])}
 
         query_limit = options.mongo_lookup_query_limit
         json_items = []
         for idx, item in enumerate(collection.find(query)):
-            if idx > query_limit:  break
+            if idx > query_limit:
+                break
 
             json_item = self.jsonable_item(item)
             json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)
 
-        self.write({ "items": json_items })
+        self.write({"items": json_items})
         self.set_status(200)
         return
 
