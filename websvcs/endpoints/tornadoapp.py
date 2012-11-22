@@ -43,6 +43,8 @@ define("mongo_uri", default="mongodb://localhost:27017", help="MongoDB URI in th
 define("mongo_lookup_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_lookup_query_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
 define("mongo_pairwise_lookup_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
+define("case_sensitive_lookups", default=[], help="List of MongoDB lookup database names for which field names will not be lowercased in queries")
+
 
 settings = {
     "debug": True,
