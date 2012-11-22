@@ -10,6 +10,7 @@ $(function () {
             "FeatureMatrix3":require("models/featureMatrix3"),
             "GraphLayouts":require("models/graph_layouts"),
             "Mutations":require("models/mutations_interpro"),
+            "PubcrawlNetwork":require("models/pubcrawlNetwork"),
             "Default":Backbone.Model.extend({
                 url: function() {
                     return this.get("data_uri");
@@ -52,7 +53,8 @@ $(function () {
             "xfeaturegrid_small": require("views/xfeaturegrid_small"),
             "mutsig_grid": require("views/mutsig_grid_view"),
             "scatterplot": require("views/scatterplot_view"),
-            "linear_browser": require("views/linear_browser")
+            "linear_browser": require("views/linear_browser"),
+            "pubcrawl_network": require("views/pubcrawl_network")
         },
         Lookups:{
             Labels:{}

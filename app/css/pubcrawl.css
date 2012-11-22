@@ -1,0 +1,87 @@
+/*network graph styles*/
+.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+
+path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 1.5px;
+}
+
+marker#ngd {
+  fill: #D5DF3E;
+}
+
+
+.link.ngd {
+  stroke: #1D3FE7;
+}
+
+.link.domine {
+  stroke-dasharray: 0,3 1;
+  stroke-width: 3px;
+  stroke:#AC0035;
+}
+
+text {
+  pointer-events: none;
+}
+
+text.hiveplot {
+  font: 14px sans-serif;
+
+}
+
+text.shadow {
+    stroke: white;
+}
+
+circle.node{
+ stroke: gray;
+     stroke-width: 2px;
+}
+
+line.axis {
+  stroke: #A8A9AB;
+  stroke-width: 1.5px;
+}
+
+.link {
+  fill: none;
+  stroke: #999;
+  stroke-width: 1.5px;
+  stroke-opacity: .3;
+}
+
+.link.active {
+  stroke: red;
+  stroke-width: 2px;
+  stroke-opacity: 1;
+}
+
+.node circle.active {
+  stroke: red;
+  stroke-width: 3px;
+}
+
+.node circle.hidden {
+    visibility: hidden;
+}
+
+
+.filtertabcontent {
+    border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+    border-left: 7px solid rgba(0, 0, 0, 0.2);
+    border-right: 7px solid rgba(0, 0, 0, 0.2);
+    border-top: 7px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+ .nocheckbox_table tbody tr:hover td,
+ .nocheckbox_table tbody tr:hover th {
+     background-color: orange;
+ }
