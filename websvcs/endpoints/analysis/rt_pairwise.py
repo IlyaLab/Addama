@@ -10,6 +10,7 @@ define("verbose", default=False, help="Prints debugging statements")
 
 from subprocess import Popen, PIPE, STDOUT
 import json
+import urllib
 
 server_settings = {
     "xheaders" : True,
@@ -26,8 +27,12 @@ class RealtimePairwise(tornado.web.RequestHandler):
             logging.info("[%s] [%s]" % (self.request.uri, self.request.arguments))
             logging.info("query=[%s]" % (self.request.query))
 
+        cleanquery = urllib.unquote(self.request.query)
+        if options.verbose:
+            logging.info("cleanquery=%s" % cleanquery)
+
         query = {}
-        for qarg in self.request.query.split("&"):
+        for qarg in cleanquery.split("&"):
             argsplit = qarg.split("=")
             key = argsplit[0]
             val = argsplit[1]
@@ -65,8 +70,12 @@ class RealtimePairwise(tornado.web.RequestHandler):
             if len(line) > 0:
                 parts = line.split("\t")
                 edge = {
-                    "node1": parts[0],
-                    "node2": parts[1],
+                    "node1": {
+                        "id": parts[0]
+                    },
+                    "node2": {
+                        "id": parts[1]
+                    },
                     "analysisType": parts[2],
                     "count": parts[3],
                     "pvalue": parts[4],
@@ -83,9 +92,11 @@ def main():
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     logging.info("--data_path=%s" % options.data_path)
     logging.info("--executable=%s" % options.executable)
+    logging.info("--verbose=%s" % options.verbose)
 
     application = tornado.web.Application([
         (r"/", RealtimePairwise),
+        (r"/svc/rt_pairwise", RealtimePairwise),
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
