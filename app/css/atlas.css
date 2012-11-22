@@ -97,3 +97,8 @@ body {
     left: 100px;
     position: absolute;
 }
+
+.highlight-cell {
+    font-weight: bolder;
+    color: #4b0082;
+}

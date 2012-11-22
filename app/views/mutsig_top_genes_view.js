@@ -28,8 +28,14 @@ module.exports = Backbone.View.extend({
 
         _.each(items, function(item) {
             item["cell_value"] = item[this.cell_attribute];
+            _.each(this.genes, function(g) {
+                if (_.isEqual(g.toLowerCase(), item["cell_value"].toLowerCase())) {
+                    item["cell_cls"] = "highlight-cell";
+                }
+            });
         }, this);
 
+        var _this = this;
         this.$el.html(Template({
             "headers": headers,
             "rows2": [],
@@ -39,7 +45,6 @@ module.exports = Backbone.View.extend({
                 var values = _.map(headers, function(header) {
                     return row_data[header.id][0];
                 });
-
                 return {
                     "label": rowlabel,
                     "values": values
