@@ -63,10 +63,18 @@
                 <div class="map-contents container-fluid" data-source="domains/mutations/mutsig_rankings" data-view="mutsig_grid">MutSig (mini)</div>
             </div>
 
+            <div class="atlas-map load-first" style="top: 40px; left: 450px;" data-scale="100">
+                <h5>MutSig Top Genes by rank</h5>
+
+                <div class="map-contents container-fluid" data-source="domains/mutations/mutsig_top20" data-view="mutsig_top_genes">MutSig Top 20 (mini)</div>
+            </div>
+
             <div class="atlas-map" style="top: 900px; left: 1600px;" data-scale="100">
                 <h5><a href="#" onclick="return false;" class="load-stacks">StacksVis</a></h5>
 
-                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features" data-view="stacksvis" data-lowercase="true">StacksVis (mini)</div>
+                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features" data-view="stacksvis" data-lowercase="true">
+                    StacksVis (mini)
+                </div>
             </div>
 
             <div class="atlas-map" style="top: 150px; left: 450px;" data-scale="100">
@@ -78,6 +86,7 @@
             <div class="atlas-map load-first" style="top: 200px; left: 750px;" data-scale="100"
                  data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small">
                 <h5>Multi-Feature <a href="#xfeaturegrid" class="load-map" onclick="return false;">(detail)</a></h5>
+
                 <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid_small"></div>
             </div>
 
@@ -101,17 +110,21 @@
 
             <div id="xfeaturegrid" class="atlas-map load-first" style="top: 20px; left: 1100px;" data-scale="100">
                 <h5>Multi-Feature <a href="#" onclick="return false;">(summary)</a></h5>
+
                 <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/all_pairs" data-view="xfeaturegrid" data-linked="#seqpeek"></div>
             </div>
 
             <div id="seqpeek" class="atlas-map load-first" style="top: 1200px; left: 100px;" data-scale="100">
                 <h5>SeqPeek</h5>
+
                 <div class="map-contents container-fluid" data-source="domains/mutations/Protein_Mutations_Per_Cancer_Type" data-view="seqpeek"></div>
             </div>
 
             <div class="atlas-map load-first" style="top: 20px; left: 1600px;" data-scale="100">
                 <h5>Scatterplot</h5>
-                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features" data-view="scatterplot" data-lowercase="true"></div>
+
+                <div class="map-contents container-fluid" data-source="domains/newMerge.05nov/annotated_features" data-view="scatterplot"
+                     data-lowercase="true"></div>
             </div>
         </div>
     </div>
@@ -125,62 +138,62 @@
 
         var currentZoomLevel = 1.0;
 
-        var loadFirst = function() {
-            _.each($(".atlas-map.load-first"), function(atlasMap) {
+        var loadFirst = function () {
+            _.each($(".atlas-map.load-first"), function (atlasMap) {
                 var mapcontents = $(atlasMap).find(".map-contents");
                 atlas.navigate(mapcontents);
             });
         };
 
-        var readyContainerFn = function() {
-            $(".atlas-zoom").draggable({ "scroll": true });
-            $(".atlas-map").draggable({ "scroll": true });
+        var readyContainerFn = function () {
+            $(".atlas-zoom").draggable({ "scroll":true });
+            $(".atlas-map").draggable({ "scroll":true });
             $(".gene-selector").sortable();
             $(".cancer-selector").sortable();
         };
 
         qed.Events.on("ready", readyContainerFn);
         qed.Events.on("ready", loadFirst);
-        
+
         $(".refresh-loaded").click(loadFirst);
 
-        $(".zoom-in").click(function() {
+        $(".zoom-in").click(function () {
             currentZoomLevel += 0.20;
             atlas.zoom(currentZoomLevel);
         });
 
-        $(".zoom-out").click(function() {
+        $(".zoom-out").click(function () {
             currentZoomLevel -= 0.20;
             if (currentZoomLevel < 0.01) currentZoomLevel = 0.01;
             atlas.zoom(currentZoomLevel);
         });
 
-        $(".zoom-home").click(function() {
+        $(".zoom-home").click(function () {
             currentZoomLevel = 1.0;
             atlas.zoom(currentZoomLevel);
         });
 
-        $(".resize-item").click(function() {
+        $(".resize-item").click(function () {
             var li = $(this).parent();
             if (li.hasClass("active")) {
                 $(".atlas-map").resizable("destroy");
             } else {
-                $(".atlas-map").resizable({ "ghost": true});
+                $(".atlas-map").resizable({ "ghost":true});
             }
             li.toggleClass("active");
         });
 
-        $(".scale-item").click(function() {
+        $(".scale-item").click(function () {
             var li = $(this).parent();
             if (li.hasClass("active")) {
                 $(".atlas-map").resizable("destroy");
             } else {
                 $(".atlas-map").resizable({
-                    "handles": "n, e, s, w, ne, se, sw, nw",
-                    "aspectRatio": true,
-                    "animateEasing": "linear",
-                    "stop": function(e, ui) {
-                        var scaleLevel = (ui.size.width/ui.originalSize.width) * 90;
+                    "handles":"n, e, s, w, ne, se, sw, nw",
+                    "aspectRatio":true,
+                    "animateEasing":"linear",
+                    "stop":function (e, ui) {
+                        var scaleLevel = (ui.size.width / ui.originalSize.width) * 90;
                         $(e.target).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
                     }
                 });
@@ -188,12 +201,12 @@
             li.toggleClass("active");
         });
 
-        $(".load-map").click(function(e) {
+        $(".load-map").click(function (e) {
             var loadmap = $(e.target).attr("href");
             var mapcontents = $(loadmap).find(".map-contents");
             atlas.navigate(mapcontents);
         });
-        $(".load-stacks").click(function(e) {
+        $(".load-stacks").click(function (e) {
             var loadmap = $(e.target).parents(".atlas-map");
             var mapcontents = $(loadmap).find(".map-contents");
             atlas.navigate(mapcontents);
