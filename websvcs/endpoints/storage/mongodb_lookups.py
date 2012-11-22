@@ -16,9 +16,9 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
         for key in args.keys():
             iargs = args[key]
             if len(iargs) == 1:
-                query[key] = args[key][0]
+                query[key] = args[key][0].lower()
             else:
-                query[key] = {"$in": args[key]}
+                query[key] = {"$in": map(lambda x: x.lower(), args[key])}
 
         ids = identity.split("/")
 

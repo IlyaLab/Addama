@@ -6,6 +6,8 @@ import sys
 
 
 def iterate_genes(file_path, cancer):
+    cancer = cancer.lower()
+
     with open(file_path, 'rb') as csvfile:
         print('Processing ' + file_path)
 
@@ -18,6 +20,7 @@ def iterate_genes(file_path, cancer):
                 row[key] = int(row[key])
 
             row['cancer'] = cancer
+            row['gene'] = row['gene'].lower()
 
             yield row
             count += 1
@@ -52,7 +55,7 @@ def main():
 
     collection = conn[args.db][args.collection]
 
-    for mutsig_dict in iterate_genes(args.mutsig_file, args.cancer_type):
+    for mutsig_dict in iterate_genes(args.mutsig_file, args.cancer_type.lower()):
         collection.insert(mutsig_dict)
 
     conn.close()
