@@ -52,44 +52,48 @@ module.exports = Backbone.View.extend({
 
     viewsByUri: function($el, uri, view_name, options, query) {
         console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + "," + JSON.stringify(query) + ")");
-        var parts = uri.split("/");
-        var data_root = parts[0];
-        var analysis_id = parts[1];
-        var dataset_id = parts[2];
-        var model_unit = qed.Datamodel.get(data_root)[analysis_id];
-        var catalog = model_unit.catalog;
-        var catalog_unit = catalog[dataset_id];
-        var modelName = model_unit.model || catalog_unit.model;
-        var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
-        var Model = qed.Models[modelName || "Default"];
-
-        var model_optns = _.extend(options, {
-            "data_uri": "svc/" + serviceUri,
-            "analysis_id": analysis_id,
-            "dataset_id": dataset_id,
-            "model_unit": model_unit,
-            "catalog_unit": catalog_unit
-        });
-        // TODO: Determine which views need annotations
-        // qed.FetchAnnotations(dataset_id);
-
-        var model = new Model(model_optns);
-        _.defer(function() {
-            model.fetch({
-                "data": query,
-                "traditional": true,
-                success:function () {
-                    model.trigger('load');
-                }
-            });
-        });
-
-        var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
-
         var ViewClass = qed.Views[view_name];
-        var view = new ViewClass(view_options);
-        $el.html(view.render().el);
-        return view;
+        if (ViewClass) {
+            var parts = uri.split("/");
+            var data_root = parts[0];
+            var analysis_id = parts[1];
+            var dataset_id = parts[2];
+            var model_unit = qed.Datamodel.get(data_root)[analysis_id];
+            var catalog = model_unit.catalog;
+            var catalog_unit = catalog[dataset_id];
+            var modelName = model_unit.model || catalog_unit.model;
+            var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
+            var Model = qed.Models[modelName || "Default"];
+
+            var model_optns = _.extend(options, {
+                "data_uri": "svc/" + serviceUri,
+                "analysis_id": analysis_id,
+                "dataset_id": dataset_id,
+                "model_unit": model_unit,
+                "catalog_unit": catalog_unit
+            });
+            // TODO: Determine which views need annotations
+            // qed.FetchAnnotations(dataset_id);
+
+            var model = new Model(model_optns);
+            _.defer(function() {
+                model.fetch({
+                    "data": query,
+                    "traditional": true,
+                    success:function () {
+                        model.trigger('load');
+                    }
+                });
+            });
+
+            var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
+
+            console.log("viewsByUri(" + uri + "," + view_name + "):loading view");
+            var view = new ViewClass(view_options);
+            $el.html(view.render().el);
+            return view;
+        }
+        return null;
     },
 
     loadCancerList: function(txt) {
