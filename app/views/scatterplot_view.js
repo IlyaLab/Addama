@@ -100,7 +100,7 @@ module.exports = Backbone.View.extend({
         fmxModel.fetch({
             "data": {
                 "gene": [this.selected_genes["x"], this.selected_genes["y"]],
-                "cancer": this.current_cancer.toLowerCase()
+                "cancer": this.current_cancer
             },
             "traditional": true,
             success: function() {
