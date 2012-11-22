@@ -29,7 +29,7 @@ import uuid
 
 from auth_decorator import authenticated
 from data import LocalFileHandler
-from storage import MongoDbLookupHandler, MongoDbPairwiseLookupHandler, MongoDbStorageHandler, GetUserinfo
+from storage import MongoDbLookupHandler, MongoDbPairwiseLookupHandler, MongoDbMutSigHandler, MongoDbStorageHandler, GetUserinfo
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -126,7 +126,8 @@ def main():
         (r"/auth/providers", AuthProvidersHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
         (r"/lookups?(.*)", MongoDbLookupHandler),
-        (r"/pw_lookups?(.*)", MongoDbPairwiseLookupHandler)        
+        (r"/mutsig_rankings?(.*)", MongoDbMutSigHandler),
+        (r"/pw_lookups?(.*)", MongoDbMutSigHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
