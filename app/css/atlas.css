@@ -74,6 +74,8 @@ body {
 
     height: auto;
     width: auto;
+    min-height: 100px;
+    min-width: 300px;
 }
 
 .atlas-map h5 {
@@ -101,4 +103,8 @@ body {
 .highlight-cell {
     font-weight: bolder;
     color: #4b0082;
+}
+
+.ui-effects-transfer {
+    border: 1px dotted black;
 }

@@ -1,7 +1,18 @@
-<div id="{{id}}" class="atlas-map" style="top: {{position.top}}px; left: {{position.left}}px;">
-    <h5><a href="#" onclick="return false;">{{label}}</a></h5>
+<div class="atlas-map" data-mapid="{{id}}" style="top: {{position.top}}px; left: {{position.left}}px;">
+    <ul class="nav nav-pills inline">
+        <li>
+            <h5><a href="#" onclick="return false;">{{label}}</a></h5>
+        </li>
+        <li><a href="#" onclick="return false;" class="info-me"> <i class="icon-info-sign"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="add-notes"> <i class="icon-pencil"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="minimize"> <i class="icon-minus"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="refresh-me"> <i class="icon-refresh"/></i> </a></li>
+    </ul>
+    <hr/>
+    <div>
     {{#each views}}
         <h3>{{label}}</h3>
         <div class="map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
     {{/each}}
+    </div>
 </div>

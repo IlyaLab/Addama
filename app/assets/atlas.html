@@ -11,7 +11,6 @@
 <head>
     <link rel="shortcut icon" href="img/isbfavicon.ico" type="image/x-icon"/>
     <meta charset="utf-8"/>
-    <!--<meta name="viewport" content="width=1024">-->
     <meta name="viewport" content="initial-scale=1.0, width=device-width, height=device-height, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>QED: Atlas</title>
@@ -46,6 +45,11 @@
             <li><a href="#" onclick="return false;" class="item-remover" data-id="CTCF">CTCF <i class="icon-trash"></i> </a></li>
         </ul>
     </div>
+
+    <div class="pull-left">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">Maps <b class="caret"></b></a>
+        <ul class="dropdown-menu maps-selector"></ul>
+    </div>
 </div>
 
 <div class="atlas-body">
@@ -62,20 +66,52 @@
         atlas = new Atlas($(".atlas-body"));
 
         var AtlasMapTemplate = require("views/templates/atlasmap");
+        var LineItemTemplate = require("views/templates/line_item");
+        var lastZindex = 10;
         var loadAtlas = function () {
+            var appendAtlasMap = function(atlasZoom, map) {
+                $(atlasZoom).append(AtlasMapTemplate(map));
+                var $atlasMap = $(".atlas-zoom").children().last();
+                $atlasMap.draggable({ "scroll":true });
+                _.each($atlasMap.find(".map-contents"), function(mc) {
+                    atlas.navigate($(mc));
+                });
+
+                $atlasMap.find("a.minimize").click(function(e) {
+                    var atlasMap = $(e.target).parents(".atlas-map");
+                    atlasMap.effect("transfer", {
+                        "to": $(".maps-selector").find("li"),
+                        complete: function() {
+                            atlasMap.remove();
+                        }
+                    }, 750);
+                });
+                $atlasMap.find("a.refresh-me").click(function(e) {
+                    _.each($(e.target).parents(".atlas-map").find(".map-contents"), function(mc) {
+                        atlas.navigate($(mc));
+                    })
+                });
+                $atlasMap.click(function(e) {
+                    $atlasMap.css("z-index", ++lastZindex);
+                });
+            };
+
             var atlasModel = new qed.Models.Default({ "data_uri": "svc/data/qed_atlas.json" });
             atlasModel.fetch({
                 success: function() {
                     var maps = atlasModel.get("maps");
                     _.each(maps, function(map) {
-                        $(".atlas-zoom").append(AtlasMapTemplate(map));
                         if (map.isOpen) {
-                            _.each($("#" + map.id).find(".map-contents"), function(mc) {
-                                atlas.navigate($(mc));
-                            });
+                            appendAtlasMap($(".atlas-zoom"), map);
                         }
+                        $(".maps-selector").append(LineItemTemplate({ "a_class": "open-map", "id": map.id, "label": map.label }));
                     });
-                    $(".atlas-map").draggable({ "scroll":true });
+
+                    var mapsById = _.groupBy(maps, "id");
+                    $(".maps-selector").find(".open-map").click(function(e) {
+                        var map = _.first(mapsById[$(e.target).data("id")]);
+                        appendAtlasMap($(".atlas-zoom"), map);
+                    });
                 }
             });
 
@@ -85,7 +121,11 @@
         };
 
         qed.Events.on("ready", loadAtlas);
-        $(".refresh-loaded").click(loadAtlas);
+        $(".refresh-loaded").click(function() {
+            _.each($(".atlas-map").find(".map-contents"), function(mc) {
+                atlas.navigate($(mc));
+            });
+        });
 
         var currentZoomLevel = 1.0;
         $(".zoom-in").click(function () {
@@ -129,17 +169,6 @@
                 });
             }
             li.toggleClass("active");
-        });
-
-        $(".load-map").click(function (e) {
-            var loadmap = $(e.target).attr("href");
-            var mapcontents = $(loadmap).find(".map-contents");
-            atlas.navigate(mapcontents);
-        });
-        $(".load-stacks").click(function (e) {
-            var loadmap = $(e.target).parents(".atlas-map");
-            var mapcontents = $(loadmap).find(".map-contents");
-            atlas.navigate(mapcontents);
         });
     });
 </script>
