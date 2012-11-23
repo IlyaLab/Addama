@@ -55,7 +55,8 @@ $(function () {
             "mutsig_top_genes": require("views/mutsig_top_genes_view"),
             "scatterplot": require("views/scatterplot_view"),
             "linear_browser": require("views/linear_browser"),
-            "pubcrawl_network": require("views/pubcrawl_network")
+            "pubcrawl_network": require("views/pubcrawl_network"),
+            "Atlas": require("views/atlas")
         },
         Lookups:{
             Labels:{}

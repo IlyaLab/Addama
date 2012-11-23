@@ -6,7 +6,8 @@ module.exports = Backbone.Router.extend({
         'mutsig_grid':'mutsig_grid_view',
         'scatterplot':'scatterplot_view',
         'seqpeek':'seqpeek_view',
-        'v/*uri/:view_name':'viewsByUri'
+        'v/*uri/:view_name':'viewsByUri',
+        'atlas': 'atlasView'
     },
 
     initialize: function(options) {
@@ -50,6 +51,21 @@ module.exports = Backbone.Router.extend({
         var CloudStorageView = require("../views/cloud_storage_view");
         var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
         $(document.body).append(csview.render().el);
+    },
+
+    atlasView: function() {
+        var model = new qed.Models.Default({ "data_uri": "svc/data/qed_atlas.json" });
+        _.defer(function() {
+            model.fetch({
+                success: function() {
+                    model.trigger("load");
+                }
+            });
+        });
+
+        var AtlasView = qed.Views["Atlas"];
+        var view = new AtlasView({ "model": model });
+        this.$el.html(view.render().el);
     },
 
     mutsig_grid_view:function () {

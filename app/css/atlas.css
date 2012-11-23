@@ -95,7 +95,6 @@ body {
 }
 
 .cancer-selector {
-    margin-top: -10px;
     left: 100px;
     position: absolute;
 }
@@ -107,10 +106,6 @@ body {
 
 .ui-effects-transfer {
     border: 1px dotted black;
-}
-
-.maps-n-genes {
-    margin-top: -10px;
 }
 
 .maps-n-genes li {
