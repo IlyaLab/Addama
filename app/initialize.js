@@ -62,7 +62,11 @@ $(function () {
             Labels:{}
         },
         Display:new Backbone.Model(),
-        Datamodel:new Backbone.Model()
+        Datamodel:new Backbone.Model(),
+        Sessions: {
+            All: new Backbone.Model(),
+            Active: new Backbone.Model()
+        }
     };
 
     qed.Display.fetch({

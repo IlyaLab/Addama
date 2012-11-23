@@ -7,7 +7,8 @@ module.exports = Backbone.Router.extend({
         'scatterplot':'scatterplot_view',
         'seqpeek':'seqpeek_view',
         'v/*uri/:view_name':'viewsByUri',
-        'atlas': 'atlasView'
+        'atlas': 'atlasView',
+        's/*sessionId': 'loadSessionById'
     },
 
     initialize: function(options) {
@@ -68,6 +69,17 @@ module.exports = Backbone.Router.extend({
         this.$el.html(view.render().el);
     },
 
+    loadSessionById: function(sessionId) {
+        if (!_.isEmpty(sessionId)) {
+            qed.Sessions.Active.fetch({
+                "url": "svc/storage/sessions/" + sessionId,
+                success: function() {
+                    qed.Router.navigate(qed.Sessions.Active.get("history")[0], {trigger: true});
+                }
+            });
+        }
+    },
+    
     mutsig_grid_view:function () {
         var MutSigGrid = require('../views/mutsig_grid_view');
         var mutsigGridView = new MutSigGrid();
