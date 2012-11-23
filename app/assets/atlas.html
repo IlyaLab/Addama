@@ -39,7 +39,7 @@
 
     <ul class="nav nav-pills pull-right maps-n-genes">
         <li class="dropdown">
-            <button class="dropdown-toggle btn btn-success" data-toggle="dropdown" type="button">Maps</button>
+            <button id="maps-btn" class="dropdown-toggle btn btn-success" data-toggle="dropdown" type="button">Maps</button>
             <ul class="dropdown-menu maps-selector"></ul>
         </li>
         <li class="dropdown">
@@ -83,7 +83,7 @@
                 $atlasMap.find("a.minimize").click(function(e) {
                     var atlasMap = $(e.target).parents(".atlas-map");
                     atlasMap.effect("transfer", {
-                        "to": $(".maps-selector").find("li"),
+                        "to": $("#maps-btn"),
                         complete: function() {
                             atlasMap.remove();
                         }
