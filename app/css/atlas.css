@@ -108,3 +108,11 @@ body {
 .ui-effects-transfer {
     border: 1px dotted black;
 }
+
+.maps-n-genes {
+    margin-top: -10px;
+}
+
+.maps-n-genes li {
+    padding-right: 10px;
+}

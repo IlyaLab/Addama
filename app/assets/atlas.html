@@ -37,19 +37,22 @@
 
     <ul class="nav nav-pills cancer-selector"></ul>
 
-    <div class="pull-right">
-        <input class="genes-typeahead" type="text" placeholder="Add a gene..."/>
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;"> <i class="icon-list"></i> </a>
-        <ul class="dropdown-menu gene-selector">
-            <li><a href="#" onclick="return false;" class="item-remover" data-id="TP53">TP53 <i class="icon-trash"></i> </a></li>
-            <li><a href="#" onclick="return false;" class="item-remover" data-id="CTCF">CTCF <i class="icon-trash"></i> </a></li>
-        </ul>
-    </div>
-
-    <div class="pull-left">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">Maps <b class="caret"></b></a>
-        <ul class="dropdown-menu maps-selector"></ul>
-    </div>
+    <ul class="nav nav-pills pull-right maps-n-genes">
+        <li class="dropdown">
+            <button class="dropdown-toggle btn btn-success" data-toggle="dropdown" type="button">Maps</button>
+            <ul class="dropdown-menu maps-selector"></ul>
+        </li>
+        <li class="dropdown">
+            <button class="dropdown-toggle btn btn-success" data-toggle="dropdown" type="button">Genes</button>
+            <ul class="dropdown-menu gene-selector">
+                <li><a href="#" onclick="return false;" class="item-remover" data-id="TP53">TP53 <i class="icon-trash"></i> </a></li>
+                <li><a href="#" onclick="return false;" class="item-remover" data-id="CTCF">CTCF <i class="icon-trash"></i> </a></li>
+            </ul>
+        </li>
+        <li>
+            <input class="genes-typeahead" type="text" placeholder="Add a gene..."/>
+        </li>
+    </ul>
 </div>
 
 <div class="atlas-body">
