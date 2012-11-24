@@ -31,9 +31,13 @@
 <table class="table table-striped table-bordered table-hover table-condensed">
     <thead>
     <tr>
-        <td><b>{{label}}</b></td>
+        <td>
+            <b>{{label}}</b>
+            <br/>{{geneA}} <i class="icon-chevron-right"></i>
+            <br/>{{geneB}} <i class="icon-chevron-down"></i>
+        </td>
         {{#each headers}}
-        <td><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></td>
+        <td class="vertical_cell"><div class="vertical_text"><a href="#" onclick="return false;" class="grid-label" data-grouping="{{../label}}" data-id="{{d.id}}">{{grid_label}}</a></div></td>
         {{/each}}
     </tr>
     </thead>

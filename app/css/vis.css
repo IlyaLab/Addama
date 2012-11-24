@@ -232,3 +232,19 @@ svg .wedge[data-ring="2"] .background {
     -o-transform: rotate(-60deg);
     -o-transform-origin: top left;
 }
+
+td.vertical_cell {
+    height: 250px;
+    vertical-align: bottom;
+}
+
+.vertical_text {
+    width: 20px;
+    height: auto;
+    -moz-transform: rotate(-90deg);
+    -moz-transform-origin: top left;
+    -webkit-transform: rotate(-90deg);
+    -webkit-transform-origin: top left;
+    -o-transform: rotate(-90deg);
+    -o-transform-origin: top left;
+}
