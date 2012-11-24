@@ -1,27 +1,24 @@
-var Template = require("./templates/sessions_menu");
 var LineItemTemplate = require("../views/templates/line_item");
 var SessionLabelTemplate = require("../views/templates/sessions_label");
 var ActiveSessionModel = require("../models/active_session");
 
 module.exports = Backbone.View.extend({
-    events: {
-        "click .new-session": function() {
+
+    initialize:function () {
+        _.bindAll(this, "loadSessions", 'saveSession', "loadModel");
+                
+        $(document.body).append(SessionLabelTemplate());
+        
+        $(".sessions-labeler button.save-session").click(this.saveSession);
+        $("a.new-session").live("click", function() {
             $(".sessions-labeler").modal("show");
-        },
-        "click .load-session": function(e) {
+        });
+        $("a.load-session").live("click", function(e) {
             var sessionId = $(e.target).data("id");
             if (sessionId) {
                 qed.Router.navigate("#s/" + sessionId, {trigger: true});
             }
-        }
-    },
-
-    initialize:function () {
-        _.bindAll(this, "loadSessions", 'saveSession', "loadModel");
-
-        this.$el.html(Template());
-        $(document.body).append(SessionLabelTemplate());
-        $(".sessions-labeler button.save-session").click(this.saveSession);
+        });
 
         this.model = qed.Sessions.All;
         this.model.on("load", this.loadSessions);
@@ -29,6 +26,8 @@ module.exports = Backbone.View.extend({
     },
 
     loadSessions: function() {
+        this.$el.empty();
+        
         var items = this.model.get("items");
         _.each(items, function(item) {
             if (!item.label) item.label = "Untitled";
