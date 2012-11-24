@@ -8,11 +8,14 @@
         <li><a href="#" onclick="return false;" class="minimize-me"> <i class="icon-minus"/></i> </a></li>
         <li><a href="#" onclick="return false;" class="refresh-me"> <i class="icon-refresh"/></i> </a></li>
     </ul>
-    <hr/>
-    <div>
-    {{#each views}}
-        <h3>{{label}}</h3>
-        <div class="map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
-    {{/each}}
+    <ul class="nav nav-tabs">
+        {{#each views}}
+        <li class="{{li_class}}"><a href="#tab_{{id}}" onclick="return false;" data-toggle="tab">{{label}}</a></li>
+        {{/each}}
+    </ul>
+    <div class="tab-content">
+        {{#each views}}
+        <div id="tab_{{id}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
+        {{/each}}
     </div>
 </div>

@@ -66,7 +66,7 @@ module.exports = Backbone.View.extend({
         "click div.atlas-map": function(e) {
             var $target = $(e.target);
             if (!$target.hasClass("atlas-map")) {
-                $target= $(e.target).parents(".atlas-map");
+                $target = $(e.target).parents(".atlas-map");
             }
 
             this["last-z-index"] = 1 + this["last-z-index"];
@@ -103,6 +103,8 @@ module.exports = Backbone.View.extend({
     },
 
     appendAtlasMap: function(map) {
+        if (!_.isEmpty(map.views)) _.first(map.views)["li_class"] = "active";
+
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
 
