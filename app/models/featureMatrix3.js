@@ -10,11 +10,25 @@ var PerCancer = Backbone.Model.extend({
             edge.node2 = _.extend(edge.node2, allFeaturesById[edge.node2.id]);
         });
 
-        return { "data": data };
+        return { "data": data, "edgesBy1": _.groupBy(data.edges, "node1.id"), "edgesBy2": _.groupBy(data.edges, "node2.id") };
     },
 
     fetch:function (options) {
         return Backbone.Model.prototype.fetch.call(this, options);
+    },
+
+    getAssociation: function(f1, f2) {
+        var edges = this.get("data").edges;
+        var edge = _.find(edges, function(edge) {
+            var e1 = edge.node1.id;
+            var e2 = edge.node2.id;
+            var match1 = _.isEqual(e1, f1) || _.isEqual(e1, f2);
+            if (match1) {
+                return _.isEqual(e2, f1) || _.isEqual(e2, f2);
+            }
+            return false;
+        });
+        return edge;
     }
 });
 
@@ -49,11 +63,34 @@ module.exports = Backbone.Model.extend({
             featuresByCancer[cancer]["features_2"] = features_2;
         });
 
-        return { "featureListsByCancer": featuresByCancer, "nodesByCancer": nodesByCancer };
+        var results = { "featureListsByCancer": featuresByCancer, "nodesByCancer": nodesByCancer };
+
+        this.set("items", data.items);
+        if (_.isEmpty(data.items)) {
+            return _.extend(results, { "ROWS": [], "COLUMNS": [], "DATA": [] });
+        }
+
+        var ROWS = _.pluck(data.items, "id");
+        var COLUMNS = _.keys(data.items[0].values);
+        var coldict = {};
+        _.each(COLUMNS, function(col, idx) {
+            return coldict[col] = idx;
+        });
+
+        var row_array;
+        var DATA = _.map(data.items, function (data_item) {
+            row_array = [];
+            _.each(data_item.values, function(value_obj, value_key) {
+                row_array[coldict[value_key]] = value_obj;
+            });
+            return row_array;
+        });
+        return _.extend(results, { "ROWS": ROWS, "COLUMNS": COLUMNS, "DATA": DATA });
     },
 
     fetch: function (options) {
-        var origSuccessFn = options.success || function() {};
+        var origSuccessFn = options.success || function() {
+        };
         var _this = this;
         return Backbone.Model.prototype.fetch.call(this, _.extend(options, {
             success: function() {
@@ -72,11 +109,10 @@ module.exports = Backbone.Model.extend({
         var featureListsByCancer = this.get("featureListsByCancer");
         var singleSuccessFn = _.after(_.keys(featureListsByCancer).length, successFn);
 
-        var perCancers = _.map(featureListsByCancer, function(featureList, cancer) {
-            console.log("perCancer=" + cancer);
+        var perCancers = {};
+        _.each(featureListsByCancer, function(featureList, cancer) {
             var perCancer = new PerCancer({
                 "data_uri": associationsUri,
-                "cancer": cancer,
                 "featureList": featureList
             });
             perCancer.fetch({
@@ -89,7 +125,7 @@ module.exports = Backbone.Model.extend({
                 "success": singleSuccessFn,
                 "error": singleSuccessFn
             });
-            return perCancer;
+            perCancers[cancer] = perCancer;
         });
 
         this.set("associationsByCancer", perCancers);
