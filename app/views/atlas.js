@@ -79,7 +79,7 @@ module.exports = Backbone.View.extend({
     initialize: function(options) {
         _.extend(this, options);
         _.bindAll(this, "initMaps", "appendAtlasMap", "loadMapData", "loadMapContents", "viewsByUri", "closeMap", "zoom");
-        _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex");
+        _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex", "nextPosition");
 
         this.$el.html(AtlasTemplate());
         this.$el.find(".atlas-zoom").draggable({ "scroll":true });
@@ -105,17 +105,15 @@ module.exports = Backbone.View.extend({
     },
 
     appendAtlasMap: function(map) {
+        var uid = Math.round(Math.random() * 10000);
         _.each(map.views, function(view, idx) {
             if (idx == 0) view["li_class"] = "active";
             view["uid"] = uid++;
         });
 
-        this.lastPosition = {
-            "left": this.lastPosition.left + 50,
-            "top": this.lastPosition.top + 50
-        };
-
-        map.position = this.lastPosition;
+        if (!_.has(map, "position")) {
+            map.assignedPosition = this.nextPosition();
+        }
 
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
@@ -269,5 +267,14 @@ module.exports = Backbone.View.extend({
         var nextZindex = 1 + this["last-z-index"];
         this["last-z-index"] = nextZindex;
         return nextZindex;
+    },
+
+    nextPosition: function() {
+        var lastPos = {
+            "left": this.lastPosition.left + 50,
+            "top": this.lastPosition.top + 50
+        };
+        this.lastPosition = lastPos;
+        return lastPos;
     }
 });
