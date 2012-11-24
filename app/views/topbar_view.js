@@ -39,7 +39,14 @@ module.exports = View.extend({
             var UL = this.$el.find(".about-links");
             UL.empty();
             _.each(aboutLinks, function(aboutLink) {
-                UL.append(AboutLink(aboutLink));
+                if (aboutLink.divider) {
+                    UL.append("<li class='divider'></li>");
+                    if (aboutLink.header) {
+                        UL.append("<li class='nav-header'>" + aboutLink.header + "</li>");
+                    }
+                } else {
+                    UL.append(AboutLink(aboutLink));
+                }
             });
         }
     },
