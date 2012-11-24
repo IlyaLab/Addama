@@ -105,7 +105,10 @@ module.exports = Backbone.View.extend({
     },
 
     appendAtlasMap: function(map) {
-        if (!_.isEmpty(map.views)) _.first(map.views)["li_class"] = "active";
+        _.each(map.views, function(view, idx) {
+            if (idx == 0) view["li_class"] = "active";
+            view["uid"] = uid++;
+        });
 
         this.lastPosition = {
             "left": this.lastPosition.left + 50,

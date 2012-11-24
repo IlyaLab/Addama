@@ -10,12 +10,12 @@
     </ul>
     <ul class="nav nav-tabs">
         {{#each views}}
-        <li class="{{li_class}}"><a href="#tab_{{id}}" onclick="return false;" data-toggle="tab">{{label}}</a></li>
+        <li class="{{li_class}}"><a href="#tab_{{uid}}" onclick="return false;" data-toggle="tab">{{label}}</a></li>
         {{/each}}
     </ul>
     <div class="tab-content">
         {{#each views}}
-        <div id="tab_{{id}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
+        <div id="tab_{{uid}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
         {{/each}}
     </div>
 </div>
