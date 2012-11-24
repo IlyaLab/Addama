@@ -10,7 +10,7 @@ var PerCancer = Backbone.Model.extend({
             edge.node2 = _.extend(edge.node2, allFeaturesById[edge.node2.id]);
         });
 
-        return { "data": data, "edgesBy1": _.groupBy(data.edges, "node1.id"), "edgesBy2": _.groupBy(data.edges, "node2.id") };
+        return { "data": data };
     },
 
     fetch:function (options) {
@@ -19,16 +19,11 @@ var PerCancer = Backbone.Model.extend({
 
     getAssociation: function(f1, f2) {
         var edges = this.get("data").edges;
-        var edge = _.find(edges, function(edge) {
+        return _.find(edges, function(edge) {
             var e1 = edge.node1.id;
             var e2 = edge.node2.id;
-            var match1 = _.isEqual(e1, f1) || _.isEqual(e1, f2);
-            if (match1) {
-                return _.isEqual(e2, f1) || _.isEqual(e2, f2);
-            }
-            return false;
+            return (_.isEqual(e1, f1) || _.isEqual(e1, f2)) && (_.isEqual(e2, f1) || _.isEqual(e2, f2));
         });
-        return edge;
     }
 });
 
