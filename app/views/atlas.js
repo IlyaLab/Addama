@@ -119,6 +119,12 @@ module.exports = Backbone.View.extend({
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
         $atlasMap.css("z-index", this.nextZindex());
 
+        $atlasMap.find(".info-me").popover({
+            "title": "Description",
+            "trigger": "hover",
+            "content": map.description
+        });
+
         var _this = this;
         this.$el.find(".maps-btn").effect("transfer", {
             "to": $atlasMap,
