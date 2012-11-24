@@ -5,6 +5,9 @@ var LineItemTemplate = require("../views/templates/line_item");
 module.exports = Backbone.View.extend({
     "last-z-index": 10,
     "currentZoomLevel": 1.0,
+    "lastPosition": {
+        "top": 0, "left": 0
+    },
 
     events: {
         "click a.refresh-loaded": function() {
@@ -69,15 +72,14 @@ module.exports = Backbone.View.extend({
                 $target = $(e.target).parents(".atlas-map");
             }
 
-            this["last-z-index"] = 1 + this["last-z-index"];
-            $target.css("z-index", this["last-z-index"]);
+            $target.css("z-index", this.nextZindex());
         }
     },
 
     initialize: function(options) {
         _.extend(this, options);
         _.bindAll(this, "initMaps", "appendAtlasMap", "loadMapData", "loadMapContents", "viewsByUri", "closeMap", "zoom");
-        _.bindAll(this, "loadCancerList", "initGeneTypeahead");
+        _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex");
 
         this.$el.html(AtlasTemplate());
         this.$el.find(".atlas-zoom").draggable({ "scroll":true });
@@ -105,8 +107,16 @@ module.exports = Backbone.View.extend({
     appendAtlasMap: function(map) {
         if (!_.isEmpty(map.views)) _.first(map.views)["li_class"] = "active";
 
+        this.lastPosition = {
+            "left": this.lastPosition.left + 50,
+            "top": this.lastPosition.top + 50
+        };
+
+        map.position = this.lastPosition;
+
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
+        $atlasMap.css("z-index", this.nextZindex());
 
         var _this = this;
         this.$el.find(".maps-btn").effect("transfer", {
@@ -250,5 +260,11 @@ module.exports = Backbone.View.extend({
         });
 
         UL.sortable();
+    },
+
+    nextZindex: function() {
+        var nextZindex = 1 + this["last-z-index"];
+        this["last-z-index"] = nextZindex;
+        return nextZindex;
     }
 });
