@@ -89,21 +89,31 @@ module.exports = Backbone.View.extend({
     },
 
     initMaps: function() {
-        _.each(this.model.get("maps"), function(map) {
+        _.each(_.sortBy(this.model.get("maps"), "label"), function(map) {
             if (map.isOpen) {
                 this.appendAtlasMap(map);
             }
-            this.$el.find(".maps-selector").append(LineItemTemplate({ "a_class": "open-map", "id": map.id, "label": map.label }));
+
+            var lit = { "a_class": "open-map", "id": map.id, "label": map.label };
+            if (map.disabled) {
+                lit = { "li_class": "disabled", "id": map.id, "label": map.label };
+            }
+            this.$el.find(".maps-selector").append(LineItemTemplate(lit));
         }, this);
     },
 
     appendAtlasMap: function(map) {
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
-
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
-        $atlasMap.draggable({ "scroll":true });
 
-        this.loadMapData($atlasMap);
+        var _this = this;
+        this.$el.find(".maps-btn").effect("transfer", {
+            "to": $atlasMap,
+            complete: function() {
+                _this.loadMapData($atlasMap);
+                $atlasMap.draggable({ "scroll":true });
+            }
+        }, 750);
     },
 
     loadMapData: function(atlasMap) {
@@ -133,7 +143,7 @@ module.exports = Backbone.View.extend({
     },
 
     viewsByUri: function(targetEl, uri, view_name, options, query) {
-        console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + "," + JSON.stringify(query) + ")");
+//        console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + "," + JSON.stringify(query) + ")");
         var ViewClass = qed.Views[view_name];
         if (ViewClass) {
             var parts = uri.split("/");
