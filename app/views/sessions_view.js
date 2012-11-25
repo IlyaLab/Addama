@@ -23,8 +23,7 @@ module.exports = Backbone.View.extend({
     loadSessions:function () {
         this.$el.empty();
         _.each(qed.Sessions.All.models, function (item) {
-            var icls = _.isEqual(item, qed.Sessions.Active) ? "icon-ok" : "";
-            this.$el.append(LineItemTemplate({ "a_class":"load-session", "id":item.get("id"), "i_class": icls, "label": item.get("label") }));
+            this.$el.append(LineItemTemplate({ "a_class":"load-session", "id":item.get("id"), "label": item.get("label") }));
         }, this);
     },
 
@@ -33,6 +32,8 @@ module.exports = Backbone.View.extend({
         if (sessionId) {
             $("a.save-session").parent().removeClass("disabled");
             $("a.save-session").data("id", sessionId);
+            this.$el.find("i").removeClass("icon-ok");
+            $(e.target).find("i").addClass("icon-ok");
             qed.Router.navigate("#s/" + sessionId, {trigger:true});
         }
     },
