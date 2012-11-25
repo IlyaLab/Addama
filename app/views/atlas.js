@@ -79,7 +79,7 @@ module.exports = Backbone.View.extend({
     initialize: function(options) {
         _.extend(this, options);
         _.bindAll(this, "initMaps", "appendAtlasMap", "loadMapData", "loadMapContents", "viewsByUri", "closeMap", "zoom");
-        _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex", "nextPosition");
+        _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex", "nextPosition", "currentState");
 
         this.$el.html(AtlasTemplate());
         this.$el.find(".atlas-zoom").draggable({ "scroll":true });
@@ -87,20 +87,34 @@ module.exports = Backbone.View.extend({
         $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.loadCancerList });
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeahead });
 
+        qed.Sessions.Producers["atlas_maps"] = this;
         this.model.on("load", this.initMaps);
     },
 
     initMaps: function() {
-        _.each(_.sortBy(this.model.get("maps"), "label"), function(map) {
-            if (map.isOpen) {
-                this.appendAtlasMap(map);
-            }
-
+        var maps = this.model.get("maps");
+        _.each(_.sortBy(maps, "label"), function(map) {
             var lit = { "a_class": "open-map", "id": map.id, "label": map.label };
             if (map.disabled) {
                 lit = { "li_class": "disabled", "id": map.id, "label": map.label };
             }
             this.$el.find(".maps-selector").append(LineItemTemplate(lit));
+        }, this);
+
+        if (qed.Sessions.Active) {
+            var mapsFromSession = qed.Sessions.Active.get("atlas_maps");
+            if (mapsFromSession) {
+                maps = _.compact(_.map(mapsFromSession, function(mapFromSession) {
+                    var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
+                    if (matchedMap) {
+                        return _.extend(matchedMap, mapFromSession);
+                    }
+                    return null;
+                }));
+            }
+        }
+        _.each(maps, function(map) {
+            if (map.isOpen) this.appendAtlasMap(map);
         }, this);
     },
 
@@ -282,5 +296,16 @@ module.exports = Backbone.View.extend({
         };
         this.lastPosition = lastPos;
         return lastPos;
+    },
+
+    currentState:function () {
+        // TODO Determine if there is an active session, otherwise create one
+        var maps = _.map(this.$el.find(".atlas-map"), function (map) {
+            var mapid = $(map).data("mapid");
+            var top = map.style["top"].replace("px", "");
+            var left = map.style["left"].replace("px", "");
+            return { "id":mapid, "isOpen":true, "position":{ "top":top, "left":left } };
+        });
+        return maps;
     }
 });

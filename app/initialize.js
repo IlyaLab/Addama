@@ -64,8 +64,9 @@ $(function () {
         Display:new Backbone.Model(),
         Datamodel:new Backbone.Model(),
         Sessions: {
-            All: new Backbone.Model(),
-            Active: new Backbone.Model()
+            All: null,
+            Active: null,
+            Producers: {}
         }
     };
 
@@ -77,11 +78,21 @@ $(function () {
     });
 
     var startupUI = function() {
-        var QEDRouter = require('lib/router');
-        qed.Router = new QEDRouter();
-        qed.Router.initTopNavBar();
-        Backbone.history.start();
-        qed.Events.trigger("ready");
+        var SessionsCollection = require("models/sessions");
+
+        qed.Sessions.All = new SessionsCollection([]);
+        qed.Sessions.All.fetch({
+            "success": function() {
+                console.log("sessions load");
+
+                var QEDRouter = require('lib/router');
+                qed.Router = new QEDRouter();
+                qed.Router.initTopNavBar();
+
+                Backbone.history.start();
+                qed.Events.trigger("ready");
+            }
+        });
     };
 
     qed.Datamodel.fetch({

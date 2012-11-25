@@ -71,12 +71,16 @@ module.exports = Backbone.Router.extend({
 
     loadSessionById: function(sessionId) {
         if (!_.isEmpty(sessionId)) {
-            qed.Sessions.Active.fetch({
-                "url": "svc/storage/sessions/" + sessionId,
-                success: function() {
-                    qed.Router.navigate(qed.Sessions.Active.get("history")[0], {trigger: true});
-                }
+            var selectedSession = _.find(qed.Sessions.All.models, function(m) {
+                return _.isEqual(m.get("id"), sessionId);
             });
+            if (selectedSession) {
+                qed.Sessions.Active = selectedSession;
+                var route = selectedSession.get("route");
+                if (!_.isEmpty(route)) {
+                    qed.Router.navigate(route, {trigger: true});
+                }
+            }
         }
     },
     

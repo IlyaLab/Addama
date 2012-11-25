@@ -1,60 +1,70 @@
 var LineItemTemplate = require("../views/templates/line_item");
 var SessionLabelTemplate = require("../views/templates/sessions_label");
-var ActiveSessionModel = require("../models/active_session");
+var SessionModel = require("../models/session");
 
 module.exports = Backbone.View.extend({
 
     initialize:function () {
-        _.bindAll(this, "loadSessions", 'saveSession', "loadModel");
-                
+        _.bindAll(this, "loadSession", "loadSessions", "saveNewSession", "saveSession", "getProducerAttributes");
+
         $(document.body).append(SessionLabelTemplate());
-        
-        $(".sessions-labeler button.save-session").click(this.saveSession);
-        $("a.new-session").live("click", function() {
+
+        $("a.new-session").live("click", function () {
             $(".sessions-labeler").modal("show");
         });
-        $("a.load-session").live("click", function(e) {
-            var sessionId = $(e.target).data("id");
-            if (sessionId) {
-                qed.Router.navigate("#s/" + sessionId, {trigger: true});
-            }
-        });
 
-        this.model = qed.Sessions.All;
-        this.model.on("load", this.loadSessions);
-        this.loadModel();
+        $(".sessions-labeler button.save-new-session").click(this.saveNewSession);
+        $("a.load-session").live("click", this.loadSession);
+        $("a.save-session").live("click", this.saveSession);
+
+        qed.Sessions.All.on("add", this.loadSessions);
+        this.loadSessions();
     },
 
-    loadSessions: function() {
+    loadSessions:function () {
+        console.log("loadSessions");
         this.$el.empty();
-        
-        var items = this.model.get("items");
-        _.each(items, function(item) {
-            if (!item.label) item.label = "Untitled";
-            this.$el.append(LineItemTemplate({ "a_class": "load-session", "id": item.id, "label": item.label }));
+        _.each(qed.Sessions.All.get("items"), function (item) {
+            var icls = _.isEqual(item, qed.Sessions.Active) ? "icon-ok" : "";
+            this.$el.append(LineItemTemplate({ "a_class":"load-session", "id":item.get("id"), "i_class": icls, "label": item.get("label") }));
         }, this);
     },
 
-    saveSession: function() {
+    loadSession:function (e) {
+        var sessionId = $(e.target).data("id");
+        if (sessionId) {
+            $("a.save-session").parent().removeClass("disabled");
+            $("a.save-session").data("id", sessionId);
+            qed.Router.navigate("#s/" + sessionId, {trigger:true});
+        }
+    },
+
+    saveNewSession:function () {
         var label = $(".sessions-labeler").find(".session-label").val();
         $(".sessions-labeler").modal("hide");
 
-        qed.Sessions.Active = new ActiveSessionModel({
-            "label": label || "Untitled",
-            "history": Backbone.history.fragment
-        });
-        qed.Sessions.Active.save({}, { success: this.loadModel });
+        var newSession = _.extend(this.getProducerAttributes(), { "label":label.trim(), "route":Backbone.history.fragment });
+        qed.Sessions.All.create(newSession, {wait: true});
     },
 
-    loadModel: function() {
-        var _this = this;
-        _.defer(function() {
-            _this.model.fetch({
-                url: "svc/storage/sessions",
-                success: function() {
-                    _this.model.trigger("load");
-                }
-            });
+    saveSession:function (e) {
+        var sessionId = $(e.target).data("id");
+        if (sessionId) {
+            var session = qed.Sessions.All.get(sessionId);
+            if (session) {
+                session.save(_.extend(this.getProducerAttributes(), { "route":Backbone.history.fragment }));
+            }
+        }
+    },
+
+    getProducerAttributes:function () {
+        var producer_attributes = {};
+        _.each(qed.Sessions.Producers, function (producer, key) {
+            var currentState = producer.currentState();
+            if (currentState) {
+                producer_attributes[key] = currentState;
+            }
         });
+        return producer_attributes;
     }
 });
