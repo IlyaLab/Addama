@@ -102,18 +102,39 @@ module.exports = Backbone.View.extend({
         }, this);
 
         if (qed.Sessions.Active) {
-            var mapsFromSession = qed.Sessions.Active.get("atlas_maps");
-            if (mapsFromSession) {
-                maps = _.compact(_.map(mapsFromSession, function(mapFromSession) {
-                    var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
-                    if (matchedMap) {
-                        return _.extend(_.clone(matchedMap), mapFromSession, {
-                            "assignedPosition": mapFromSession.position,
-                            "assignedZindex": mapFromSession.zindex
+            var session_atlas = qed.Sessions.Active.get("atlas_maps");
+            if (session_atlas) {
+                if (session_atlas.genes) {
+                    var UL = this.$el.find(".gene-selector");
+                    UL.empty();
+                    _.each(session_atlas.genes, function(gene) {
+                        UL.append(LineItemTemplate({ "label":gene, "id":gene, "a_class":"item-remover", "i_class":"icon-trash" }));
+                        UL.find(".item-remover").click(function(e) {
+                            $(e.target).parent().remove();
                         });
-                    }
-                    return null;
-                }));
+                    });
+                }
+                
+                if (session_atlas.cancers) {
+                    _.each(this.$el.find(".cancer-selector li"), function(li) {
+                        var cancer = $(li).find("a").data("id");
+                        if (session_atlas.cancers.indexOf(cancer) < 0) {
+                            $(li).removeClass("active");
+                        }
+                    })
+                }
+                if (session_atlas.maps) {
+                    maps = _.compact(_.map(session_atlas.maps, function(mapFromSession) {
+                        var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
+                        if (matchedMap) {
+                            return _.extend(_.clone(matchedMap), mapFromSession, {
+                                "assignedPosition": mapFromSession.position,
+                                "assignedZindex": mapFromSession.zindex
+                            });
+                        }
+                        return null;
+                    }));
+                }
             }
         }
         _.each(maps, function(map) {
@@ -305,12 +326,22 @@ module.exports = Backbone.View.extend({
     },
 
     currentState:function () {
-        return _.map(this.$el.find(".atlas-map"), function (map) {
+        var openMaps = _.map(this.$el.find(".atlas-map"), function (map) {
             var mapid = $(map).data("mapid");
             var top = map.style["top"].replace("px", "");
             var left = map.style["left"].replace("px", "");
             var zindex = map.style["z-index"];
             return { "id":mapid, "isOpen":true, "position":{ "top":top, "left":left }, "zindex": zindex };
         });
+
+        var afn = function(link) {
+            return $(link).data("id")
+        };
+
+        return {
+            "genes": _.map(this.$el.find(".gene-selector .item-remover"), afn),
+            "cancers": _.map(this.$el.find(".cancer-selector .active a"), afn),
+            "maps": openMaps
+        }
     }
 });
