@@ -1,4 +1,9 @@
-var SessionModel = require("../models/session");
+var SessionModel = Backbone.Model.extend({
+    "defaults": {
+        "label": "Untitled",
+        "route": ""
+    }
+});
 
 module.exports = Backbone.Collection.extend({
     model: SessionModel,

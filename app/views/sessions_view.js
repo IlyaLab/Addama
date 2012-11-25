@@ -1,6 +1,5 @@
 var LineItemTemplate = require("../views/templates/line_item");
 var SessionLabelTemplate = require("../views/templates/sessions_label");
-var SessionModel = require("../models/session");
 
 module.exports = Backbone.View.extend({
 
@@ -22,9 +21,8 @@ module.exports = Backbone.View.extend({
     },
 
     loadSessions:function () {
-        console.log("loadSessions");
         this.$el.empty();
-        _.each(qed.Sessions.All.get("items"), function (item) {
+        _.each(qed.Sessions.All.models, function (item) {
             var icls = _.isEqual(item, qed.Sessions.Active) ? "icon-ok" : "";
             this.$el.append(LineItemTemplate({ "a_class":"load-session", "id":item.get("id"), "i_class": icls, "label": item.get("label") }));
         }, this);

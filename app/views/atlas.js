@@ -107,7 +107,10 @@ module.exports = Backbone.View.extend({
                 maps = _.compact(_.map(mapsFromSession, function(mapFromSession) {
                     var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
                     if (matchedMap) {
-                        return _.extend(matchedMap, mapFromSession);
+                        return _.extend(_.clone(matchedMap), mapFromSession, {
+                            "assignedPosition": mapFromSession.position,
+                            "assignedZindex": mapFromSession.zindex
+                        });
                     }
                     return null;
                 }));
@@ -129,9 +132,12 @@ module.exports = Backbone.View.extend({
             map.assignedPosition = this.nextPosition();
         }
 
+        if (!_.has(map, "zindex")) {
+            map.assignedZindex = this.nextZindex();
+        }
+
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
-        $atlasMap.css("z-index", this.nextZindex());
 
         $atlasMap.find(".info-me").popover({
             "title": "Description",
@@ -299,13 +305,12 @@ module.exports = Backbone.View.extend({
     },
 
     currentState:function () {
-        // TODO Determine if there is an active session, otherwise create one
-        var maps = _.map(this.$el.find(".atlas-map"), function (map) {
+        return _.map(this.$el.find(".atlas-map"), function (map) {
             var mapid = $(map).data("mapid");
             var top = map.style["top"].replace("px", "");
             var left = map.style["left"].replace("px", "");
-            return { "id":mapid, "isOpen":true, "position":{ "top":top, "left":left } };
+            var zindex = map.style["z-index"];
+            return { "id":mapid, "isOpen":true, "position":{ "top":top, "left":left }, "zindex": zindex };
         });
-        return maps;
     }
 });

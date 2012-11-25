@@ -78,12 +78,12 @@ $(function () {
     });
 
     var startupUI = function() {
-        var SessionsCollection = require("models/sessions");
-
-        qed.Sessions.All = new SessionsCollection([]);
-        qed.Sessions.All.fetch({
-            "success": function() {
-                console.log("sessions load");
+        $.ajax({
+            "url": "svc/storage/sessions",
+            "method": "GET",
+            "success": function(json) {
+                var SessionsCollection = require("models/sessions");
+                qed.Sessions.All = new SessionsCollection(json.items);
 
                 var QEDRouter = require('lib/router');
                 qed.Router = new QEDRouter();
