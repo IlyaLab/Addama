@@ -1,16 +1,12 @@
-var View = require('./view');
-var template = require('./templates/topbar');
+var Template = require("./templates/topbar");
 var SignInModal = require("./templates/sign_in_modal");
 var SignInView = require("./sign_in");
 var SessionsView = require("./sessions_view");
 var HangoutLink = require("./templates/hangout_link");
 var AboutLink = require("./templates/about_link");
+var CloudStorageView = require("../views/cloud_storage_view");
 
-module.exports = View.extend({
-    id:'top-bar',
-    template:template,
-    _autocompleteSources:[],
-    sessionsView: new SessionsView(),
+module.exports = Backbone.View.extend({
 
     events:{
         "click .signin": function() {
@@ -21,9 +17,21 @@ module.exports = View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initSearchAutocomplete', 'addAutocompleteSource', 'initHangoutLink', 'initAboutLinks');
+        _.bindAll(this, "initHangoutLink", "initAboutLinks");
+
+        this.$el.html(Template());
+
+        this.initSignIn();
+        _.defer(function() {
+            new CloudStorageView();
+        });
         _.defer(this.initHangoutLink);
         _.defer(this.initAboutLinks);
+
+        this.$el.find(".titled").html(qed.Display.get("title") || "QED");
+
+        var sessionsView = new SessionsView();
+        this.$el.find(".sessions-container").html(sessionsView.render().el);
     },
 
     initHangoutLink: function() {
@@ -49,58 +57,6 @@ module.exports = View.extend({
                 }
             });
         }
-    },
-
-    afterRender:function () {
-        this.initSearchAutocomplete();
-        this.initSignIn();
-
-        this.$el.find(".titled").html(qed.Display.get("title") || "QED");
-        this.$el.find(".sessions-container").html(this.sessionsView.render().el);
-    },
-
-    initSearchAutocomplete:function () {
-        var queryEl = this.$el.find("#querySearchTerm");
-        var resultsModal = this.$el.find("#searchResults");
-        resultsModal.modal({ backdrop:false, show:false });
-
-        var modalBody = resultsModal.find(".modal-body");
-        var me = this;
-
-        queryEl.typeahead({
-            source:function (query) {
-                modalBody.empty();
-
-                _.each(me._autocompleteSources, function (src) {
-                    if (src.autocomplete) {
-                        var resultBin = function (results) {
-                            if (results && results.length) {
-                                resultsModal.modal('show');
-
-                                var html = [];
-                                html.push("<ul class='nav nav-list'>");
-                                if (src.label) html.push("<li class='nav-header'>" + src.label + "</li>");
-                                _.each(_.uniq(results), function (result) {
-                                    html.push("<li>" + result + "</li>");
-                                });
-                                html.push("</ul>");
-                                modalBody.append(html.join(""));
-
-                                modalBody.find("li").find("a").click(function () {
-                                    resultsModal.modal("hide");
-                                });
-                            }
-                        };
-
-                        src.autocomplete(query, resultBin);
-                    }
-                });
-            }
-        });
-    },
-
-    addAutocompleteSource:function (newSource) {
-        this._autocompleteSources.push(newSource);
     },
 
     initSignIn:function () {
