@@ -79,15 +79,11 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
         labels = stored_item["label"]
         if not labels is None and type(labels) is list: stored_item["label"] = labels[0]
 
+        update_id = ids[1]
         collection = open_collection(ids[0])
-        existing_item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": whoami })
-        for k in stored_item.iterkeys():
-            if k != "id": existing_item[k] = stored_item[k]
+        collection.update({ "_id": update_id }, stored_item )
 
-        collection.update({ "_id": ids[1] }, existing_item )
-        insert_id = ids[1]
-
-        self.write({ "id": insert_id, "uri": self.request.uri + "/" + insert_id })
+        self.write({ "id": update_id, "uri": self.request.uri + "/" + update_id })
         self.set_status(200)
 
     def jsonable_item(self, item):
