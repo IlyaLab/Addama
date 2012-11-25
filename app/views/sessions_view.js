@@ -41,6 +41,8 @@ module.exports = Backbone.View.extend({
     saveNewSession:function () {
         var label = $(".sessions-labeler").find(".session-label").val();
         $(".sessions-labeler").modal("hide");
+        
+        this.$el.find("i").removeClass("icon-ok");
 
         var newSession = _.extend(this.getProducerAttributes(), { "label":label.trim(), "route":Backbone.history.fragment });
         qed.Sessions.All.create(newSession, {wait: true});
