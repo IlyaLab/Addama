@@ -143,15 +143,16 @@ module.exports = Backbone.View.extend({
 
         var options = {
             location_tick_height: 25,
-            protein_scale_width: 1500,
+            protein_scale_width: 1000,
             protein_scale_y: 40,
             protein_vertical_padding: 10,
             signature_height: 10,
             enable_transitions: true,
             enable_mutation_stems: true,
             mutation_layout: 'all_subtypes',
-            mutation_stem_height: 50,
-            mutation_shape_width: 8,
+            mutation_stem_height: 15,
+            mutation_stem_stroke_width: 0.5,
+            mutation_shape_width: 2,
             mutation_group_padding: 0,
             mutation_colors: {
                 Nonsense_Mutation: 'red',
