@@ -196,6 +196,34 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
         self.set_status(200)
 
+class MongoDbFeaturesByLocationHandler(tornado.web.RequestHandler):
+    def get(self, identity):
+        logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
+
+        args = self.request.arguments
+        ids = identity.split("/")
+
+        query = {
+            "chr": str(args["chr"][0]),
+            "start": {"$gt": int(args["start"][0])},
+            "end": {"$lt": int(args["end"][0])},
+            "cancer": {"$in": map(lambda x: x.lower(), args["cancer"])},
+            "source": {"$in": map(lambda x: x.lower(), args["source"])}
+        }
+
+        logging.info("query=%s" % str(query))
+
+        query_limit = options.mongo_lookup_query_limit
+        collection = self.open_collection(ids[1], ids[2])
+
+        items = []
+        for idx, item in enumerate(collection.find(query, {'values':0})):
+            if idx > query_limit: break
+            items.append(item)
+
+        self.write(json.dumps({ "items": map(self.jsonable_item, items) }))
+        self.set_status(200)
+
     def jsonable_item(self, item):
         json_item = {}
         for k in item.iterkeys():
