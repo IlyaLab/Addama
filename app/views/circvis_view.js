@@ -173,7 +173,7 @@ module.exports = View.extend({
                 features: [],
                 edges: [],
                 hash : function(feature) {
-                    return feature.label
+                    return feature.id;
                 }
             },
             PLOT: {
@@ -204,7 +204,7 @@ module.exports = View.extend({
             ],
             TICKS : {
                 OPTIONS : {
-                    wedge_height: 15,
+                    wedge_height: 7,
                     wedge_width:0.7,
                     overlap_distance:10000000, //tile ticks at specified base pair distance
                     height : 120,
@@ -222,10 +222,10 @@ module.exports = View.extend({
                     outer_padding : 10,
                     tile_nodes : Boolean(true),
                     node_overlap_distance: 3e7,
-                    node_radius:6,
+                    node_radius:3,
                     node_fill_style : tick_colors,
                     link_stroke_style : "red",
-                    link_line_width:8,
+                    link_line_width:1,
                     link_alpha : 0.6,
                     node_highlight_mode : "isolate",
                     node_key : function(node) {
