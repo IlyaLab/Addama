@@ -7,6 +7,7 @@ import sys
 
 def feature_id_extract(feature):
     feature_parts = feature.split(":")
+    source = feature_parts[1].lower()
 
     if "chr" in feature_parts[3]:
         start = feature_parts[4]
@@ -19,8 +20,8 @@ def feature_id_extract(feature):
         return {
             "id": feature,
             "type": feature_parts[0],
-            "source": feature_parts[1],
-            "gene": feature_parts[2],
+            "source": source,
+            "gene": feature_parts[2].lower(),
             "label": feature_parts[2],
             "chr": feature_parts[3][3:],
             "start": int(start),
@@ -32,7 +33,7 @@ def feature_id_extract(feature):
     return {
         "id": feature,
         "type": feature_parts[0],
-        "source": feature_parts[1],
+        "source": source,
         "label": feature_parts[2],
         "modifier": feature_parts[7]
     }

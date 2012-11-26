@@ -1,24 +1,12 @@
-<table>
-    <tr>
-    {{#each data}}
-        <td class='rotated_cell'>
-            <div class='rotate_text'>{{label}}</div>
-        </td>
-    {{/each}}
-    </tr>
-    <tr>
-    {{#each data}}
-        <td>
-            <table border="1" style="text-align: center;">
-                {{#each data}}
-                <tr>
-                    {{#each row}}
-                    <td style="background-color: {{color}}; width: 2px; height: 2px;">&nbsp;</td>
-                    {{/each}}
-                </tr>
-                {{/each}}
-            </table>
-        </td>
-    {{/each}}
-    </tr>
-</table>
+{{#each data}}
+    <table class="table table-bordered table-condensed">
+        <caption>{{label}}</caption>
+        {{#each data}}
+        <tr>
+            {{#each row}}
+            <td style="background-color: {{color}}; width: 2px; height: 2px;">&nbsp;</td>
+            {{/each}}
+        </tr>
+        {{/each}}
+    </table>
+{{/each}}

@@ -1,0 +1,21 @@
+<div class="atlas-map" data-mapid="{{id}}" style="top: {{assignedPosition.top}}px; left: {{assignedPosition.left}}px; z-index: {{assignedZindex}}">
+    <ul class="nav nav-pills inline">
+        <li>
+            <h5><a href="#" onclick="return false;">{{label}}</a></h5>
+        </li>
+        <li><a href="#" onclick="return false;" class="info-me"> <i class="icon-info-sign"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="notes-me"> <i class="icon-pencil"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="minimize-me"> <i class="icon-minus"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="refresh-me"> <i class="icon-refresh"/></i> </a></li>
+    </ul>
+    <ul class="nav nav-tabs">
+        {{#each views}}
+        <li class="{{li_class}}"><a href="#tab_{{uid}}" onclick="return false;" data-toggle="tab">{{label}}</a></li>
+        {{/each}}
+    </ul>
+    <div class="tab-content">
+        {{#each views}}
+        <div id="tab_{{uid}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
+        {{/each}}
+    </div>
+</div>

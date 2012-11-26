@@ -1,5 +1,9 @@
 body {
-    background-color: #ffefd5;
+    background-color: #E6E5E6;
+    background-image: url(https://www.systemsbiology.org/sites/all/themes/isb/images/bg.png);
+    background-position-x: 50%;
+    background-position-y: 0%;
+    background-size: initial;
 }
 
 .atlas-body {
@@ -74,6 +78,8 @@ body {
 
     height: auto;
     width: auto;
+    min-height: 100px;
+    min-width: 300px;
 }
 
 .atlas-map h5 {
@@ -93,7 +99,19 @@ body {
 }
 
 .cancer-selector {
-    margin-top: -10px;
     left: 100px;
     position: absolute;
+}
+
+.highlight-cell {
+    font-weight: bolder;
+    color: #4b0082;
+}
+
+.ui-effects-transfer {
+    border: 1px dotted black;
+}
+
+.maps-n-genes li {
+    padding-right: 10px;
 }

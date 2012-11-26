@@ -1,12 +1,14 @@
 module.exports = Backbone.Router.extend({
     targetEl: "#mainDiv",
     routes:{
-        '':'home_view',
-        'twoD/:f1/:f2':'twod_view',
-        'mutsig_grid':'mutsig_grid_view',
-        'scatterplot':'scatterplot_view',
-        'seqpeek':'seqpeek_view',
-        'v/*uri/:view_name':'viewsByUri'
+        "":"home_view",
+        "twoD/:f1/:f2":"twod_view",
+        "mutsig_grid":"mutsig_grid_view",
+        "scatterplot":"scatterplot_view",
+        "seqpeek":"seqpeek_view",
+        "v/*uri/:view_name":"viewsByUri",
+        "atlas": "atlasView",
+        "s/*sessionId": "loadSessionById"
     },
 
     initialize: function(options) {
@@ -30,9 +32,9 @@ module.exports = Backbone.Router.extend({
     },
 
     initTopNavBar:function() {
-        var TopNavBar = require('../views/topbar_view');
+        var TopNavBar = require("../views/topbar_view");
         var topnavbar = new TopNavBar();
-        $('#navigation-container').append(topnavbar.render().el);
+        $("#navigation-container").append(topnavbar.render().el);
 
         var DataMenuView = require("../views/data_menu");
         var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
@@ -43,38 +45,64 @@ module.exports = Backbone.Router.extend({
                 var modalConfig = _.extend({ sectionId: section_id }, selected);
                 var DataMenuModal = require("../views/data_menu_modal");
                 var dataMenuModal = new DataMenuModal(modalConfig);
-                $('body').append(dataMenuModal.render().el);
+                $("body").append(dataMenuModal.render().el);
+            });
+        });
+    },
+
+    atlasView: function() {
+        var model = new qed.Models.Default({ "data_uri": "svc/data/qed_atlas.json" });
+        _.defer(function() {
+            model.fetch({
+                success: function() {
+                    model.trigger("load");
+                }
             });
         });
 
-        var CloudStorageView = require("../views/cloud_storage_view");
-        var csview = new CloudStorageView({ $navbar:$('#navigation-container') });
-        $(document.body).append(csview.render().el);
+        var AtlasView = qed.Views["Atlas"];
+        var view = new AtlasView({ "model": model });
+        this.$el.html(view.render().el);
     },
 
+    loadSessionById: function(sessionId) {
+        if (!_.isEmpty(sessionId)) {
+            var selectedSession = _.find(qed.Sessions.All.models, function(m) {
+                return _.isEqual(m.get("id"), sessionId);
+            });
+            if (selectedSession) {
+                qed.Sessions.Active = selectedSession;
+                var route = selectedSession.get("route");
+                if (!_.isEmpty(route)) {
+                    qed.Router.navigate(route, {trigger: true});
+                }
+            }
+        }
+    },
+    
     mutsig_grid_view:function () {
-        var MutSigGrid = require('../views/mutsig_grid_view');
+        var MutSigGrid = require("../views/mutsig_grid_view");
         var mutsigGridView = new MutSigGrid();
         this.$el.html(mutsigGridView.render().el);
     },
 
     scatterplot_view:function () {
-        var Scatterplot = require('../views/scatterplot_view');
+        var Scatterplot = require("../views/scatterplot_view");
         var scatterplotView = new Scatterplot();
         this.$el.html(scatterplotView.render().el);
     },
 
     seqpeek_view:function () {
-        var SeqPeek = require('../views/seqpeek_view');
+        var SeqPeek = require("../views/seqpeek_view");
         var seqpeekView = new SeqPeek();
         this.$el.html(seqpeekView.render().el);
     },
 
     twod_view:function (label1, label2) {
         var TwoD = qed.Views.twoD;
-        var FL = require('../models/featureList');
+        var FL = require("../models/featureList");
         var fl = new FL({
-            websvc:'/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=',
+            websvc:"/endpoints/filter_by_id?filepath=%2Ffeature_matrices%2F2012_09_18_0835__cons&IDs=",
             feature_list:[label1, label2]
         });
         var twoDView = new TwoD({collection:fl});
@@ -83,7 +111,7 @@ module.exports = Backbone.Router.extend({
     },
 
     home_view:function () {
-        var HomeView = require('../views/home_view');
+        var HomeView = require("../views/home_view");
         var homeView = new HomeView();
         this.$el.html(homeView.render().el);
     },
@@ -114,7 +142,7 @@ module.exports = Backbone.Router.extend({
             model.fetch({
                 success:function () {
                     if (model.make_copy) model.make_copy(Model, model_optns);
-                    model.trigger('load');
+                    model.trigger("load");
                 }
             });
         });

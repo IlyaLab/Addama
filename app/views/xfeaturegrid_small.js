@@ -15,27 +15,24 @@ module.exports = Backbone.View.extend({
         
         var negative_color_scale = d3.scale.linear().domain([-16.0, 0.0]).range(["blue", "white"]);
         var positive_color_scale = d3.scale.linear().domain([0.0, 16.0]).range(["white", "red"]);
+        var associationsByCancer = this.model.get("associationsByCancer");
 
-        var cancerData = _.map(this.model.get("data"), function(perCancerData) {
-            var features = perCancerData.get("features");
-            var pwpv = perCancerData.get("pwpv");
-            var get_pairwise_data = function(id1, id2) {
-                if (_.has(pwpv, id1)) return pwpv[id1][id2];
-                if (_.has(pwpv, id2)) return pwpv[id2][id1];
-                return null;
-            };
-            var get_css_color = function(id1, id2) {
-                var pw = get_pairwise_data(id1, id2);
-                if (!pw) return "lightgray";
-                if (pw.corr < 0) return negative_color_scale(-pw.mlog10p);
-                return positive_color_scale(pw.mlog10p);
+        var cancerData = _.map(this.model.get("nodesByCancer"), function(perCancerData, cancer) {
+            var featuresByGene = _.groupBy(perCancerData, "gene");
+            var aByC = associationsByCancer[cancer];
+
+            var get_css_color = function(f1, f2) {
+                var assoc = aByC.getAssociation(f1, f2);
+                if (!assoc) return "grey";
+                if (assoc.rho < 0) return negative_color_scale(-assoc.pvalue);
+                return positive_color_scale(assoc.pvalue);
             };
 
-            var gene_a_features = _.map(features[geneA], function(feature) {
+            var gene_a_features = _.map(featuresByGene[geneA] || featuresByGene[geneA.toLowerCase()], function(feature) {
                 return { "d": feature };
             });
 
-            var gene_b_features = _.map(features[geneB], function(feature) {
+            var gene_b_features = _.map(featuresByGene[geneB] || featuresByGene[geneB.toLowerCase()], function(feature) {
                 return {
                     "d": feature,
                     "row":_.map(gene_a_features, function(af) {
@@ -44,7 +41,7 @@ module.exports = Backbone.View.extend({
                 };
             });
 
-            return { "label": perCancerData.get("cancer"), "data": gene_b_features };
+            return { "label": cancer, "data": gene_b_features };
         });
 
         this.$el.html(Template({ "data": cancerData }));

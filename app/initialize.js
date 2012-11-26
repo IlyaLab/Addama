@@ -52,15 +52,22 @@ $(function () {
             "xfeaturegrid": require("views/xfeaturegrid"),
             "xfeaturegrid_small": require("views/xfeaturegrid_small"),
             "mutsig_grid": require("views/mutsig_grid_view"),
+            "mutsig_top_genes": require("views/mutsig_top_genes_view"),
             "scatterplot": require("views/scatterplot_view"),
             "linear_browser": require("views/linear_browser"),
-            "pubcrawl_network": require("views/pubcrawl_network")
+            "pubcrawl_network": require("views/pubcrawl_network"),
+            "Atlas": require("views/atlas")
         },
         Lookups:{
             Labels:{}
         },
         Display:new Backbone.Model(),
-        Datamodel:new Backbone.Model()
+        Datamodel:new Backbone.Model(),
+        Sessions: {
+            All: null,
+            Active: null,
+            Producers: {}
+        }
     };
 
     qed.Display.fetch({
@@ -71,11 +78,21 @@ $(function () {
     });
 
     var startupUI = function() {
-        var QEDRouter = require('lib/router');
-        qed.Router = new QEDRouter();
-        qed.Router.initTopNavBar();
-        Backbone.history.start();
-        qed.Events.trigger("ready");
+        $.ajax({
+            "url": "svc/storage/sessions",
+            "method": "GET",
+            "success": function(json) {
+                var SessionsCollection = require("models/sessions");
+                qed.Sessions.All = new SessionsCollection(json.items);
+
+                var QEDRouter = require('lib/router');
+                qed.Router = new QEDRouter();
+                qed.Router.initTopNavBar();
+
+                Backbone.history.start();
+                qed.Events.trigger("ready");
+            }
+        });
     };
 
     qed.Datamodel.fetch({

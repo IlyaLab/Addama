@@ -5,36 +5,45 @@ import json
 import tornado.web
 import pymongo
 
+
 class MongoDbLookupHandler(tornado.web.RequestHandler):
 
     def get(self, identity):
         logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
 
+        ids = identity.split("/")
+        db_name = ids[1]
+        collection = self.open_collection(db_name, ids[2])
+
         # TODO : Improve this logic to correctly parse arguments and convert to a proper mongo DB query
         args = self.request.arguments
         query = {}
+
+        case_sensitive_lookups = frozenset(options.case_sensitive_lookups)
+        normalize_fn = None
+        if db_name in case_sensitive_lookups:
+            normalize_fn = lambda x: x
+        else:
+            normalize_fn = lambda x: x.lower()
+
         for key in args.keys():
             iargs = args[key]
             if len(iargs) == 1:
-                query[key] = args[key][0]
+                query[key] = normalize_fn(args[key][0])
             else:
-                query[key] = {"$in": args[key]}
-
-        ids = identity.split("/")
-
-        db_name = ids[1]
-        collection = self.open_collection(db_name, ids[2])
+                query[key] = {"$in": map(normalize_fn, args[key])}
 
         query_limit = options.mongo_lookup_query_limit
         json_items = []
         for idx, item in enumerate(collection.find(query)):
-            if idx > query_limit:  break
+            if idx > query_limit:
+                break
 
             json_item = self.jsonable_item(item)
             json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)
 
-        self.write({ "items": json_items })
+        self.write({"items": json_items})
         self.set_status(200)
         return
 
@@ -149,5 +158,105 @@ class MongoDbPairwiseLookupHandler(tornado.web.RequestHandler):
         logging.info("open_collection(%s)" % collection_name)
 
         connection = pymongo.Connection(mongo_uri)
+        database = connection[db_name]
+        return database[collection_name]
+
+
+class MongoDbMutSigHandler(tornado.web.RequestHandler):
+    def get(self, identity):
+        logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
+
+        args = self.request.arguments
+
+        query = {}
+        for key in args.keys():
+            if key != "cancer":
+                continue
+            iargs = args[key]
+            if len(iargs) == 1:
+                query[key] = args[key][0].lower()
+            else:
+                query[key] = {"$in": map(lambda x: x.lower(), args[key])}
+
+        if "max_rank" not in args:
+            query["rank"] = {"$lt": 21}
+        else:
+            query["rank"] = {"$lt": int(args["max_rank"][0]) + 1}
+
+        collection = self.open_collection("qed_lookups", "mutsig_rankings")
+        items = []
+
+        if "cancer" in query:
+            items = collection.find(query)
+
+        result = {
+            "items": map(self.jsonable_item, items)
+        }
+
+        self.write(json.dumps(result))
+        self.set_status(200)
+
+    def jsonable_item(self, item):
+        json_item = {}
+        for k in item.iterkeys():
+            if k == "_id":
+                json_item["id"] = str(item["_id"])
+            elif "[]" in k:
+                json_item[k.replace("[]", "")] = item[k]
+            else:
+                json_item[k] = item[k]
+        return json_item
+
+    def open_collection(self, db_name, collection_name):
+        logging.info("open_collection(%s)" % collection_name)
+
+        connection = pymongo.Connection(options.mongo_lookup_uri)
+        database = connection[db_name]
+        return database[collection_name]
+
+
+class MongoDbFeaturesByLocationHandler(tornado.web.RequestHandler):
+    def get(self, identity):
+        logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
+
+        args = self.request.arguments
+        ids = identity.split("/")
+
+        query = {
+            "chr": str(args["chr"][0]),
+            "start": {"$gt": int(args["start"][0])},
+            "end": {"$lt": int(args["end"][0])},
+            "cancer": {"$in": map(lambda x: x.lower(), args["cancer"])},
+            "source": {"$in": map(lambda x: x.lower(), args["source"])}
+        }
+
+        logging.info("query=%s" % str(query))
+
+        query_limit = options.mongo_lookup_query_limit
+        collection = self.open_collection(ids[1], ids[2])
+
+        items = []
+        for idx, item in enumerate(collection.find(query, {'values':0})):
+            if idx > query_limit: break
+            items.append(item)
+
+        self.write(json.dumps({ "items": map(self.jsonable_item, items) }))
+        self.set_status(200)
+
+    def jsonable_item(self, item):
+        json_item = {}
+        for k in item.iterkeys():
+            if k == "_id":
+                json_item["id"] = str(item["_id"])
+            elif "[]" in k:
+                json_item[k.replace("[]", "")] = item[k]
+            else:
+                json_item[k] = item[k]
+        return json_item
+
+    def open_collection(self, db_name, collection_name):
+        logging.info("open_collection(%s)" % collection_name)
+
+        connection = pymongo.Connection(options.mongo_lookup_uri)
         database = connection[db_name]
         return database[collection_name]

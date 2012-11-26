@@ -28,41 +28,38 @@ module.exports = Backbone.View.extend({
 
         var negative_color_scale = d3.scale.linear().domain([-16.0, 0.0]).range(["blue", "white"]);
         var positive_color_scale = d3.scale.linear().domain([0.0, 16.0]).range(["white", "red"]);
-        var buildGridLabel = function(feature) {
-            if (feature.source === 'METH') return "METH:" + feature.modifier;
-            return feature.source;
+        var associationsByCancer = this.model.get("associationsByCancer");
+
+        var featureLabel = function(feature) {
+            return feature.source + "::" + feature.modifier;
         };
+        
+        var cancerData = _.map(this.model.get("nodesByCancer"), function(perCancerData, cancer) {
+            var featuresByGene = _.groupBy(perCancerData, "gene");
+            var aByC = associationsByCancer[cancer];
 
-        var cancerData = _.map(this.model.get("data"), function(perCancerData) {
-            var features = perCancerData.get("features");
-            var pwpv = perCancerData.get("pwpv");
-            var get_pairwise_data = function(id1, id2) {
-                if (_.has(pwpv, id1)) return pwpv[id1][id2];
-                if (_.has(pwpv, id2)) return pwpv[id2][id1];
-                return null;
-            };
             var get_css_color = function(id1, id2) {
-                var pw = get_pairwise_data(id1, id2);
-                if (!pw) return "lightgray";
-                if (pw.corr < 0) return negative_color_scale(-pw.mlog10p);
-                return positive_color_scale(pw.mlog10p);
+                var assoc = aByC.getAssociation(id1, id2);
+                if (!assoc) return "grey";
+                if (assoc.rho < 0) return negative_color_scale(-assoc.pvalue);
+                return positive_color_scale(assoc.pvalue);
             };
 
-            var gene_a_features = _.map(features[geneA], function(feature) {
-                return { "d": feature, "grid_label": buildGridLabel(feature) };
+            var gene_a_features = _.map(featuresByGene[geneA] || featuresByGene[geneA.toLowerCase()], function(feature) {
+                return { "d": feature, "grid_label": featureLabel(feature) };
             });
 
-            var gene_b_features = _.map(features[geneB], function(feature) {
+            var gene_b_features = _.map(featuresByGene[geneB] || featuresByGene[geneB.toLowerCase()], function(feature) {
                 return {
                     "d": feature,
-                    "grid_label": buildGridLabel(feature),
+                    "grid_label": featureLabel(feature),
                     "row":_.map(gene_a_features, function(af) {
                         return _.extend(af, { "color": get_css_color(feature.id, af.d.id) });
                     })
                 };
             });
 
-            return { "label": perCancerData.get("cancer"), "headers": gene_a_features, "data": gene_b_features };
+            return { "label": cancer, "geneA": geneA, "geneB": geneB, "headers": gene_a_features, "data": gene_b_features };
         });
 
         var fn = function (ci) {
@@ -82,8 +79,6 @@ module.exports = Backbone.View.extend({
     handleGridClicks: function(e) {
         var featureId = $(e.target).data("id");
         var grouping = $(e.target).data("grouping");
-        var allFeatures = this.model.allFeatures();
-        var selectedFeature = allFeatures[grouping][featureId];
-        this.trigger("selected", selectedFeature);
+        this.trigger("selected", this.model.get("nodesByCancer")[grouping][featureId]);
     }
 });

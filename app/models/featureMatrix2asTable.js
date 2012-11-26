@@ -11,7 +11,7 @@ module.exports = Backbone.Model.extend({
         
         var ROWS = _.pluck(data.items, "id");
         var COLUMNS = _.keys(data.items[0].values);
-        var coldict = {}
+        var coldict = {};
         _.each(COLUMNS, function(col,idx) {
             return coldict[col] = idx;
         });

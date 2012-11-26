@@ -1,25 +1,27 @@
 import argparse
 import csv
-import os
 import pymongo
 import sys
 
 
-def iterate_genes(file_path, cancer):
-    cancer = cancer.lower()
+def iterate_mutations(file_path):
+    fieldnames = ['cancer', 'gene', 'mutation_type', 'patient_id', 'uniprot_id', 'mutation_id', 'location', 'start_aa', 'end_aa']
 
     with open(file_path, 'rb') as csvfile:
         print('Processing ' + file_path)
 
-        csvreader = csv.DictReader(csvfile, delimiter='\t')
+        csvreader = csv.DictReader(csvfile, delimiter='\t', fieldnames=fieldnames)
         count = 0
 
         for row in csvreader:
+            if row['uniprot_id'] == 'UNIPROT_FAIL':
+                continue
+
             # Convert integer fields
-            for key in ['rank', 'N', 'n', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'nsite', 'nsil']:
+            for key in ['location']:
                 row[key] = int(row[key])
 
-            row['cancer'] = cancer
+            row['cancer'] = row['cancer'].lower()
             row['gene'] = row['gene'].lower()
 
             yield row
@@ -35,9 +37,8 @@ def connect_database(hostname, port):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MutSig to MongoDB import utility")
-    parser.add_argument('--mutsig-file', required=True, help='Path to MutSig output file')
-    parser.add_argument('--cancer-type', required=True, help='Cancer type')
+    parser = argparse.ArgumentParser(description="Mutations to MongoDB import utility")
+    parser.add_argument('--mutations-file', required=True, help='Path to mutation summary file')
     parser.add_argument('--host', required=True, help='Hostname')
     parser.add_argument('--port', required=True, type=int, help='Port')
     parser.add_argument('--db', required=True, help='Database name')
@@ -55,8 +56,8 @@ def main():
 
     collection = conn[args.db][args.collection]
 
-    for mutsig_dict in iterate_genes(args.mutsig_file, args.cancer_type.lower()):
-        collection.insert(mutsig_dict)
+    for mutation_dict in iterate_mutations(args.mutations_file):
+        collection.insert(mutation_dict)
 
     conn.close()
 
