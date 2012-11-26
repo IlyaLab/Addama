@@ -11,6 +11,7 @@ $(function () {
             "GraphLayouts":require("models/graph_layouts"),
             "Mutations":require("models/mutations_interpro"),
             "PubcrawlNetwork":require("models/pubcrawlNetwork"),
+            "PubcrawlLit": require("models/pubcrawlLit"),
             "Default":Backbone.Model.extend({
                 url: function() {
                     return this.get("data_uri");
@@ -56,6 +57,7 @@ $(function () {
             "scatterplot": require("views/scatterplot_view"),
             "linear_browser": require("views/linear_browser"),
             "pubcrawl_network": require("views/pubcrawl_network"),
+            "pubcrawl_lit": require("views/pubcrawl_lit"),
             "Atlas": require("views/atlas")
         },
         Lookups:{

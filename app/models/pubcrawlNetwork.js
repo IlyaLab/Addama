@@ -99,7 +99,7 @@ var NodeCollection = Backbone.Collection.extend({
     model: Node
 });
 
-NodeDetailsModel = Backbone.Model.extend({
+var NodeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
     urlRoot: 'http://apollo:4080/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true',
     url: function(){

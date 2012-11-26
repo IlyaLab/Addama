@@ -99,10 +99,11 @@ thead {
    color: #FFFFFF;
 }
 
-.dataTables_wrapper {
+/*.dataTables_wrapper {
     line-height: 10px;
     font-size: 8px;
 }
+*/
 
 
 table.table thead .sorting,
@@ -138,6 +139,7 @@ div.dataTables_filter label {
 
 div.dataTables_info {
    padding-top: 8px;
+    width: 200px;
 }
 
 div.dataTables_paginate {
