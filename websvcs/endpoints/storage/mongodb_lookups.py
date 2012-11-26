@@ -196,6 +196,25 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
         self.write(json.dumps(result))
         self.set_status(200)
 
+    def jsonable_item(self, item):
+        json_item = {}
+        for k in item.iterkeys():
+            if k == "_id":
+                json_item["id"] = str(item["_id"])
+            elif "[]" in k:
+                json_item[k.replace("[]", "")] = item[k]
+            else:
+                json_item[k] = item[k]
+        return json_item
+
+    def open_collection(self, db_name, collection_name):
+        logging.info("open_collection(%s)" % collection_name)
+
+        connection = pymongo.Connection(options.mongo_lookup_uri)
+        database = connection[db_name]
+        return database[collection_name]
+
+
 class MongoDbFeaturesByLocationHandler(tornado.web.RequestHandler):
     def get(self, identity):
         logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
