@@ -230,7 +230,7 @@
             });
         },
 
-        getVisualizationSize: function() {
+        getMaxVisualizationSize: function() {
             var that = this;
             var data = this.data;
 
@@ -277,6 +277,83 @@
             };
         },
 
+        getDefaultVisualizationSize: function() {
+            var that = this;
+            var data = this.data,
+                layout;
+
+            // Resolve the maximum total height of the subtypes, assuming that the protein scale
+            // and protein domains are displayed only on the last subtype.
+            var max_height = 0;
+
+            var default_layout = {
+                background_ticks: {
+                    y1: 0,
+                    y2: 0
+                },
+                mutations: {
+                    y: 0
+                },
+                protein_scale_line: {
+                    enabled: false,
+                    y: 0
+                },
+                protein_scale_ticks: {
+                    enabled: false,
+                    y: 0
+                },
+                protein_domains: {
+                    enabled: false,
+                    y: 0
+                },
+                y: 0
+            };
+
+            var last_layout = {
+                background_ticks: {
+                    y1: 0,
+                    y2: 0
+                },
+                mutations: {
+                    y: 0
+                },
+                protein_scale_line: {
+                    enabled: true,
+                    y: 0
+                },
+                protein_scale_ticks: {
+                    enabled: true,
+                    y: 0
+                },
+                protein_domains: {
+                    enabled: true,
+                    y: 0
+                },
+                y: 0
+            };
+
+            var test_config = _.extend({}, that.config, {
+                enable_mutation_stems: true
+            });
+
+            // Add height of all but the last cancer
+            _.chain(data.cancer_subtypes)
+                .initial()
+                .each(function(subtype) {
+                    layout = that.doSubtypeLayout(subtype, test_config, default_layout);
+                    max_height += (layout.height + that.config.protein_vertical_padding);
+                });
+
+            // Add height of the last cancer
+            layout = that.doSubtypeLayout(_.last(data.cancer_subtypes), test_config, last_layout);
+            max_height += (layout.height + that.config.protein_vertical_padding);
+
+            return {
+                width: this.config.band_label_width + this.config.protein_scale_width,
+                height: max_height
+            };
+        },
+
         draw: function(data, param_config) {
             this.config.target_el.innerHTML = "";
             this.data = data;
@@ -295,12 +372,12 @@
 
             this.updateVerticalScaleRanges();
 
-            var size_info = this.getVisualizationSize();
+            var size_info = this.getDefaultVisualizationSize();
 
             this.vis.root = d3.select(this.config.target_el)
                 .append("svg")
                     .attr("width", (2 * this.config.plot.horizontal_padding + size_info.width))
-                    .attr("height", (2 * this.config.plot.vertical_padding + 2 * size_info.height));
+                    .attr("height", (2 * this.config.plot.vertical_padding + size_info.height));
 
             this.vis.root
                 .append("g")
@@ -1097,7 +1174,7 @@
                             .attr("class", "stem")
                             .style("fill", "none")
                             .style("stroke", "gray")
-                            .style("stroke-width", 2)
+                        .style("stroke-width", that.config.mutation_stem_stroke_width)
                         .append("svg:title")
                             .text(function(d) {
                                 return that.getMutationLabelRows(d).join("\n");
