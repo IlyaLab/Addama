@@ -61,10 +61,10 @@ var TableView = Backbone.View.extend({
         for(var k=0; k < thisView.dataConfig.length; k++){
             var dataProp=thisView.dataConfig[k].propName;
             if(thisView.dataConfig[k].urlLink != null){
-
+                var link = thisView.dataConfig[k].urlLink;
                 aoColumns.push({"sTitle": thisView.dataConfig[k].headerName,"mDataProp": dataProp,
-               "sWidth":thisView.dataConfig[k].headerWidth,  "mData": function (source, type, val){
-                          return  "<a href='" + thisView.dataConfig[k].urlLink + source + "'>"+source + "</a>";
+               "sWidth":thisView.dataConfig[k].headerWidth,  "fnRender": function (source){
+                          return  "<a href='" + link + source.aData[source.mDataProp] + "' target='_blank'>"+source.aData[source.mDataProp] + "</a>";
                     }});
             }
             else{
@@ -78,8 +78,12 @@ var TableView = Backbone.View.extend({
             "sPaginationType": "bootstrap",
             "bAutoWidth":false,
             "aaData": this.model,
+            "iDisplayLength": 5,
             "oLanguage": {
-                "sLengthMenu": "_MENU_ records per page"
+                "sLengthMenu": "<select><option value='5'>5</option>" +
+                    "<option value='10'>10</option>" +
+                    "<option value='15'>15</option>" +
+                    "<option value='20'>20</option></select> records per page"
             },
 
             "aoColumns":aoColumns,

@@ -225,7 +225,7 @@ module.exports = Backbone.View.extend({
                         }
                         return 300;
                     })
-                .charge(-200)
+                .charge(-300)
                 .on("tick", tick);
 
             var line = svg.append("svg:g").selectAll("line.link")

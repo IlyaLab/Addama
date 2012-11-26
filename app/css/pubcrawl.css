@@ -99,11 +99,12 @@ thead {
    color: #FFFFFF;
 }
 
-/*.dataTables_wrapper {
-    line-height: 10px;
-    font-size: 8px;
+div.dataTables_wrapper {
+    /*line-height: 10px;
+    font-size: 12px;      */
+    width: 700px;
 }
-*/
+
 
 
 table.table thead .sorting,
