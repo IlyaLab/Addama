@@ -53,7 +53,35 @@
 	stroke-width:1;
 }
 
+/*kde_plot*/
+.kde_plot .circle .data_point{
+    fill:#ff0000;
+}
+.kde_plot .grid line {
+    stroke:#333;
+    stroke-opacity:0.7;
+}
 
+.kde_plot .axis_label {
+    font-size:16px;
+    font-weight:bold;
+}
+
+.kde_plot .plot_area {
+    fill:'orange';
+    fill-opacity:0.8;
+}
+
+.kde_plot .plot_line {
+    fill:'#333';
+    fill-opacity:0.8;
+}
+
+.kde_plot .median_line {
+    stroke:'#f00';
+    stroke-opacity:0.8;
+    stroke-width:3;
+}
 
 /* circvis css */
 
@@ -94,11 +122,11 @@ svg .ideogram .radial_lines {
     stroke-width:1.5px;
 }
 svg .wedge .background {
-	fill:#ddd;
+	fill:none;
 	stroke:#444;
 	opacity:0.6;
 }
-svg .wedge[data-ring="1"] .background {
+/*svg .wedge[data-ring="1"] .background {
 	fill:rgba(255,255,255,0.7);
 	stroke:none;
 	stroke-width:0;
@@ -112,7 +140,7 @@ svg .wedge[data-ring="1"] .background {
 svg .wedge[data-ring="2"] .background {
 	fill:rgba(200,200,200,0.4);
 	stroke-width:0;
-}
+}*/
 
 /*hovercard css */
 
@@ -247,4 +275,26 @@ td.vertical_cell {
     -webkit-transform-origin: top left;
     -o-transform: rotate(-90deg);
     -o-transform-origin: top left;
+}
+
+i.icon-ucsc {
+    content: url('../icons/ucsc.png');
+}
+
+i.icon-cosmic {
+    content: url('../icons/cosmic.png');
+}
+
+i.icon-ensembl {
+    content: url('../icons/ensembl.png');
+}
+
+i.icon-mirBase {
+    content: url('../icons/mirbase.png');
+}
+
+
+.circ-container {
+    height: 700px;
+    width: 700px;
 }

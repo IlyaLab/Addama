@@ -1,35 +1,28 @@
 //circvis.wedge.js
 
 
-vq.CircVis = function() {
-    vq.Vis.call(this);
-};
-vq.CircVis.prototype = vq.extend(vq.Vis);
+// vq.CircVis = function() {
+//     vq.Vis.call(this);
+// };
+// vq.CircVis.prototype = vq.extend(vq.Vis);
 
-/**
- *
- *  Constructs the Circvis model and adds the SVG tags to the defined DOM element.
- *
- * @param {JSON Object} circvis_object - the object defined above.
- */
-vq.CircVis.prototype.draw = function(data) {
+var CircVis = function(data) {
+  var chromoData = new vq.models.CircVisData(data);
 
-    var vis_data = new vq.models.CircVisData(data);
+  var circvis = function() {
 
-    if (vis_data.isDataReady()) {
-        this.chromoData = vis_data;
-        this._render();
+    if (chromoData.isDataReady()) {
+        _render();
     } else {
         console.warn('Invalid data input.  Check data for missing or improperly formatted values.');
     }
+    return this;
 };
 
-vq.CircVis.prototype._render = function() {
+   var _render = function() {
 
-    var that = this;
-
-    var dataObj = this.chromoData;
-    var width = dataObj._plot.width, height = dataObj._plot.height;
+    var width = chromoData._plot.width, 
+       height = chromoData._plot.height;
 
     function dragmove(d,u) {
         var transform = d3.transform(d3.select(this).attr('transform'));
@@ -55,9 +48,9 @@ vq.CircVis.prototype._render = function() {
         .on("drag", dragmove)
         .on("dragend", dragend);
 
-    var id = dataObj._plot.id;
+    var id = chromoData._plot.id;
 
-    var svg = d3.select(dataObj._plot.container)        
+    var svg = d3.select(chromoData._plot.container)        
         .append('svg:svg')
         .attr('id', id)
         .attr('width', width)
@@ -71,21 +64,21 @@ vq.CircVis.prototype._render = function() {
 
 
 var ideograms = svg.selectAll('g.ideogram')
-        .data(dataObj._chrom.keys)
+        .data(chromoData._chrom.keys)
         .enter().append('svg:g')
             .attr('class','ideogram')
             .attr('data-region',function(d) { return d;})
             .attr('opacity',1.0)
-            .attr('transform',function(key) { return 'rotate(' + dataObj._chrom.groups[key].startAngle * 180 / Math.PI + ')';})
-            .each(draw_ideogram_rings);
+            .attr('transform',function(key) { return 'rotate(' + chromoData._chrom.groups[key].startAngle * 180 / Math.PI + ')';})
+            .each(draw_ideogram);
 //calculate label placement as halfway along tick radial segment
-    var outerRadius  = (dataObj._plot.height / 2);
-    var outerTickRadius = outerRadius - dataObj.ticks.outer_padding;
-    var innerRadius = outerTickRadius - dataObj.ticks.height;
+    var outerRadius  = (chromoData._plot.height / 2);
+    var outerTickRadius = outerRadius - chromoData.ticks.outer_padding;
+    var innerRadius = outerTickRadius - chromoData.ticks.height;
     var label_height = (outerTickRadius + innerRadius) / 2;
 
            ideograms.append('text')
-            .attr('transform',function(key) { return 'rotate(' + (dataObj._chrom.groups[key].endAngle - dataObj._chrom.groups[key].startAngle)
+            .attr('transform',function(key) { return 'rotate(' + (chromoData._chrom.groups[key].endAngle - chromoData._chrom.groups[key].startAngle)
                    * 180 / Math.PI / 2 +
                    ' )translate(0,-'+label_height+')';})
              .attr('class','region_label')
@@ -97,18 +90,18 @@ var ideograms = svg.selectAll('g.ideogram')
                .each(function() { $(this).disableSelection();})
             .on('mouseover',function ideogram_label_click(obj){
                    var half_arc_genome = {};
-                   var region_length = dataObj.normalizedLength[obj];
+                   var region_length = chromoData.normalizedLength[obj];
                    var new_length = 1.0 - region_length;
-                   var num_regions = _.size(dataObj.normalizedLength);
-                   _.each(dataObj.normalizedLength,function(value,key,list){
+                   var num_regions = _.size(chromoData.normalizedLength);
+                   _.each(chromoData.normalizedLength,function(value,key,list){
                         half_arc_genome[key] = value / new_length / 2;
                    });
                    half_arc_genome[obj] = 0.5;
                });
-    if(!_.isNull(dataObj._chrom.radial_grid_line_width)&&
-                dataObj._chrom.radial_grid_line_width > 0) {
+    if(!_.isNull(chromoData._chrom.radial_grid_line_width)&&
+                chromoData._chrom.radial_grid_line_width > 0) {
 
-        var network_radius = dataObj._network.network_radius;
+        var network_radius = chromoData._network.network_radius;
                 ideograms.selectAll('path.radial_lines')
                     .data(function(chr) {
                         return [[{x:0,y:-1*outerTickRadius},{x:0,y:-1*network_radius[chr]}]];
@@ -122,41 +115,56 @@ var ideograms = svg.selectAll('g.ideogram')
                     );
    }
 
-        function draw_ideogram_rings(d) {
-            that._add_wedge( d);
-            that._drawTicks( d);
-            that._drawNetworkNodes( d);
-        }
-    that._drawNetworkLinks(svg.insert('svg:g','.ideogram').attr('class','links'));
-    _(_.range(0,dataObj._wedge.length)).each(function(ring_index) {
-        that._draw_axes_ticklabels(ring_index);
-        that._insertRingClipping(ring_index);
+     
+    if (chromoData._network._doRender) {
+           _drawNetworkLinks(svg.insert('svg:g','.ideogram').attr('class','links'));
+    }
+    _(_.range(0,chromoData._wedge.length)).each(function(ring_index) {
+        _draw_axes_ticklabels(ring_index);
+        _insertRingClipping(ring_index);
     });
+
+    return this;
 
 };
 
-vq.CircVis.prototype._drawWedgeContents = function(chr, wedge_index) {
-    var that = this;
-    var dataObj = that.chromoData;
-    var ideogram = dataObj._ideograms[chr];
+var draw_ideogram = function(d) {
+        _add_wedge(d);
+        draw_ideogram_data(d);
+};
+
+var draw_ideogram_data = function(d) {
+      if (chromoData._chrom.groups[d] === undefined) { return;}
+        _(_.range(0,chromoData._wedge.length)).each(function(ring) {
+          _drawWedgeData(d,ring);
+        });
+            _drawTicks( d);
+          if ( chromoData._network._doRender) {
+             _drawNetworkNodes( d);
+          }
+};
+
+function _drawWedgeContents (chr, wedge_index) {
+    
+    var ideogram = chromoData._ideograms[chr];
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
-    var wedge_params = dataObj._wedge[wedge_index];
+    var wedge_params = chromoData._wedge[wedge_index];
     switch (wedge_params._plot_type) {
         case('karyotype'):
         case('tile'):
         case('band'):
         case('heatmap'):
         case('glyph'):
-            this._drawWedgeData(chr, wedge_index);
+            _drawWedgeData(chr, wedge_index);
             break;
         default:
-            this._drawWedge_withRange(chr, wedge_index);
+            _drawWedge_withRange(chr, wedge_index);
     }
 };
 
-vq.CircVis.prototype._insertRingClipping = function(index) {
-    var outerRadius =  this.chromoData._wedge[index]._outerRadius,
-    innerRadius = this.chromoData._wedge[index]._innerRadius;
+function _insertRingClipping (index) {
+    var outerRadius =  chromoData._wedge[index]._outerRadius,
+    innerRadius = chromoData._wedge[index]._innerRadius;
 
     var arc = d3.svg.arc()({innerRadius:innerRadius,outerRadius:outerRadius, startAngle:0,endAngle:2*Math.PI});
 
@@ -167,23 +175,22 @@ vq.CircVis.prototype._insertRingClipping = function(index) {
 };
 
 /**private **/
-vq.CircVis.prototype._add_wedge = function(chr) {
-    var that = this;
-    var dataObj = this.chromoData;
+ function _add_wedge (chr) {
+    
     var ideogram_obj = d3.select('.ideogram[data-region="'+chr+'"]');
 
     function outerRadius(index) {
-        return dataObj._wedge[index]._outerPlotRadius;
+        return chromoData._wedge[index]._outerPlotRadius;
     }
 
     function innerRadius(index) {
-        return dataObj._wedge[index]._innerRadius;
+        return chromoData._wedge[index]._innerRadius;
     }
 
     var wedge_obj = ideogram_obj.append("svg:g")
         .attr('class','wedges')
         .selectAll("path")
-        .data(_.range(0,dataObj._wedge.length))
+        .data(_.range(0,chromoData._wedge.length))
         .enter()
         .append("svg:g")
         .attr("class",  "wedge")
@@ -197,7 +204,7 @@ vq.CircVis.prototype._add_wedge = function(chr) {
         .innerRadius(  function(ring_index) { return innerRadius(ring_index); })
         .outerRadius( function(ring_index) { return outerRadius(ring_index);} )
         .startAngle(0)
-        .endAngle( dataObj._chrom.groups[chr].angle)
+        .endAngle( chromoData._chrom.groups[chr].angle)
     );
 
 
@@ -209,7 +216,7 @@ vq.CircVis.prototype._add_wedge = function(chr) {
 
     function checkAndPlot(wedge_index) {
         var wedge_obj = d3.select(this);
-        var wedge_params = dataObj._wedge[wedge_index];
+        var wedge_params = chromoData._wedge[wedge_index];
         if ((wedge_params._plot_type != 'karyotype') &&
             (wedge_params._plot_type != 'tile') &&
             (wedge_params._plot_type != 'band') &&
@@ -224,31 +231,29 @@ vq.CircVis.prototype._add_wedge = function(chr) {
                 console.warn('Invalid value range detected.  Range reset to [-1,1].');
             }
         }
-        that._drawWedgeContents(chr, wedge_index);
+        _drawWedgeContents(chr, wedge_index);
     }
 };
 
 
-vq.CircVis.prototype._drawWedge_withoutRange = function( chr, wedge_index) {
-    var that = this;
-    var dataObj = that.chromoData;
-    var ideogram = dataObj._ideograms[chr];
-    var wedge_params = dataObj._wedge[wedge_index];
+function _drawWedge_withoutRange ( chr, wedge_index) {
+    
+    var ideogram = chromoData._ideograms[chr];
+    var wedge_params = chromoData._wedge[wedge_index];
     var wedge = ideogram.wedge[wedge_index];
 };
 
-vq.CircVis.prototype._drawWedge_withRange = function(chr, wedge_index) {
-    var that = this;
-    var dataObj = that.chromoData;
-    var ideogram = dataObj._ideograms[chr];
-    var wedge_params = dataObj._wedge[wedge_index];
+function _drawWedge_withRange (chr, wedge_index) {
+        
+    var ideogram = chromoData._ideograms[chr];
+    var wedge_params = chromoData._wedge[wedge_index];
     var wedge = ideogram.wedge[wedge_index];
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     if (wedge_params._draw_axes) {
         /* Circular grid lines. */
         //add a new panel each time we want to draw on top of the previously created image.
-        var p = dataObj._chrom.groups[chr];
+        var p = chromoData._chrom.groups[chr];
         var startAngle = p.startAngle;
         var endAngle = p.angle;
 
@@ -271,28 +276,28 @@ vq.CircVis.prototype._drawWedge_withRange = function(chr, wedge_index) {
     }
 
 
-    that._drawWedgeData(chr, wedge_index);
+    _drawWedgeData(chr, wedge_index);
 
 };
 
-vq.CircVis.prototype._drawWedgeData = function(chr, wedge_index) {
+function _drawWedgeData (chr, wedge_index) {
     var that = this;
 
     //draw all wedges if parameter is left out.
     var all_wedges = _.isUndefined(wedge_index) || _.isNull(wedge_index);
     //return if ill-defined wedge
     if (!all_wedges && _.isNumber(wedge_index) && _.isFinite(wedge_index) &&
-        wedge_index >= that.chromoData._wedge.length) {
+        wedge_index >= chromoData._wedge.length) {
         console.error('drawWedgeData: Invalid wedge #:' + wedge_index);
         return;
     }
 
     function drawWedge(index) {
-        var wedge_params = that.chromoData._wedge[index];
+        var wedge_params = chromoData._wedge[index];
 
-        var funcName = '_drawWedgeData_'+ wedge_params._plot_type;
-        if (that[funcName] !==undefined) {
-            that[funcName](chr,index);
+        var funcName =  wedge_params._plot_type;
+        if (_drawWedgeData_array[funcName] !==undefined) {
+            _drawWedgeData_array[funcName](chr,index);
         }
         //get all the data points in this wedge
         var data = d3.selectAll('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+index+'"] .data > *');
@@ -301,7 +306,7 @@ vq.CircVis.prototype._drawWedgeData = function(chr, wedge_index) {
     }
 
     if (all_wedges) {
-        _.each(_.range(0,that.chromoData._wedge.length),function(i) { drawWedge.call(that,i);});
+        _.each(_.range(0,chromoData._wedge.length),function(i) { drawWedge.call(that,i);});
         return;
     }
     else {
@@ -310,18 +315,18 @@ vq.CircVis.prototype._drawWedgeData = function(chr, wedge_index) {
 
 };
 
-
-vq.CircVis.prototype._drawWedgeData_barchart = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+var _drawWedgeData_array = {
+    'barchart' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var histogramArc = function (point) {
         var _inner = wedge_params._innerRadius;
-        var start = that.chromoData._ideograms[chr].theta(point.start);
-        var end = that.chromoData._ideograms[chr].theta(point.end);
+        var start = chromoData._ideograms[chr].theta(point.start);
+        var end = chromoData._ideograms[chr].theta(point.end);
         return d3.svg.arc()
             .innerRadius( _inner)
             .startAngle( start)
@@ -330,7 +335,7 @@ vq.CircVis.prototype._drawWedgeData_barchart = function(chr, wedge_index) {
 
     var hist = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     hist
         .enter().append('svg:path')
         .style('fill',wedge_params._fillStyle)
@@ -360,20 +365,19 @@ vq.CircVis.prototype._drawWedgeData_barchart = function(chr, wedge_index) {
         .style('fill-opacity',1e-6)
         .style('stroke-opacity',1e-6)
         .remove();
-};
+},
 
-vq.CircVis.prototype._drawWedgeData_histogram = vq.CircVis.prototype._drawWedgeData_barchart;
-
-vq.CircVis.prototype._drawWedgeData_scatterplot = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+ 'scatterplot' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
+    var center = vq.utils.VisUtils.tileCenter;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var scatter = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     scatter
         .enter().append('svg:path')
         .style('fill',wedge_params._fillStyle)
@@ -381,7 +385,7 @@ vq.CircVis.prototype._drawWedgeData_scatterplot = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
         .style('stroke-opacity', 1e-6)
         .attr("transform",function(point) {
-            return "rotate(" + ((that.chromoData._ideograms[chr].theta(point.start) * 180 / Math.PI) - 90)+ ")translate(" +
+            return "rotate(" + ((chromoData._ideograms[chr].theta(center(point)) * 180 / Math.PI) - 90)+ ")translate(" +
                 wedge_params._thresholded_value_to_radius(point[value_key]) + ")";} )
         .attr('d',d3.svg.symbol()
             .type(wedge_params._shape)
@@ -397,20 +401,21 @@ vq.CircVis.prototype._drawWedgeData_scatterplot = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
         .style('stroke-opacity', 1e-6)
         .remove();
-};
+},
 
-vq.CircVis.prototype._drawWedgeData_line = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = _.sortBy(that.chromoData._ideograms[chr].wedge[wedge_index],'start');
+ 'line' : function(chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = _.sortBy(chromoData._ideograms[chr].wedge[wedge_index],'start');
     var value_key = wedge_params._value_key;
+    var center = vq.utils.VisUtils.tileCenter;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var line = d3.svg.line.radial()
             .interpolate('basis')
             .tension(0.8)
             .radius(function(point) { return wedge_params._thresholded_value_to_radius(point[value_key]);})
-            .angle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);});
+            .angle(function(point) { return chromoData._ideograms[chr].theta(center(point));});
 
     var line_plot = wedge_obj.select('g.data')
         .selectAll("path")
@@ -432,20 +437,21 @@ vq.CircVis.prototype._drawWedgeData_line = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
         .style('stroke-opacity', 1e-6)
         .remove();
-};
+},
 
-vq.CircVis.prototype._drawWedgeData_area = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = _.sortBy(that.chromoData._ideograms[chr].wedge[wedge_index],'start');
+ 'area' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = _.sortBy(chromoData._ideograms[chr].wedge[wedge_index],'start');
     var value_key = wedge_params._value_key;
+    var center = vq.utils.VisUtils.tileCenter;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var line = d3.svg.line.radial()
             .interpolate('basis')
             .tension(0.8)
             .radius(function(point) { return wedge_params._thresholded_value_to_radius(point[value_key]);})
-            .angle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);});
+            .angle(function(point) { return chromoData._ideograms[chr].theta(center(point));});
 
 
     var area = d3.svg.area.radial()
@@ -453,7 +459,7 @@ vq.CircVis.prototype._drawWedgeData_area = function(chr, wedge_index) {
             .tension(0.8)
             .innerRadius(function(point) { return  wedge_params._thresholded_innerRadius(point[value_key]);})
             .outerRadius(function(point) { return wedge_params._thresholded_outerRadius(point[value_key]);})
-            .angle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);});
+            .angle(function(point) { return chromoData._ideograms[chr].theta(center(point));});
 
 
     var line_plot = wedge_obj.select('g.data')
@@ -487,18 +493,18 @@ vq.CircVis.prototype._drawWedgeData_area = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
         .style('stroke-opacity', 1e-6)
         .remove();
-};
+}, 
 
-vq.CircVis.prototype._drawWedgeData_band = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+'band' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
 
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
     var band = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     band
         .enter().append('svg:path')
         .style('fill',wedge_params._fillStyle)
@@ -508,8 +514,8 @@ vq.CircVis.prototype._drawWedgeData_band = function(chr, wedge_index) {
         .attr('d',d3.svg.arc()
         .innerRadius( wedge_params._innerRadius)
         .outerRadius( wedge_params._outerPlotRadius)
-        .startAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);})
-        .endAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.end);})
+        .startAngle(function(point) { return chromoData._ideograms[chr].theta(point.start);})
+        .endAngle(function(point) { return chromoData._ideograms[chr].theta(point.end);})
     )
         .transition()
         
@@ -525,13 +531,12 @@ vq.CircVis.prototype._drawWedgeData_band = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
         .style('stroke-opacity', 1e-6)
         .remove();
-};
+},
 
-vq.CircVis.prototype._drawWedgeData_glyph = function(chr, wedge_index) {
-
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+ 'glyph' : function (chr, wedge_index) {
+    var center = vq.utils.VisUtils.tileCenter;
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
@@ -545,7 +550,7 @@ vq.CircVis.prototype._drawWedgeData_glyph = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
         .attr("transform",function(point) {
-            return "rotate(" + ((that.chromoData._ideograms[chr].theta(point.start) * 180 / Math.PI) - 90)+ ")translate(" +
+            return "rotate(" + ((chromoData._ideograms[chr].theta(center(point)) * 180 / Math.PI) - 90)+ ")translate(" +
                 wedge_params._glyph_distance(point) + ")";} )
         .transition()
         
@@ -561,23 +566,23 @@ vq.CircVis.prototype._drawWedgeData_glyph = function(chr, wedge_index) {
         .style('stroke-opacity', 1);
     glyph.exit()
         .transition()
-        
         .duration(800)
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
-        .remove();
-};
+        .remove()        
+        .each("end",function(n) { remove_wedge_layout(n,wedge);});
+},
 
-vq.CircVis.prototype._drawWedgeData_tile = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+ 'tile' : function(chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var tile = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     tile
         .enter().append('svg:path')
         .style('fill',wedge_params._fillStyle)
@@ -587,8 +592,8 @@ vq.CircVis.prototype._drawWedgeData_tile = function(chr, wedge_index) {
         .attr('d',d3.svg.arc()
         .innerRadius( function(point) { return wedge_params._thresholded_tile_innerRadius(point,wedge_params);})
         .outerRadius( function(point) { return wedge_params._thresholded_tile_outerRadius(point,wedge_params);})
-        .startAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);})
-        .endAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.end);})
+        .startAngle(function(point) { return chromoData._ideograms[chr].theta(point.start);})
+        .endAngle(function(point) { return chromoData._ideograms[chr].theta(point.end);})
     ) .transition()
         
         .duration(800)
@@ -601,18 +606,19 @@ vq.CircVis.prototype._drawWedgeData_tile = function(chr, wedge_index) {
         .duration(800)
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
-        .remove();
-};
+        .remove()
+        .each("end",function(n) { remove_wedge_layout(n,wedge);});
+},
 
-vq.CircVis.prototype._drawWedgeData_karyotype = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+ 'karyotype' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
     var karyotype = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     karyotype
         .enter().append('svg:path')
         .style('fill',function(point) { return point[value_key];})
@@ -622,8 +628,8 @@ vq.CircVis.prototype._drawWedgeData_karyotype = function(chr, wedge_index) {
         .attr('d',d3.svg.arc()
         .innerRadius( wedge_params._innerRadius)
         .outerRadius( wedge_params._outerPlotRadius)
-        .startAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);})
-        .endAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.end);})
+        .startAngle(function(point) { return chromoData._ideograms[chr].theta(point.start);})
+        .endAngle(function(point) { return chromoData._ideograms[chr].theta(point.end);})
     )
         .transition()     
         .duration(800)
@@ -637,18 +643,18 @@ vq.CircVis.prototype._drawWedgeData_karyotype = function(chr, wedge_index) {
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
         .remove();
-};
+},
 
-vq.CircVis.prototype._drawWedgeData_heatmap = function(chr, wedge_index) {
-    var that = this;
-    var wedge_params = that.chromoData._wedge[wedge_index];
-    var wedge_data = that.chromoData._ideograms[chr].wedge[wedge_index];
+ 'heatmap' : function (chr, wedge_index) {
+    
+    var wedge_params = chromoData._wedge[wedge_index];
+    var wedge_data = chromoData._ideograms[chr].wedge[wedge_index];
     var value_key = wedge_params._value_key;
     var wedge_obj = d3.select('.ideogram[data-region="'+chr+'"] .wedge[data-ring="'+wedge_index+'"]');
 
     var generateArcTween = function (point) {
-        var _theta = that.chromoData._ideograms[chr].theta(point.start);
-        var _end = that.chromoData._ideograms[chr].theta(point.end);
+        var _theta = chromoData._ideograms[chr].theta(point.start);
+        var _end = chromoData._ideograms[chr].theta(point.end);
         return d3.svg.arc()
             .innerRadius(function(multiplier) { return wedge_params._innerRadius - (multiplier *4);})
             .outerRadius(function(multiplier) { return wedge_params._outerPlotRadius + (multiplier * 4);})
@@ -658,7 +664,7 @@ vq.CircVis.prototype._drawWedgeData_heatmap = function(chr, wedge_index) {
 
     var heat = wedge_obj.select('g.data')
         .selectAll("path")
-        .data(wedge_data,that.chromoData._network.node_key);
+        .data(wedge_data,wedge_params._hash);
     heat
         .enter().append('svg:path')
         .style('fill',wedge_params._fillStyle)
@@ -669,8 +675,8 @@ vq.CircVis.prototype._drawWedgeData_heatmap = function(chr, wedge_index) {
         .attr('d',d3.svg.arc()
         .innerRadius( wedge_params._innerRadius)
         .outerRadius( wedge_params._outerPlotRadius)
-        .startAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.start);})
-        .endAngle(function(point) { return that.chromoData._ideograms[chr].theta(point.end);})
+        .startAngle(function(point) { return chromoData._ideograms[chr].theta(point.start);})
+        .endAngle(function(point) { return chromoData._ideograms[chr].theta(point.end);})
     )
         .transition()
         
@@ -693,12 +699,15 @@ vq.CircVis.prototype._drawWedgeData_heatmap = function(chr, wedge_index) {
                 .style('stroke-opacity', 1e-6)
         .remove();
 
+}
 };
 
-vq.CircVis.prototype._draw_axes_ticklabels = function(wedge_index) {
-    var that = this;
-    var dataObj = that.chromoData;
-    var wedge_params = dataObj._wedge[wedge_index];
+_drawWedgeData_array['histogram'] = _drawWedgeData_array['barchart'];
+
+function _draw_axes_ticklabels (wedge_index) {
+    
+    
+    var wedge_params = chromoData._wedge[wedge_index];
     //don't do this for ring without a range.
     if(!_.isFunction(wedge_params._y_linear)) { return;}
 
@@ -721,39 +730,39 @@ vq.CircVis.prototype._draw_axes_ticklabels = function(wedge_index) {
 
 };
 
-
+function remove_wedge_layout(node,wedge) {
+    delete wedge._layout[wedge._hash(node)];
+};
 /** private **/
-vq.CircVis.prototype._drawTicks = function(chr) {
+var _drawTicks = function(chr) {
     var that = this;
-    var dataObj = that.chromoData;
 
-    if(!dataObj.ticks.render_ticks) { return;}
-
+    if(!chromoData.ticks.render_ticks) { return;}
+    var hash = chromoData._data.hash;
     var ideogram_obj = d3.select('.ideogram[data-region="'+chr+'"]');
-    
-    var outerRadius  = (dataObj._plot.height / 2);
-    var outerTickRadius = outerRadius - dataObj.ticks.outer_padding;
-    var innerRadius = outerTickRadius - dataObj.ticks.height;
-    var inner = dataObj.ticks.tile_ticks ?  function(feature) {
+    var level = function(node) {return chromoData.ticks._layout[hash(node)]; }
+    var outerRadius  = (chromoData._plot.height / 2);
+    var outerTickRadius = outerRadius - chromoData.ticks.outer_padding;
+    var innerRadius = outerTickRadius - chromoData.ticks.height;
+    var inner = chromoData.ticks.tile_ticks ?  function(feature) {
         return innerRadius +
-            (feature.level * (dataObj.ticks.wedge_height * 1.3)) ;} :
+            (level(feature) * (chromoData.ticks.wedge_height * 1.3)) ;} :
         function(feature) { return innerRadius;};
 
-    var outer = function(feature) { return inner(feature) + dataObj.ticks.wedge_height;};
-    var label_key = dataObj.ticks.label_key;
-
-    var tick_fill = function(c) { return dataObj.ticks.fill_style(c,label_key);};
-    var tick_stroke = function(c) { return dataObj.ticks.stroke_style(c,label_key);};
+    var outer = function(feature) { return inner(feature) + chromoData.ticks.wedge_height;};
+    var tick_fill = function(c) { return chromoData.ticks.fill_style(c,hash);};
+    var tick_stroke = function(c) { return chromoData.ticks.stroke_style(c,hash);};
     var tick_angle = function(tick) { var angle = tick_length / inner(tick); return  isNodeActive(tick) ? angle * 2 : angle; };
     var isNodeActive = function(c) { return true;};
 
-    var tick_width = Math.PI / 180 * dataObj.ticks.wedge_width;
+    var tick_width = Math.PI / 180 * chromoData.ticks.wedge_width;
     var tick_length = tick_width * innerRadius;
+    var center = vq.utils.VisUtils.tileCenter;
 
     var generateArcTween = function (point) {
         var _inner = inner(point);
         var _outer = outer(point);
-        var _theta = that.chromoData._ideograms[point.chr].theta(point.start);
+        var _theta = chromoData._ideograms[point.chr].theta(center(point));
         var _tick_angle = tick_angle(point);
         return d3.svg.arc()
             .innerRadius(function(multiplier) { return _inner - (multiplier *4);})
@@ -763,7 +772,7 @@ vq.CircVis.prototype._drawTicks = function(chr) {
                 return _theta + _tick_angle + (multiplier * Math.PI /  360);});
     };
 
-    var tick_key = dataObj._network.node_key;
+    var tick_key = chromoData._network.node_key;
 
     if(ideogram_obj.select('g.ticks').empty()) {
         ideogram_obj
@@ -772,20 +781,20 @@ vq.CircVis.prototype._drawTicks = function(chr) {
     }
 
     var ticks = ideogram_obj.select('g.ticks').selectAll('path')
-        .data(dataObj.ticks.data_map[chr],tick_key);
+        .data(chromoData._data.chr[chr],chromoData._data.hash);
 
     ticks.enter().append('path')
-        .attr('class',function(tick) { return tick[label_key];})
+        .attr('class',function(tick) { return tick[hash];})
         .style('fill',tick_fill)
         .style('stroke',tick_stroke)
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
         .on('mouseover',function(d){
-            d3.select('text[data-label=\''+d[label_key]+'\']').attr('visibility','visible');
-            dataObj.ticks.hovercard.call(this,d);
+            d3.select('text[data-label=\''+d[hash]+'\']').attr('visibility','visible');
+            chromoData.ticks.hovercard.call(this,d);
         })
         .on('mouseout',function(d){
-            d3.select('text[data-label=\''+d[label_key]+'\']').attr('visibility','hidden');
+            d3.select('text[data-label=\''+d[hash]+'\']').attr('visibility','hidden');
         })
         .transition()
         .duration(800)
@@ -807,29 +816,33 @@ vq.CircVis.prototype._drawTicks = function(chr) {
         })
         .style('fill-opacity', 1e-6)
                 .style('stroke-opacity', 1e-6)
-        .remove();
-
+        .remove()
+        .each("end",remove_tick_layout);
 };
 
+var remove_tick_layout = function(node) {
+    delete chromoData.ticks._layout[chromoData._data.hash(node)];
+};
 
 /** private **/
-vq.CircVis.prototype._drawNetworkNodes = function (chr) {
-    var     dataObj = this.chromoData;
+var _drawNetworkNodes = function (chr) {
 
-    var network_radius = dataObj._network.tile_nodes ? function(node) { return dataObj._network.network_radius[chr] - (node.level * 2 * dataObj._network.node_radius(node)); } :
-    function(node) { return dataObj._network.network_radius[chr];};
+    var hash = chromoData._data.hash;
+    var level = function(node) { return chromoData._network.layout[hash(node)];};
+    var center = vq.utils.VisUtils.tileCenter;
+    var network_radius = chromoData._network.tile_nodes ? function(node) { return chromoData._network.network_radius[chr] - (level(node) * 2 * chromoData._network.node_radius(node)); } :
+    function(node) { return chromoData._network.network_radius[chr];};
 
     var ideogram_obj = d3.select('.ideogram[data-region="'+chr+'"]');
 
     if(ideogram_obj.select('g.nodes').empty()) {
         ideogram_obj.append('svg:g').attr('class','nodes');
     }
-    var arr = dataObj._network.nodes_array.filter(function(node) { return !node.children && node.chr == chr;});
-
+    
     var node = ideogram_obj
         .select('g.nodes')
         .selectAll('circle.node')
-        .data(dataObj._network.nodes_array.filter(function(node) { return !node.children && node.chr == chr;}),dataObj._network.node_key);
+        .data(_.where(chromoData._data.features,{chr:chr}),hash);
 
     var node_enter = node.enter(),
         node_exit = node.exit();
@@ -838,53 +851,62 @@ vq.CircVis.prototype._drawNetworkNodes = function (chr) {
         .attr('class','node')
         .attr('cx',0)
         .attr('cy',0)
-        .attr('r',function(a) { return dataObj._network.node_radius(a)*4; })
-        .style('fill',dataObj._network.node_fillStyle)
-        .style('stroke',dataObj._network.node_strokeStyle)
+        .attr('r',function(a) { return chromoData._network.node_radius(a)*4; })
+        .style('fill',chromoData._network.node_fillStyle)
+        .style('stroke',chromoData._network.node_strokeStyle)
         .style('fill-opacity',1e-6)
         .style('stroke-opacity',1e-6)
         .attr('transform', function(node) {
-            return 'rotate('+ ((dataObj._ideograms[chr].theta(node.start) / Math.PI * 180) - 90) +')translate(' + network_radius(node) + ')';
+            return 'rotate('+ ((chromoData._ideograms[chr].theta(center(node)) / Math.PI * 180) - 90) +')translate(' + network_radius(node) + ')';
         })
-        .on('mouseover',function(d){dataObj._network.node_hovercard.call(this,d);})
+        .on('mouseover',function(d){chromoData._network.node_hovercard.call(this,d);})
         .transition()
         .duration(800)
-        .attr('r',dataObj._network.node_radius)
+        .attr('r',chromoData._network.node_radius)
         .style('stroke-opacity',1)
         .style('fill-opacity',1);
 
     node_exit
     .transition()
         .duration(800)
-        .attr('r',function(a) {return dataObj._network.node_radius(a)*4; })
+        .attr('r',function(a) {return chromoData._network.node_radius(a)*4; })
         .style('fill-opacity',1e-6)
                 .style('stroke-opacity',1e-6)
        .remove();
+       // .each("end",remove_node_layout);
 };
 
-vq.CircVis.prototype._drawNetworkLinks= function() {
 
-    var dataObj = this.chromoData;
+var remove_node_layout = function(node) {
+    delete chromoData._network.layout[chromoData._data.hash(node)];
+};
 
+var _drawNetworkLinks= function() {
+
+    var hash = chromoData._data.hash;
+    var center = vq.utils.VisUtils.tileCenter;
+    var level = function(node) { return chromoData._network.layout[hash(node)];};
     var bundle = d3.layout.bundle();
 
-    var network_radius = dataObj._network.tile_nodes ? function(node) { return dataObj._network.network_radius[node.chr] - (node.level * 2 * dataObj._network.node_radius(node)); } :
-        function(node) { return dataObj._network.network_radius[node.chr];};
+    var network_radius = chromoData._network.tile_nodes ? function(node) { return chromoData._network.network_radius[node.chr] - (level(node) * 2 * chromoData._network.node_radius(node)); } :
+        function(node) { return chromoData._network.network_radius[node.chr];};
 
     var line = d3.svg.line.radial()
         .interpolate("bundle")
         .tension(.65)
         .radius(function(d) { return d.radius !== undefined ?
             d.radius :
-            network_radius(d)
+            network_radius(d);
         })
         .angle(function(d) { return d.angle !== undefined ?
             d.angle :
-            dataObj._ideograms[d.chr]._feature_angle(d.start);
+            chromoData._ideograms[d.chr]._feature_angle(center(d));
         });
 
+    var new_data = bundle(chromoData._network.links_array).map(function(b, index) { return _.extend(chromoData._network.links_array[index],{spline:b});});
+
     var edges = d3.select('g.links').selectAll("path.link")
-        .data(bundle(dataObj._network.links_array).map(function(b, index) { return _.extend(dataObj._network.links_array[index],{spline:b});}));
+        .data(new_data);
 
         edges
         .enter().insert("svg:path")
@@ -893,28 +915,118 @@ vq.CircVis.prototype._drawNetworkLinks= function() {
         })
 
         .style('fill','none')
-        .style('stroke',dataObj._network.link_strokeStyle)
-        .style('stroke-width',function(a) { return dataObj._network.link_line_width(a) * 3;})
+        .style('stroke',chromoData._network.link_strokeStyle)
+        .style('stroke-width',function(a) { return chromoData._network.link_line_width(a) * 3;})
         .style('stroke-opacity',1e-6)
         .attr("d", function(link) { return line(link.spline);})
         .on('mouseover',function(d){
-            d3.select(this).style('stroke-opacity',1.0); dataObj._network.link_hovercard.call(this,d);
+            d3.select(this).style('stroke-opacity',1.0); chromoData._network.link_hovercard.call(this,d);
         })
-        .on('mouseout',function(d){d3.select(this).style('stroke-opacity',dataObj._network.link_alpha(d));})
+        .on('mouseout',function(d){d3.select(this).style('stroke-opacity',chromoData._network.link_alpha(d));})
         .transition()
         .duration(800)
-        .style('stroke-width',dataObj._network.link_line_width)
-        .style('stroke-opacity',dataObj._network.link_alpha);
+        .style('stroke-width',chromoData._network.link_line_width)
+        .style('stroke-opacity',chromoData._network.link_alpha);
 
         edges.exit()
         .transition()
         .duration(800)
          .style('stroke-opacity',1e-6)
-         .style('stroke-width',function(a) { return dataObj._network.link_line_width(a)*3;})
+         .style('stroke-width',function(a) { return chromoData._network.link_line_width(a)*3;})
         .remove();
 };
 
+/*EDGES*/
 
+circvis.addEdges = function(edge_array) {
+    var edges;
+    if (_.isArray(edge_array)) {
+        edges = this._insertEdges(edge_array);
+    }
+    else {
+        edges = this._insertEdges([edge_array]);
+    }
+
+    var nodes = _.flatten(_.map(edges, function(edge) { return [edge.source,edge.target];}));
+    this.addNodes(nodes);
+
+    _drawNetworkLinks();
+
+};
+
+circvis.removeEdges = function(edge_array, ignore_nodes) {
+    var ignore = _.isBoolean(ignore_nodes) ? ignore_nodes : Boolean(false);
+    if (edge_array === 'all') {
+            edge_array = chromoData._network.links_array;
+        }
+
+    if (_.isArray(edge_array)) {
+        _.each(edge_array,function(edge) {chromoData._removeEdge(edge);});
+    }
+    else if ( _.isObject(edge_array)){
+        chromoData._removeEdge(edge_array);
+    }
+    _drawNetworkLinks();
+
+    if(ignore) {return;}
+
+    var removable = _edgeListToNodeList(edge_array);
+    var remaining_nodes = _edgeListToNodeList(chromoData._network.links_array);
+    var nodes_to_remove = _.difference(removable,remaining_nodes);
+    this.removeNodes(nodes_to_remove);    
+};
+
+circvis._insertEdges = function(edge_array) {
+    //return the array of edges inserted
+    return _.filter(_.map(edge_array, vq.models.CircVisData.prototype._insertEdge, chromoData),
+        function(edge) { return !_.isNull(edge);});
+};
+
+/* NODES*/
+
+circvis.addNodes = function(node_array) {
+    
+    var that = this;
+    if (_.isArray(node_array)) {
+       chromoData._insertNodes(node_array);
+    }
+    else {
+        chromoData._insertNodes([node_array]);
+    }
+    _.each(_.uniq(_.pluck(node_array,'chr')), draw_ideogram_data);
+};
+
+circvis.removeNodes = function(node_array) {
+    var that = this;
+    if (_.isFunction(node_array)) {
+        node_array = _.filter(chromoData._data.features, node_array);
+    }
+
+    if (_.isArray(node_array)) {
+        _.each(node_array, function(node) {
+            chromoData._removeNode(node);
+        });
+        _.each(_.uniq(_.pluck(node_array,'chr')), draw_ideogram_data);
+    }
+    else if (_.isObject(node_array)){
+        chromoData._removeNode(node_array);
+        draw_ideogram_data(node_array.chr);
+    }
+    //retiling too soon will break the exit transition.. need to retile later when data is not being changed.
+    // chromoData._retile();
+
+};
+
+
+/*Utils*/
+
+ function _edgeListToNodeList (edges) {
+    return _.uniq(_.flatten(_.chain(edges).map(function(edge){return [edge.source || edge.node1,edge.target || edge.node2];}).value()));
+}; 
+return circvis;
+};
+
+vq.CircVis = CircVis;
 
 vq.models.CircVisData = function(data) {
 
@@ -923,7 +1035,7 @@ vq.models.CircVisData = function(data) {
     this.setDataModel();
 
     if (this.getDataType() == 'vq.models.CircVisData') {
-        this._build_data(this.getContents())
+        this._build_data(this.getContents());
     } else {
         console.warn('Unrecognized JSON object.  Expected vq.models.CircVisData object.');
     }
@@ -937,8 +1049,21 @@ vq.models.CircVisData.prototype.setDataModel = function() {
         {label: '_plot.width', id: 'PLOT.width', defaultValue: 400},
         {label: '_plot.height', id: 'PLOT.height', defaultValue: 400},
         {label : '_plot.container', id:'PLOT.container', optional : true},
-        {label: 'vertical_padding', id: 'PLOT.vertical_padding', defaultValue: 0},
-        {label: 'horizontal_padding', id: 'PLOT.horizontal_padding', defaultValue: 0},
+        {label: '_plot.vertical_padding', id: 'PLOT.vertical_padding', defaultValue: 0},
+        {label: '_plot.horizontal_padding', id: 'PLOT.horizontal_padding', defaultValue: 0},
+        {label : '_plot.enable_pan', id: 'PLOT.enable_pan', cast: Boolean, defaultValue : false },
+        {label : '_plot.enable_zoom', id: 'PLOT.enable_zoom', cast: Boolean, defaultValue : false },
+        {label : '_plot.show_legend', id: 'PLOT.show_legend', cast: Boolean, defaultValue : false },
+        {label : '_plot.legend_corner', id: 'PLOT.legend_corner', cast: String, defaultValue : 'ne' },
+        {label : '_plot.legend_radius', id: 'PLOT.legend_radius', cast: Number, defaultValue : 25 },
+        {label : '_plot.legend_show_rings', id: 'PLOT.legend_show_rings', cast: Boolean, defaultValue : true },
+        {label : '_plot.rotate_degrees', id: 'PLOT.rotate_degrees', cast: Number, defaultValue : 0 },
+        {label : '_plot.tooltip_timeout', id: 'PLOT.tooltip_timeout', cast: Number, defaultValue : 200 },
+
+        {label: '_data.features', id: 'DATA.features', defaultValue: []},
+        {label: '_data.edges', id: 'DATA.edges', defaultValue: []},       
+        {label: '_data.hash', id: 'DATA.hash', defaultValue: []},       
+
         {label : '_chrom.keys', id: 'GENOME.DATA.key_order', defaultValue : ["1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"] },
         {label : '_chrom.length', id: 'GENOME.DATA.key_length', defaultValue : [] },
@@ -950,18 +1075,8 @@ vq.models.CircVisData.prototype.setDataModel = function() {
         {label : '_chrom.listener', id: 'GENOME.OPTIONS.listener', cast: Function, defaultValue : function() {
             return null;
         }},
-
-        {label : '_plot.enable_pan', id: 'PLOT.enable_pan', cast: Boolean, defaultValue : false },
-        {label : '_plot.enable_zoom', id: 'PLOT.enable_zoom', cast: Boolean, defaultValue : false },
-        {label : '_plot.show_legend', id: 'PLOT.show_legend', cast: Boolean, defaultValue : false },
-        {label : '_plot.legend_corner', id: 'PLOT.legend_corner', cast: String, defaultValue : 'ne' },
-        {label : '_plot.legend_radius', id: 'PLOT.legend_radius', cast: Number, defaultValue : 25 },
-        {label : '_plot.legend_show_rings', id: 'PLOT.legend_show_rings', cast: Boolean, defaultValue : true },
-        {label : '_plot.rotate_degrees', id: 'PLOT.rotate_degrees', cast: Number, defaultValue : 0 },
-        {label : '_plot.tooltip_timeout', id: 'PLOT.tooltip_timeout', cast: Number, defaultValue : 200 },
-        {label : '_network.data', id: 'NETWORK.DATA.data_array',  optional : true },
-        //{label : '_network.radius', id: 'NETWORK.OPTIONS.network_radius', cast : Number, defaultValue : 100 },
-        {label : '_network._outer_padding', id: 'NETWORK.OPTIONS.outer_padding',  optional : true },
+        {label : '_network._doRender', id: 'NETWORK.OPTIONS.render',  defaultValue: true, cast: Boolean },
+        {label : '_network._outer_padding', id: 'NETWORK.OPTIONS.outer_padding',  defaultValue: 0, cast: Number },
         {label : '_network.node_listener', id: 'NETWORK.OPTIONS.node_listener', cast: Function, defaultValue : function() {
             return null;
         } },
@@ -988,9 +1103,6 @@ vq.models.CircVisData.prototype.setDataModel = function() {
         {label : '_network.node_radius', id: 'NETWORK.OPTIONS.node_radius', cast : vq.utils.VisUtils.wrapProperty, defaultValue : function() {
             return 3;
         } },
-        {label : '_network.node_key', id: 'NETWORK.OPTIONS.node_key', cast : Function, defaultValue : function(node) {
-            return node['chr'];
-        } },
         {label : '_network.node_highlightMode', id: 'NETWORK.OPTIONS.node_highlight_mode', cast : String, defaultValue : 'brighten' },
         {label : '_network.node_tooltipFormat', id: 'NETWORK.OPTIONS.node_tooltipFormat', cast : vq.utils.VisUtils.wrapProperty, defaultValue : vq.utils.VisUtils.network_node_title },
         {label : '_network.node_tooltipItems', id: 'NETWORK.OPTIONS.node_tooltip_items', defaultValue :  { Chr : 'chr', Start : 'start', End : 'end'} },
@@ -999,7 +1111,7 @@ vq.models.CircVisData.prototype.setDataModel = function() {
         {label : '_network.min_node_linkDegree', id: 'NETWORK.OPTIONS.min_node_linkdegree', cast : Number, defaultValue :  0 },
         {label : '_network.node_overlap_distance', id: 'NETWORK.OPTIONS.node_overlap_distance', cast : Number, defaultValue :  12000000.0},
         {label : '_network.tile_nodes', id: 'NETWORK.OPTIONS.tile_nodes', cast : Boolean, defaultValue : false },
-        {label : 'ticks._data_array', id: 'TICKS.DATA.data_array',  optional : true },
+        
         {label : 'ticks.tooltipItems', id: 'TICKS.OPTIONS.tooltip_items', defaultValue :  { Chr : 'chr', Start : 'start', End : 'end', Label:'value'} },
         {label : 'ticks.tooltipLinks', id: 'TICKS.OPTIONS.tooltip_links',  defaultValue : {} },
         {label : 'ticks.label_map', id: 'TICKS.OPTIONS.label_map', defaultValue:[
@@ -1064,7 +1176,7 @@ vq.models.CircVisData.prototype._setupData = function() {
     _.each(chrom_keys_array,function(val,index){chrom_keys_order[val]=index;});
 
     chrom_length_array = this._chrom.length.filter(function(d) {
-        return chrom_keys_order[d['chr_name']] != null;
+        return chrom_keys_order[d['chr_name']] !== null;
     });
     chrom_length_array.sort(function(c, d) {
         return chrom_keys_order[c['chr_name']] - chrom_keys_order[d['chr_name']] > 0;
@@ -1101,7 +1213,7 @@ vq.models.CircVisData.prototype._setupData = function() {
         theta[d] = d3.scale.linear().domain([0, chrom_length_map[d.toUpperCase()]])
             .range([0, 2 * Math.PI * normalizedLength[d]]);
 
-        if (that._chrom.reverse_list != undefined &&
+        if (that._chrom.reverse_list !== undefined &&
             that._chrom.reverse_list.filter(
                 function(c) {
                     return c == d;
@@ -1120,37 +1232,48 @@ vq.models.CircVisData.prototype._setupData = function() {
 
     this.theta = theta;
     this._ideograms={};
+    this._data.chr = {};
     _.each(that._chrom.keys, function(d) {
         startAngle_map[d] =  startAngle[d] + rotation;
         that._ideograms[d] = _.extend(chrom_groups[d],{wedge:[],_feature_angle : function(a) { return this.startAngle + this.theta(a); }});
+        that._data.chr[d] = [];
     });
     this.startAngle_map = startAngle_map;
     this._chrom.groups = chrom_groups;
 
+//Global Data
+
+    if (this._data.features,length) {     
+       this._data.chr = _.groupBy(this._data.features,'chr');
+    } 
+
 //    Ring Data
 
-    if (this._wedge != undefined) {
-        _.each(this._wedge,function(wedge, index) {
+    if (this._wedge !== undefined) {
+        var _data = [], cnv_map = {};
+        _.each(this._wedge, function(wedge, index) {
+             // are we using the global dataset?
+             wedge._globalData = true;
+            if(  wedge._globalData = !Boolean(wedge._data.length)) {
+                wedge._data = that._data.features;
+                }
+            wedge._hash = _.isUndefined(wedge._hash) ? that._data.hash : wedge._hash;
 
             if (wedge._plot_type == 'tile' || wedge._plot_type == 'glyph') {
-                var max_tile_level = wedge._tile.show_all_tiles ?
-                    Math.floor((wedge._plot_height - (wedge._radius() * 4)) / (wedge._tile.height + wedge._tile.padding)) :
+                var max_tile_level = 
+                wedge._tile.show_all_tiles ?
+                    Math.floor((wedge._plot_height - (wedge._radius() * 2)) / (wedge._tile.height + wedge._tile.padding)) :
                     undefined;
-                wedge._data = (wedge._plot_type == 'tile' ? vq.utils.VisUtils.layoutChrTiles(wedge._data, wedge._tile.overlap_distance, max_tile_level) :
+                _data = (wedge._plot_type == 'tile' ? 
+                    vq.utils.VisUtils.layoutChrTiles(wedge._data, wedge._tile.overlap_distance, max_tile_level) :
                     vq.utils.VisUtils.layoutChrTicks(wedge._data, wedge._tile.overlap_distance, max_tile_level));
+                wedge._layout = {};
+                _.each(_data,function(f) { wedge._layout[wedge._hash(f)] = f.level;}); //layout is a sparse map of id to level
             }
 
-            cnv_map = {};
-            _.each(wedge._data, function(d) {
-                if (cnv_map[d.chr] === undefined) { cnv_map[d.chr] = [];}
-                cnv_map[d.chr].push(d);
-            });
-
-            wedge._chr = {};
-            _.each(that._chrom.keys, function(d) {
-                wedge._chr[d] =  cnv_map[d] === undefined ? [] : _.extend(cnv_map[d],chrom_groups[d]);
-            });
-            wedge._outerRadius =
+        wedge._chr = wedge._globalData ? that._data.chr : _.groupBy(wedge._data,'chr');
+                    
+        wedge._outerRadius =
                 (that._plot.height / 2) -
                     vq.sum(that._wedge.slice(0, index), function(a) {
                         return a._plot_height + a._outer_padding;
@@ -1160,9 +1283,9 @@ vq.models.CircVisData.prototype._setupData = function() {
 
             wedge._innerRadius = wedge._outerPlotRadius - wedge._plot_height;
 
-            that._chrom.keys.forEach(function(d) {
-                that._ideograms[d]._outerRadius = (that._plot.height / 2) - (that.ticks.outer_padding + that.ticks.height);
-                that._ideograms[d].wedge[index] = wedge._chr[d]; //?
+            _.each(that._chrom.keys, function(d) {
+                that._ideograms[d]._outerRadius = ( that._plot.height / 2 ) -  that.ticks.outer_padding + that.ticks.height;
+                that._ideograms[d].wedge[index] = wedge._chr[d];
             });
 
             wedge.hovercard = vq.hovercard({
@@ -1194,10 +1317,10 @@ vq.models.CircVisData.prototype._setupData = function() {
             wedge._thresholded_value_to_radius = function(d) { return Math.min(Math.max(wedge._y_axis(d),wedge._innerRadius),wedge._outerPlotRadius); };
             wedge._thresholded_radius = function(d) { return Math.min(Math.max(d,wedge._innerRadius),wedge._outerPlotRadius); };
 
-            wedge._thresholded_tile_innerRadius = function(c,d) { return wedge._innerRadius + (d._tile.height + d._tile.padding) * c.level;};
-            wedge._thresholded_tile_outerRadius = function(c,d) { return wedge._innerRadius + ((d._tile.height + d._tile.padding) * c.level) + d._tile.height;};
+            wedge._thresholded_tile_innerRadius = function(c,d) { return wedge._innerRadius + (d._tile.height + d._tile.padding) * wedge._layout[wedge._hash(c)];};
+            wedge._thresholded_tile_outerRadius = function(c,d) { return wedge._innerRadius + ((d._tile.height + d._tile.padding) * wedge._layout[wedge._hash(c)]) + d._tile.height;};
             if (wedge._plot_type == 'glyph') {
-                wedge._glyph_distance = function(c) { return (((wedge._tile.height + wedge._tile.padding) * c.level)
+                wedge._glyph_distance = function(c) { return (((wedge._tile.height + wedge._tile.padding) * wedge._layout[wedge._hash(c)])
                     + wedge._innerRadius + (wedge._radius(c)));};
                 wedge._checked_endAngle = function(feature,chr) {
                     if (that._chrom.keys.length == 1) {
@@ -1216,31 +1339,23 @@ vq.models.CircVisData.prototype._setupData = function() {
         }); //foreach
     }
 
-
 //    Tick Data
-
-    if (this.ticks != undefined && this.ticks._data_array != undefined && this.ticks._data_array != null) {
-        if (that.ticks.overlap_distance === undefined) {
-            var overlap_ratio = 7000000.0 / 3080419480;
-            that.ticks.overlap_distance = overlap_ratio * totalChromLength;
+        
+        if (that.ticks.tile_ticks) {
+            if (that.ticks.overlap_distance === undefined) {
+                var overlap_ratio = 7000000.0 / 3080419480;
+                that.ticks.overlap_distance = overlap_ratio * totalChromLength;
+            }
+        
+            var _tickData = 
+                    vq.utils.VisUtils.layoutChrTicks(this._data.features, that.ticks.overlap_distance);
+            var layout = this.ticks._layout = {};
+            var hash = that._data.hash;
+            _.each(_tickData,function(f) {layout[hash(f)] = f.level;}); 
         }
-        var tick_array = that.ticks.render_ticks && that.ticks.tile_ticks ? vq.utils.VisUtils.layoutChrTicks(that.ticks._data_array, that.ticks.overlap_distance) :
-            that.ticks._data_array;
 
-        var ticks_map = {};
-        _.each(tick_array,function(d) {
-            if (ticks_map[d.chr] === undefined) { ticks_map[d.chr] = new Array();}
-            ticks_map[d.chr].push(d);
-        });
-
-        this.ticks.data_map = {};
-        _.each(that._chrom.keys, function(d) {
-            that.ticks.data_map[d] =  ticks_map[d] === undefined ? [] : ticks_map[d];
-        });
-        this.ticks._data_array = [];
-        delete tick_array;
-        ticks_map = [];
-
+        this.ticks.data_map = that._data.chr;     
+        
         this.ticks.hovercard =  vq.hovercard({
             canvas_id : that._plot.id,
             include_header : false,
@@ -1251,31 +1366,26 @@ vq.models.CircVisData.prototype._setupData = function() {
             tool_config : that.ticks.tooltipLinks
         });
 
-    }
-
     //------------------- NETWORK DATA
     var nodes = {};
     _.each(that._chrom.keys, function(d) {
         nodes[d] = {};
     });
     var node_parent_map = {};
-    var node_array = [{parent:null, chr:null, radius:0, angle:0,children:[]}];
+    var node_array = [{parent:null, chr:null, radius:0, angle:0}];
     that._network.network_radius = {};
+    that._network.layout = {};
     chrom_keys_array.forEach(function(key,index) {
         var innerRadius = that._ideograms[key].wedge.length > 0 ? that._wedge[that._ideograms[key].wedge.length-1]._innerRadius :
             (that._plot.height / 2) - that.ticks.outer_padding - that.ticks.height;
         var network_radius = that._network.network_radius[key] = innerRadius - that._network._outer_padding;
         node_parent_map[key] = index + 1;
-        var node = {chr:key,parent:node_array[0],children:[],radius: network_radius / 2,
+        var node = {chr:key,parent:node_array[0],radius: network_radius / 2,
             angle : (that._chrom.groups[key].startAngle + that._chrom.groups[key].endAngle)/2};
-        node_array[0].children.push(node);
         node_array.push(node);
     });
 
     this._network.node_parent_map = node_parent_map;
-    this._network.base_nodes = _.map(node_array,function(node){return _.extend({},node);});
-    this._network.data_nodes_map=Object.create(null);
-    this._network.links_map=Object.create(null);
   
         this._network.nodes_array=node_array;
         this._network.links_array=[];
@@ -1301,7 +1411,7 @@ vq.models.CircVisData.prototype._setupData = function() {
 
         //var edges = _.filter(_.map(that._network.data, vq.models.CircVisData.prototype._insertEdge, that),
         //function(edge) { return !_.isNull(edge);});
-    this._insertEdges(that._network.data);
+    this._insertEdges(that._data.edges);
 
     this.setDataReady(true);
 };
@@ -1311,8 +1421,10 @@ vq.models.CircVisData.prototype._remove_wedge_data = function(node) {
     var that = this;
     var chr = node.chr;
     _.each(this._ideograms[chr].wedge, function(wedge,index) {
+     if (wedge._globalData) {
         that._ideograms[chr].wedge[index] = _.reject(wedge,
             function(obj) { return that.same_feature(obj,node);});
+    }
     });
 };
 
@@ -1320,147 +1432,154 @@ vq.models.CircVisData.prototype._add_wedge_data = function(data) {
     var that = this;
     var chr = data.chr;
     _.each(this._ideograms[chr].wedge, function(wedge,index) {
+        if (wedge._globalData) {
         if(_.isUndefined(data[that._wedge[index]._value_key]) || that._wedge[index]._plot_type =='karyotype') { return;}
         wedge.push(data);
+        }
     });
 };
 
 vq.models.CircVisData.prototype.same_feature = function(n1,n2) {
-    return this._network.node_key(n1) ==  this._network.node_key(n2);
+    return this._data.hash(n1) ==  this._data.hash(n2);
 };
 
-vq.models.CircVisData.prototype.same_edge= function(rf_assoc,circvis_assoc) {
-    return this.same_feature(rf_assoc.source,circvis_assoc.source) &&
-        this.same_feature(rf_assoc.target,circvis_assoc.target);
+vq.models.CircVisData.prototype.same_edge= function(edge1,edge2) {
+    return this.same_feature(edge1.source,edge2.source) &&
+        this.same_feature(edge1.target,edge2.target);
 };
 
-vq.models.CircVisData.prototype._add_tick_data = function(node) {
+vq.models.CircVisData.prototype._retileWedge = function() {
+    var that = this;
+    _.each(this._wedge,function(wedge,index) {
+        var data = wedge._globalData ? that._data.features : wedge._data;
+        if (wedge._plot_type == 'tile' || wedge._plot_type == 'glyph') {
+                var max_tile_level = 
+                wedge._tile.show_all_tiles ?
+                    Math.floor((wedge._plot_height - (wedge._radius() * 2)) / (wedge._tile.height + wedge._tile.padding)) :
+                    undefined;
+                var _data = (wedge._plot_type == 'tile' ? 
+                    vq.utils.VisUtils.layoutChrTiles(data, wedge._tile.overlap_distance, max_tile_level) :
+                    vq.utils.VisUtils.layoutChrTicks(data, wedge._tile.overlap_distance, max_tile_level));
+                wedge._layout = {};
+                _.each(_data,function(f) { wedge._layout[wedge._hash(f)] = f.level;}); //layout is a sparse map of id to level
+            }
+  });
+};
+
+
+vq.models.CircVisData.prototype._retileTicks = function() {
     var that = this;
     var tick;
-    if ( _.any(that.ticks.data_map[node.chr],
-        function(tick) { return that.same_feature(tick,node);})) {
-        tick = _.find(that.ticks.data_map[node.chr],
-            function(n) { return that.same_feature(n,node);});
-    }
-    else {
-        tick = node;
-        vq.utils.VisUtils.layoutTile(tick,that.ticks.data_map[tick.chr].length,
-            that.ticks.data_map[tick.chr],that.ticks.overlap_distance);
-        that.ticks.data_map[tick.chr].push(tick);
-    }
-
-    return tick;
+    var _tickData = 
+        vq.utils.VisUtils.layoutChrTicks(this._data.features, this.ticks.overlap_distance);
+    var layout = this.ticks._layout;
+    var hash = that._data.hash;
+    _.each(_tickData,function(f) {layout[hash(f)] = f.level;}); 
 };
 
-vq.models.CircVisData.prototype._add_network_node = function(node) {
+vq.models.CircVisData.prototype._format_network_node = function(node) {
     var that = this;
     var node_parent_map = this._network.node_parent_map;
+    var hash = this._data.hash;
 
     function include_node(node) {
         var new_node;
-        var index = that._network.data_nodes_map[that._network.node_key(node)];
         var parent = that._network.nodes_array[node_parent_map[node.chr]];
         //previously loaded this node, pull it from the node_array
-        if (_.isUndefined(index)) {
+        if ( !_.isUndefined(parent)) {
             new_node = _.extend({parent:parent},node);
-            parent.children.push(new_node);
-            that._network.data_nodes_map[that._network.node_key(node)] = that._network.nodes_array.push(new_node) - 1;   
+            // parent.children.push(new_node);
             return new_node;
         }
         else {
-            return that._network.nodes_array[index]
+            return null;
         }
     }
 
-    if (_.isArray(node)) { return _.map(node,include_node,that);}
-    return include_node(node);
+    if (_.isArray(node)) { return _.compact(_.map(node,include_node,that));}
+    return include_node.call(that,node);
 
 };
 
 
-vq.models.CircVisData.prototype._remove_network_node = function(node) {
+vq.models.CircVisData.prototype._remove_layouts = function(node) {
     var that = this;
+    var hash = this._data.hash(node);
 
-    function remove_node(node) {
-        var new_node;
-        var index = this._network.data_nodes_map[this._network.node_key(node)];
-        //previously loaded this node, pull it from the node_array
-        if (_.isDefined(index)) {
-             that._network.nodes_array[index] = undefined;
-             that._network.data_nodes_map[that._network.node_key(node)] = undefined;
-        }
-    }
+    delete this.ticks._layout[hash];
+    delete this._network.layout[hash];
 
-    if (_.isArray(node)) { _.map(node,remove_node,that);}
-    else { remove_node(node); }
+    _.each(this._wedge, function(wedge){
+        if (wedge._layout && wedge._layout[hash]) { delete wedge._layout[hash];}
+    });
+
 };
 
-vq.models.CircVisData.prototype._remove_tick_data = function(node) {
+vq.models.CircVisData.prototype._remove_feature = function(node) {
     var that = this;
-    this.ticks.data_map[node.chr] = _.reject(this.ticks.data_map[node.chr],
-        function(obj) { return that.same_feature(obj,node);});
+    var feature_index= -1;
+     _.each(this._data.chr[node.chr],
+        function(obj,index) { if (that.same_feature(obj,node)) { feature_index = index;} 
+    });
+
+    if (!!~feature_index)    this._data.chr[node.chr].splice(feature_index,1);
+
+    feature_index = -1;
+     _.each(this._data.features,
+        function(obj,index) { if (that.same_feature(obj,node)) { feature_index = index;} 
+    });
+
+    if (!!~feature_index) this._data.features.splice(feature_index,1);
+    return this;
 };
 
 vq.models.CircVisData.prototype._insertNode = function(node) {
     var that = this;
     var new_node;
-
+    var hash = this._data.hash;
     if (!_.include(_.keys(that._chrom.groups),node.chr)) {return null;}
-    //previously loaded this node, pull it from the node_array
-
-    this._add_tick_data(node);
-    new_node = this._add_network_node(node);
-    this._add_wedge_data(node);
-    return new_node;
+    
+    if (new_node = _.find(that._data.features,function(feature) { return hash(feature) === hash(node);}) ) {
+        return new_node;
+    } else {
+        that._data.features.push(node);
+        that._data.chr[node.chr].push(node);
+    }
+    return node;
 };
 
 vq.models.CircVisData.prototype._insertNodes = function(node_array) {
     var that = this;
     var nodes = [];
-    var insert_nodes = that._add_network_node(node_array);
-    _.each(insert_nodes, function(node) {
-             that._add_wedge_data(node);
-        }
-    );
-    //this._retileNodes();
+    var insert_nodes = _.map(node_array,this._insertNode, this);
+    this._retile();
     return insert_nodes;
 };
 
+vq.models.CircVisData.prototype._retile = function() {
+    this._retileNodes();
+    this._retileTicks();
+    this._retileWedge();
+    return this;
+};
+
 vq.models.CircVisData.prototype._retileNodes = function() {
-    if (this._network.tile_nodes) {
-        var nodes = _.reject(this._network.nodes_array,function(node) { return node.children;});
-        nodes = vq.utils.VisUtils.layoutChrTiles(nodes ,this._network.node_overlap_distance);
-        this._network.nodes_array = _.union(this._network.base_nodes, nodes);
+    var that = this;
+    if (this._network.tile_nodes && this._data.features.length) {
+        nodes = vq.utils.VisUtils.layoutChrTiles(that._data.features ,that._network.node_overlap_distance);
+         _.each(nodes,function(f) { that._network.layout[that._data.hash(f)] = f.level;});
     }
+    return this;
 };
 
 vq.models.CircVisData.prototype._removeNode = function(node) {
     if (!_.isObject(node)) { return; }
-    this._remove_tick_data(node);
-    this._remove_network_node(node);
-    this._remove_wedge_data(node);
+    this._remove_feature(node);
 };
 
 vq.models.CircVisData.prototype._insertEdges = function(edge_array) {
     var that = this;
-    var node_array = _.flatten(_.map(edge_array, function(edge) { return [edge.node1,edge.node2];}));
-    this._add_network_node(node_array);
-
-    function insert_edge(edge) {
-        var node_key = this._network.node_key;
-        var node1 = edge.node1, node2 = edge.node2;
-        var node1_key = node_key(node1), node2_key = node_key(node2);
-        var edge_key =node1_key +'_'+ node2_key;
-        var index = this._network.links_map[edge_key];
-
-        if (_.isUndefined(index)) { //link does not yet exist
-            var insert_edge = _.extend( {source:that._network.nodes_array[that._network.data_nodes_map[node1_key]],
-                target:that._network.nodes_array[that._network.data_nodes_map[node2_key]] }
-                , edge);
-            this._network.links_map[edge_key] = this._network.links_array.push(insert_edge) -1;  //add it
-            }
-        }
-        _.map(edge_array,insert_edge,that);
+    _.each(edge_array,this._insertEdge,that);
 };
 
 
@@ -1471,17 +1590,19 @@ vq.models.CircVisData.prototype._insertEdge = function(edge) {
     //quit if either node has an unmappable location
     if(_.any(nodes,function(a){return _.isNull(a) ||
         !_.include(_.keys(that._chrom.groups),a.chr); })) {
-        console.log('Unmappable chromosome in edge.');
+        console.log('Unmappable chromosome in edge: 1:'+ nodes[0].chr + ', 2:' + nodes[1].chr);
         return null;
     }
     //insert/recover both nodes
-    var edge_arr = that._insertNodes([nodes[0],nodes[1]]);
+    var edge_arr = _.map([nodes[0],nodes[1]],that._insertNode,that);
     if(_.any(edge_arr,function(a){return _.isNull(a);})) {
         console.error('Unable to insert node for requested edge'); return null;
     }
 
     //list of keys that aren't node1,node2
     var keys = _.chain(edge).keys().reject(function(a){return a=='node1'|| a== 'node2';}).value();
+    edge_arr = _.map(edge_arr,this._format_network_node,this);
+
     //append the source,target nodes
     var insert_edge = _.chain(edge).pick(keys).extend({source:edge_arr[0],target:edge_arr[1]}).value();
 
@@ -1497,21 +1618,23 @@ vq.models.CircVisData.prototype._insertEdge = function(edge) {
 vq.models.CircVisData.prototype._removeEdge = function(edge) {
     var that = this;
     if (_.isObject(edge)) {
-        this._network.links_array =
-            _.reject(this._network.links_array,function(link) { return that.same_edge(link,edge);});
+        var edge_index = -1;
+            _.each(this._network.links_array,function(link,index) { 
+                if (that.same_edge(link,_.extend(
+                            {},{source:edge.node1,target:edge.node2},edge))) {
+                edge_index = index;
+                }
+            });
+        if (edge_index) this._network.links_array.splice(edge_index,1);
     }
-
 };
 
 vq.models.CircVisData.prototype._removeEdges = function(edge_arr) {
     var that = this;
     if (_.isArray(edge_arr)) {
-        this._network.links_array =
-            _.difference(that._network.links_array,edge_arr);
+        _.each(edge_arr, this._removeEdge,this);
     }
-
 };
-
 
 
 /**
@@ -1534,12 +1657,9 @@ vq.models.CircVisData.WedgeData.prototype = vq.extend(vq.models.VisData);
 
 vq.models.CircVisData.WedgeData.prototype.setDataModel = function() {
     this._dataModel = [
-        {label : '_data', id: 'DATA.data_array', defaultValue : [
-            {"chr": "1", "end": 12784268, "start": 644269,
-                "value": -0.058664}
-        ]},
-        {label : '_value_key', id: 'DATA.value_key', defaultValue : 'value',cast: String },
-        {label : '_hash', id: 'DATA.hash', defaultValue : 'label',cast: String },
+        {label : '_data', id: 'DATA.data_array', defaultValue : [   ]},
+        {label : '_value_key', id: 'DATA.value_key', defaultValue : 'value',cast: String },  //value to plot
+        {label : '_hash', id: 'DATA.hash', optional: true ,cast: vq.utils.VisUtils.wrapProperty }, //unique identifier
         {label : 'listener', id: 'OPTIONS.listener', defaultValue :  function(a, b) {
         } },
         {label : '_plot_type', id: 'PLOT.type', defaultValue : 'histogram' },
@@ -1548,9 +1668,8 @@ vq.models.CircVisData.WedgeData.prototype.setDataModel = function() {
             return 'red';
         } },
         {label : '_strokeStyle', id: 'OPTIONS.stroke_style', cast : vq.utils.VisUtils.wrapProperty, defaultValue : function(d) {
-            return 'black';
-        } },
-         {label : '_lineWidth', id: 'OPTIONS.line_width', cast : Number, defaultValue : 0.5 },
+            return 'black'; } },
+        {label : '_lineWidth', id: 'OPTIONS.line_width', cast : Number, defaultValue : 0.5 },
         {label : '_shape', id: 'OPTIONS.shape', cast : vq.utils.VisUtils.wrapProperty, defaultValue : function(d) {
             return 'circle';
         } },
@@ -1564,6 +1683,7 @@ vq.models.CircVisData.WedgeData.prototype.setDataModel = function() {
         {label : '_legend_label', id: 'OPTIONS.legend_label', cast: String, defaultValue : '' },
         {label : '_legend_desc', id: 'OPTIONS.legend_description', cast: String, defaultValue : '' },
         {label : '_draw_axes', id: 'OPTIONS.draw_axes', cast: Boolean, defaultValue : true },
+        {label : '_draw_axes', id: 'OPTIONS.show_tooltips', cast: Boolean, defaultValue : true },
         {label : '_tooltipFormat', id: 'OPTIONS.tooltipFormat', cast :vq.utils.VisUtils.wrapProperty,
             defaultValue : function(c, d) {
                 return "Chr " + d + "\nStart: " + c.start + "\nEnd: " + c.end;
@@ -1579,106 +1699,4 @@ vq.models.CircVisData.WedgeData.prototype.setDataModel = function() {
 
 vq.models.CircVisData.WedgeData.prototype._build_data = function(data_struct) {
     this._processData(data_struct)
-};
-/*EDGES*/
-
-vq.CircVis.prototype.addEdges = function(edge_array,ignore_nodes) {
-    var ignore = _.isBoolean(ignore_nodes) ? ignore_nodes : Boolean(false);
-    var edges;
-    if (_.isArray(edge_array)) {
-        edges = this._insertEdges(edge_array);
-    }
-    else {
-        edges = this._insertEdges([edge_array]);
-    }
-    this._drawNetworkLinks();
-
-    if (ignore) { return;}
-
-    var nodes = _.flatten(_.map(edges, function(edge) { return [edge.source,edge.target];}));
-    this.addNodes(nodes);
-};
-
-vq.CircVis.prototype.removeEdges = function(edge_array, ignore_nodes) {
-    var that = this;
-    var ignore = _.isBoolean(ignore_nodes) ? ignore_nodes : Boolean(false);
-    if (edge_array === 'all') {
-            edge_array = this.chromoData._network.links_array;
-        }
-
-    if (_.isArray(edge_array)) {
-        _.each(edge_array,function(edge) {that.chromoData._removeEdge(edge);});
-    }
-    else if ( _.isObject(edge_array)){
-        this.chromoData._removeEdge(edge_array);
-    }
-
-    this._drawNetworkLinks();
-
-    if(ignore) {return;}
-
-    var removable = this._edgeListToNodeList(edge_array);
-    var remaining_nodes = this._edgeListToNodeList(this.chromoData._network.links_array);
-    var nodes_to_remove = _.difference(removable,remaining_nodes);
-    this.removeNodes(nodes_to_remove);
-
-};
-
-
-vq.CircVis.prototype._insertEdges = function(edge_array) {
-    //return the array of edges inserted
-    return _.filter(_.map(edge_array, vq.models.CircVisData.prototype._insertEdge, this.chromoData),
-        function(edge) { return !_.isNull(edge);});
-};
-
-/* NODES*/
-
-vq.CircVis.prototype.addNodes = function(node_array) {
-    var nodes;
-    var that = this;
-    if (_.isArray(node_array)) {
-       nodes = this.chromoData._insertNodes(node_array);
-    }
-    else {
-        nodes = this.chromoData._insertNodes([node_array]);
-    }
-    nodes = _.reject(nodes,function(n) {return _.isNull(n);});
-    _.each(_.uniq(_.pluck(nodes,'chr')), function(chr) {
-               that._drawTicks(chr);
-               that._drawNetworkNodes(chr);
-               that._drawWedgeData(chr);
-           });
-};
-
-vq.CircVis.prototype.removeNodes = function(node_array) {
-    var that = this;
-    if (_.isFunction(node_array)) {
-        node_array = _.filter(this.chromoData._network.nodes_array, node_array);
-    }
-
-    if (_.isArray(node_array)) {
-        _.each(node_array, function(node) {
-            that.chromoData._removeNode(node);
-        });
-        this.chromoData._retileNodes();
-        _.each(_.uniq(_.pluck(node_array,'chr')), function(chr) {
-            that._drawTicks(chr);
-            that._drawNetworkNodes(chr);
-            that._drawWedgeData(chr);
-        });
-    }
-    else if (_.isObject(node_array)){
-        that.chromoData._removeNode(node_array);
-        that._drawTicks(node_array.chr);
-        that._drawNetworkNodes(node_array.chr);
-        that._drawWedgeData(node_array.chr);
-    }
-
-};
-
-
-/*Utils*/
-
-vq.CircVis.prototype._edgeListToNodeList = function(edges) {
-    return _.uniq(_.flatten(_.chain(edges).map(function(edge){return [edge.source,edge.target];}).value()));
 };

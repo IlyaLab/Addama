@@ -4,12 +4,11 @@ var PerCancer = Backbone.Model.extend({
     },
 
     parse: function(data) {
-        var allFeaturesById = _.groupBy(this.get("featureList"), "id");
+        var allFeaturesById = _.groupBy(this.get("nodes"), "id");
         _.each(data.edges, function(edge) {
-            edge.node1 = _.extend(edge.node1, allFeaturesById[edge.node1.id]);
-            edge.node2 = _.extend(edge.node2, allFeaturesById[edge.node2.id]);
+            edge.node1 = _.extend(edge.node1, allFeaturesById[edge.node1.id][0]);
+            edge.node2 = _.extend(edge.node2, allFeaturesById[edge.node2.id][0]);
         });
-
         return { "data": data };
     },
 
@@ -108,7 +107,7 @@ module.exports = Backbone.Model.extend({
         _.each(featureListsByCancer, function(featureList, cancer) {
             var perCancer = new PerCancer({
                 "data_uri": associationsUri,
-                "featureList": featureList
+                "nodes": this.get("nodesByCancer")[cancer]
             });
             perCancer.fetch({
                 "data": {
@@ -121,9 +120,9 @@ module.exports = Backbone.Model.extend({
                 "error": singleSuccessFn
             });
             perCancers[cancer] = perCancer;
-        });
+        }, this);
 
         this.set("associationsByCancer", perCancers);
-        this.set("nodesByCancer", this.get("nodesByCancer"));
+//        this.set("nodesByCancer", this.get("nodesByCancer"));
     }
 });

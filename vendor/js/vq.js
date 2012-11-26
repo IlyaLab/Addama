@@ -451,32 +451,31 @@ vq.utils.VisUtils.natural_order = function(a,b){return a-b};
         }
     };
 
-
 vq.utils.VisUtils.layoutChrTiles = function(tiles,overlap, max_level, treat_as_points) {
     var points = treat_as_points || Boolean(false);
     var new_tiles = [], chr_arr = [];
-    chr_arr = _.uniq(_.pluck(tiles,'chr'));
-    chr_arr.forEach(function(chr) {
-        new_tiles = _.union(new_tiles,
-                vq.utils.VisUtils.layoutTiles(tiles.filter(function(tile) { return tile.chr == chr;}),overlap,max_level,points));
+    chr_arr = _.uniq(_.pluck(tiles,'chr')); //find the unique chr labels
+    chr_arr.forEach(function(chr) { // for each chr
+        new_tiles = _.union(new_tiles,  //concat together tiles being laid out by chr.
+                vq.utils.VisUtils.layoutTiles(_.where(tiles,{'chr':chr}),overlap,max_level,points)); 
     });
-    tiles.forEach(function(obj) { vq.utils.VisUtils.copyTile(obj,new_tiles);});
-    return tiles;
+    // tiles.forEach(function(obj) { vq.utils.VisUtils.copyTile(obj,new_tiles);});
+    return new_tiles;
 };
 
-vq.utils.VisUtils.copyTile = function(tile,tile_set) {
-            var match = null,
-            index= 0,
-            props = _.keys(tile);
-            do {
-                 match = props.every(function(prop) { return ((tile[prop] == tile_set[index][prop]) ||
-                            (isNaN(tile[prop] && isNaN(tile_set[index][prop])))) ? 1 : 0;});
-                index++;
-            }
-          while (index < tile_set.length && match != 1);
-            tile.level = tile_set[index-1].level;
-        return tile;
-};
+// vq.utils.VisUtils.copyTile = function(tile,tile_set) {
+//             var match = null,
+//             index= 0,
+//             props = _.keys(tile);
+//             do {
+//                  match = props.every(function(prop) { return ((tile[prop] == tile_set[index][prop]) ||
+//                             (isNaN(tile[prop] && isNaN(tile_set[index][prop])))) ? 1 : 0;});
+//                 index++;
+//             }
+//           while (index < tile_set.length && match != 1);
+//             tile.level = tile_set[index-1].level;
+//         return tile;
+// };
 
 vq.utils.VisUtils.layoutChrTicks = function(tiles,overlap,max_level) {
     return vq.utils.VisUtils.layoutChrTiles(tiles,overlap,max_level,true);
@@ -488,14 +487,15 @@ vq.utils.VisUtils.layoutChrTicks = function(tiles,overlap,max_level) {
 
 vq.utils.VisUtils.layoutTiles = function(tiles,overlap,max_level, treat_as_points){
     var points = treat_as_points || Boolean(false);
-    tiles.forEach (function(b) { b.tile_length = (b.end - b.start);});  // generate a tile length property
-    tiles = tiles.sort(function(a,b) { return (a.tile_length < b.tile_length) ? -1 :
+    var new_tiles = new Array(tiles.length);
+    new_tiles = _.map(tiles,function(b) { return _.extend({},b,{tile_length : (b.end - b.start)});});  // generate a tile length property
+    new_tiles = new_tiles.sort(function(a,b) { return (a.tile_length < b.tile_length) ? -1 :
             (a.tile_length > b.tile_length) ? 1 : a.start < b.start ? -1 : 1 ;}).reverse();         //sort all tiles by tile length
-    if (tiles.length) {tiles[0].level = 0;}
-    tiles.forEach(function(tile,index,array) {
+    if (new_tiles.length) {new_tiles[0].level = 0;}
+    _.each(new_tiles,function(tile,index,array) {
             vq.utils.VisUtils.layoutTile(tile,index,array,overlap,max_level,treat_as_points);
     });
-    return tiles;
+    return new_tiles;
 };
 
 vq.utils.VisUtils.layoutTile = function(tile,index,array,overlap,max_level, treat_as_points) {
@@ -504,19 +504,18 @@ vq.utils.VisUtils.layoutTile = function(tile,index,array,overlap,max_level, trea
                 .map(
                 function(a){
                     var t1 = vq.utils.VisUtils.extend({},a);
-                    var t2 = vq.utils.VisUtils.extend({},tile);
-                    if(a.end == null)  t1.end = t2.start + 0.1;
-                    else if(tile.end == null) t2.end = t2.start + 0.1;
-                    return vq.utils.VisUtils._isOverlapping(t1,t2,overlap || 0, points) ? a.level : null;
+                    if (_.isNull(a.end))  t1.end = tile.start + 0.1;
+                    else if (_.isNull(tile.end)) tile.end = tile.start + 0.1;
+                    return vq.utils.VisUtils._isOverlapping(t1,tile,overlap || 0, points) ? a.level : null;
                 }
                 );
-        levels = levels.filter(function(a) { return _.isFinite(a);}).sort(vq.utils.VisUtils.natural_order);
+        levels = _.filter(levels, function(a) { return _.isFinite(a);}).sort(vq.utils.VisUtils.natural_order);
         var find = 0, l_index =0;
         while (find >= levels[l_index]) {
             if (find == levels[l_index]) { find++;}
             l_index++;
         }
-        if (max_level === undefined) { tile.level = find;}
+        if (_.isUndefined(max_level)) { tile.level = find;}
         else
         {tile.level  = find <= max_level ? find : Math.floor(Math.random() * (max_level + 1));}
     };
@@ -526,6 +525,11 @@ vq.utils.VisUtils._isOverlapping = function(tile1,tile2,overlap, treat_as_points
     if (point) return ((tile1.start-overlap) <= tile2.start && (tile1.start + overlap) >= tile2.start);
     else
     return ((tile1.start-overlap) <= tile2.end && (tile1.end + overlap) >= tile2.start);
+};
+
+vq.utils.VisUtils.tileCenter = function(tile) {
+  if (!(_.isFinite(tile.end + tile.start)) && _.isNumber(tile.start)) { return tile.start;}
+  return (tile.end + tile.start) >>> 1; // divide by 2 and drop fraction/sign.
 };
 
 //taken from PrototypeJS
@@ -1317,7 +1321,7 @@ vq.Hovercard.prototype.renderFooter = function() {
         return false;
     }
     $(close).on('click',hideHovercard);
-    $('<i></i>').addClass('icon-remove').appendTo(close);
+    $('<i></i>').addClass('icon-remove').html('CLOSE').appendTo(close);
     $(footer).append(close);
     return footer;
 };
