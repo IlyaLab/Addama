@@ -81,7 +81,7 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
 
         update_id = ids[1]
         collection = open_collection(ids[0])
-        collection.update({ "_id": update_id }, stored_item )
+        collection.update({ "_id": objectid.ObjectId(update_id) }, stored_item )
 
         self.write({ "id": update_id, "uri": self.request.uri + "/" + update_id })
         self.set_status(200)
