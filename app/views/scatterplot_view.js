@@ -139,8 +139,8 @@ module.exports = Backbone.View.extend({
         y_feature = this.selected_features["y"],
         x_axis = this.getFeatureAxisLabel("x"),
         y_axis = this.getFeatureAxisLabel("y"),
-        x_values = _.first(x_features).values || {},
-        y_values = _.first(y_features).values || {};
+        x_values = _.first(x_feature).values || {},
+        y_values = _.first(y_feature).values || {};
         //just take x and y values.  can't handle id's yet.
         var data_array = _.map(x_values, function(x_val,index) { var obj = {} 
             obj[x_axis] = x_val;
@@ -193,7 +193,7 @@ module.exports = Backbone.View.extend({
         var x_feature = this.selected_features["x"];
         var y_feature = this.selected_features["y"];
         if(this.isNominal(x_feature) != this.isNominal(y_feature)) {  //if one feature is nominal and the other isn't
-            drawKDE();  //draw the KDE
+            this.drawKDE();  //draw the KDE
             return; //and get out
         }
 
@@ -248,7 +248,7 @@ module.exports = Backbone.View.extend({
 
         var datapoints = _.map(x_values, function(x_val, point_id) {
             var y_val = y_values[point_id];
-            if (_.isNumber(x_val) && _.isNumber(y_val)) {
+            if (!_.isEqual(x_val, "NA") && !_.isEqual(y_val, "NA")) {
                 var dataPoint = {"id": point_id};
                 dataPoint[x_axis] = x_val;
                 dataPoint[y_axis] = y_val;
