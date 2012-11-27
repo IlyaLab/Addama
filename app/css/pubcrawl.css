@@ -85,3 +85,65 @@ line.axis {
  .nocheckbox_table tbody tr:hover th {
      background-color: orange;
  }
+
+
+thead {
+    background-color:  #0061af;
+     background-image: -moz-linear-gradient(top, #0077d8, #003f72);
+ background-image: -ms-linear-gradient(top, #0077d8, #003f72);
+ background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0077d8), to(#003f72));
+ background-image: -webkit-linear-gradient(top, #0077d8, #003f72);
+ background-image: -o-linear-gradient(top, #0077d8, #003f72);
+ background-image: linear-gradient(top, #0077d8, #003f72);
+ background-repeat: repeat-x;
+   color: #FFFFFF;
+}
+
+div.dataTables_wrapper {
+    /*line-height: 10px;
+    font-size: 12px;      */
+    width: 700px;
+}
+
+
+
+table.table thead .sorting,
+table.table thead .sorting_asc,
+table.table thead .sorting_desc,
+table.table thead .sorting_asc_disabled,
+table.table thead .sorting_desc_disabled {
+   cursor: pointer;
+   *cursor: hand;
+}
+
+table.table thead .sorting { background: url('../img/sort_both.png') no-repeat center right; }
+table.table thead .sorting_asc { background: url('../img/sort_asc.png') no-repeat center right; }
+table.table thead .sorting_desc { background: url('../img/sort_desc.png') no-repeat center right; }
+
+table.table thead .sorting_asc_disabled { background: url('../img/sort_asc_disabled.png') no-repeat center right; }
+table.table thead .sorting_desc_disabled { background: url('../img/sort_desc_disabled.png') no-repeat center right; }
+
+
+ div.dataTables_length label {
+   float: left;
+   text-align: left;
+
+}
+
+div.dataTables_length select {
+     width: 100px;
+}
+
+div.dataTables_filter label {
+   float: right;
+}
+
+div.dataTables_info {
+   padding-top: 8px;
+    width: 200px;
+}
+
+div.dataTables_paginate {
+   float: right;
+   margin: 0;
+}
