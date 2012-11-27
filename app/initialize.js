@@ -59,6 +59,7 @@ $(function () {
             "datatable": require("views/datatable_view"),
             "pubcrawl_network": require("views/pubcrawl_network"),
             "pubcrawl_lit": require("views/pubcrawl_lit"),
+            "items_grid": require("views/items_grid_view"),
             "Atlas": require("views/atlas")
         },
         Lookups:{

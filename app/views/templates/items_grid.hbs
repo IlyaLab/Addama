@@ -1,0 +1,18 @@
+<table class="table table-striped table-bordered table-hover table-condensed">
+    <thead>
+    <tr>
+        {{#each headers}}
+        <td>{{.}}</td>
+        {{/each}}
+    </tr>
+    </thead>
+    <tbody>
+    {{#each rows}}
+    <tr>
+        {{#each values}}
+            <td>{{.}}</td>
+        {{/each}}
+    </tr>
+    {{/each}}
+    </tbody>
+</table>
