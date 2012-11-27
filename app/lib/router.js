@@ -111,9 +111,10 @@ module.exports = Backbone.Router.extend({
     },
 
     home_view:function () {
-        var HomeView = require("../views/home_view");
-        var homeView = new HomeView();
-        this.$el.html(homeView.render().el);
+        this.navigate("#atlas", {trigger: true});
+//        var HomeView = require("../views/home_view");
+//        var homeView = new HomeView();
+//        this.$el.html(homeView.render().el);
     },
 
     viewsByUri: function(uri, view_name, options) {
