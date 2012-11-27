@@ -82,7 +82,7 @@ module.exports = Backbone.View.extend({
         _.bindAll(this, "loadCancerList", "initGeneTypeahead", "nextZindex", "nextPosition", "currentState");
 
         this.$el.html(AtlasTemplate());
-        this.$el.find(".atlas-zoom").draggable({ "scroll":true });
+        this.$el.find(".atlas-zoom").draggable({ "scroll":true, "cancel": "div.atlas-map" });
 
         $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.loadCancerList });
         $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initGeneTypeahead });
@@ -171,7 +171,7 @@ module.exports = Backbone.View.extend({
             "to": $atlasMap,
             complete: function() {
                 _this.loadMapData($atlasMap);
-                $atlasMap.draggable({ "scroll":true });
+                $atlasMap.draggable({ "handle": ".icon-move", "scroll": true });
             }
         }, 750);
     },
