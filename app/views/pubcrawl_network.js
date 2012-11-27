@@ -1,4 +1,123 @@
+var Template = require('./templates/pubcrawl_network');
 
+
+var NodeTableView = Backbone.View.extend({
+
+    initialize: function(){
+
+        this.$el.html('<div id="nodeDetails"></div>');
+        this.model.bind("reset", this.render, this);
+    },
+
+
+    render: function(){
+
+        var tabs = '<ul class="nav nav-tabs" id="nodeDetailsTabs">' +
+            '<li class="active"><a id="qfDocTab" href="#docTableView" data-toggle="tab">Medline Documents</a></li>' +
+            '<li><a id="qfNMDTab" href="#nmdTableView" data-toggle="tab">NMD Connections</a></li>' +
+            '<li><a id="qfDomineTab" href="#domineTableView" data-toggle="tab">Domine Connections</a></li>' +
+            '</ul>' +
+            '<div class="tab-content">' +
+            '<div class="tab-pane active queryfiltertable" id="docTableView"></div>' +
+            '<div class="tab-pane queryfiltertable" id="nmdTableView">' +
+            '</div>' +
+            '<div class="tab-pane queryfiltertable" id="domineTableView"></div>' +
+            '</div>';
+
+        this.$el.find("#nodeDetails").html(tabs);
+
+        var docConfig = [{headerName:'PMID', headerWidth: '10%', propName:'pmid', urlLink:'http://www.ncbi.nlm.nih.gov/pubmed/'},
+            {headerName:'Title', headerWidth: '50%', propName: 'article_title'},
+            {headerName:'Pub. Year', headerWidth: '10%', propName: 'pub_date_year'}];
+
+        var expConfig = [{propName:'abstract_text'}];
+        var ViewClass = qed.Views['datatable'];
+        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "docTable",model: this.model.docs});
+        this.$el.find("#docTableView").html(this.docView.render().el);
+
+        var nmdConfig = [{headerName:'Name', headerWidth: '30%', propName:'name'},
+            {headerName:'Term Single Count', headerWidth: '10%', propName: 'termcount'},
+            {headerName:'Term Combo Count', headerWidth: '10%', propName: 'combocount'},
+            {headerName:'NMD', headerWidth: '10%', propName: 'nmd'}];
+
+        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "nmdTable",model: this.model.nmdDetailsModel});
+        this.$el.find("#nmdTableView").html(this.nmdView.render().el);
+
+        var dataConfig = [{headerName:'Term1', headerWidth: '30%', propName:'term1'},
+            {headerName:'Term2', headerWidth: '10%', propName: 'term2'},
+            {headerName:'UniProt ID1', headerWidth: '10%', propName: 'uni1'},
+            {headerName:'UniProt ID2', headerWidth: '10%', propName: 'uni2'},
+            {headerName:'Domain 1', headerWidth: '10%', propName: 'pf1'},
+            {headerName:'Domain 2', headerWidth: '10%', propName: 'pf2'},
+            {headerName:'Type', headerWidth: '10%', propName: 'type'},
+            {headerName:'Domain 1 Count', headerWidth: '10%', propName: 'pf1_count'},
+            {headerName:'Domain 2 Count', headerWidth: '10%', propName: 'pf2_count'}];
+
+        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "domineTable",model: this.model.domineDetailsModel});
+        this.$el.find("#domineTableView").html(this.domineView.render().el);
+
+        return this;
+    }
+});
+
+var EdgeTableView = Backbone.View.extend({
+
+    initialize: function(){
+        this.$el.html('<div id="edgeDetails"></div>');
+               this.model.bind("reset", this.render, this);
+    },
+
+
+    render: function(){
+
+        var tabs = '<ul class="nav nav-tabs" id="edgeDetailsTabs">' +
+            '<li class="active"><a id="qfDocTab" href="#edocTableView" data-toggle="tab">Medline Documents</a></li>' +
+            '<li><a id="qfNMDTab" href="#enmdTableView" data-toggle="tab">NMD Connections</a></li>' +
+            '<li><a id="qfDomineTab" href="#edomineTableView" data-toggle="tab">Domine Connections</a></li>' +
+            '</ul>' +
+            '<div class="tab-content">' +
+            '<div class="tab-pane active queryfiltertable" id="edocTableView"></div>' +
+            '<div class="tab-pane queryfiltertable" id="enmdTableView">' +
+            '</div>' +
+            '<div class="tab-pane queryfiltertable" id="edomineTableView"></div>' +
+            '</div>';
+
+        this.$el.find("#edgeDetails").html(tabs);
+
+        var docConfig = [{headerName:'PMID', headerWidth: '5%', propName:'pmid', urlLink:'http://www.ncbi.nlm.nih.gov/pubmed/'},
+            {headerName:'Title', headerWidth: '50%', propName: 'article_title'},
+            {headerName:'Pub. Year', headerWidth: '5%', propName: 'pub_date_year'}];
+
+        var expConfig = [{propName:'abstract_text'}];
+        var ViewClass = qed.Views['datatable'];
+        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "docTable",model: this.model.docs});
+        this.$el.find("#edocTableView").html(this.docView.render().el);
+
+        var nmdConfig = [{headerName:'Term1', headerWidth: '20%', propName:'term1'},
+            {headerName: 'Term2', headerWidth: '20%', propName: 'term2'},
+            {headerName:'Term Single Count', headerWidth: '10%', propName: 'termcount'},
+            {headerName:'Term Combo Count', headerWidth: '10%', propName: 'combocount'},
+            {headerName:'NMD', headerWidth: '20%', propName: 'nmd'}];
+
+        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "nmdTable",model: this.model.nmdDetailsModel});
+        this.$el.find("#enmdTableView").html(this.nmdView.render().el);
+
+        var dataConfig = [{headerName:'Term1', headerWidth: '10%', propName:'term1'},
+            {headerName:'Term2', headerWidth: '10%', propName: 'term2'},
+            {headerName:'UniProt ID1', headerWidth: '10%', propName: 'uni1'},
+            {headerName:'UniProt ID2', headerWidth: '10%', propName: 'uni2'},
+            {headerName:'Domain 1', headerWidth: '10%', propName: 'pf1'},
+            {headerName:'Domain 2', headerWidth: '10%', propName: 'pf2'},
+            {headerName:'Type', headerWidth: '10%', propName: 'type'},
+            {headerName:'Domain 1 Count', headerWidth: '10%', propName: 'pf1_count'},
+            {headerName:'Domain 2 Count', headerWidth: '10%', propName: 'pf2_count'}];
+
+        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "domineTable",model: this.model.domineDetailsModel});
+        this.$el.find("#edomineTableView").html(this.domineView.render().el);
+
+        return this;
+    }
+});
 
 module.exports = Backbone.View.extend({
 
@@ -6,12 +125,14 @@ module.exports = Backbone.View.extend({
         _.extend(this, options);
         _.bindAll(this, "loadData");
 
+        this.$el.html(Template({}));
+        $("#pubcrawlGraphTabs").tabs();
         this.model.on("load", this.loadData);
     },
 
     loadData: function() {
 
-       this.render(600,400);
+      this.render(650,350);
 
     },
 
@@ -26,7 +147,7 @@ module.exports = Backbone.View.extend({
                         return this;
                     }
 
-        var svg = d3.select(this.el).append("svg:svg")
+        var svg = d3.select("#pubcrawlNetworkView").append("svg:svg")
                       .attr("width", width)
                       .attr("height", height);
 
@@ -42,11 +163,11 @@ module.exports = Backbone.View.extend({
                 .linkDistance(
                     function(d){
                         if(d.nmd != null){
-                            return (d.nmd)*300;
+                            return (d.nmd)*350;
                         }
-                        return 300;
+                        return 350;
                     })
-                .charge(-200)
+                .charge(-300)
                 .on("tick", tick);
 
             var line = svg.append("svg:g").selectAll("line.link")
@@ -141,11 +262,11 @@ module.exports = Backbone.View.extend({
       }
 
       function triggerNodeDetailsView(item){
-          $(that.el).trigger('nodeClicked',item.name);
+         that.showNodeDetails(item.name);
       }
 
       function triggerEdgeDetailsView(item){
-          $(that.el).trigger('edgeClicked',{source: item.source.name, target: item.target.name});
+          that.showEdgeDetails({source: item.source.name, target: item.target.name});
       }
 
             force.start();
@@ -156,6 +277,27 @@ module.exports = Backbone.View.extend({
                    }
 
         return this;
-     }
+     },
+
+   showNodeDetails: function(node){
+       this.nodeDetails = new NodeDetailsModel(this.model.networkData,node);
+       var that=this;
+       $("#pubcrawlGraphTabs").tabs("option","selected",1);
+       var datatable=this.nodeDetails.fetch({success: function(model,response){
+           $("#pubcrawlNodeDetails").html(new NodeTableView({model: model}).render().el);
+           that.$("#pubcrawlGraphTabs").tabs("option","selected",1);
+
+       }});
+   },
+
+    showEdgeDetails: function(edge){
+          this.edgeDetails = new EdgeDetailsModel(this.model.networkData,edge);
+          var that=this;
+          $("#pubcrawlGraphTabs").tabs("option","selected",2);
+          var datatable=this.edgeDetails.fetch({success: function(model,response){
+              $("#pubcrawlEdgeDetails").html(new EdgeTableView({model: model}).render().el);
+
+          }});
+      }
 
 });
