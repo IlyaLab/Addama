@@ -99,11 +99,11 @@ var NodeCollection = Backbone.Collection.extend({
     model: Node
 });
 
-var NodeDetailsModel = Backbone.Model.extend({
+NodeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
     urlRoot: 'http://apollo:4080/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true',
     url: function(){
-        return this.urlRoot + "&q=+text:(" + this.nodeName + ")&fq=pub_date_year:[1991 TO 2012]";
+        return this.urlRoot + "&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]";
     },
 
     initialize: function(networkModel,nodeName){
@@ -119,22 +119,22 @@ var NodeDetailsModel = Backbone.Model.extend({
         }
         for(var i=0; i< networkModel.edges.length; i++){
             var edge = networkModel.edges.models[i];
-            if(edge.source.node == this.node){
+            if(edge.source.name == this.node.name){
                 if(edge.relType == "ngd"){
 
-                    var edgeItem={name: edge.target.node.name, combocount: edge.combocount, termcount: edge.target.node.termcount,nmd:edge.nmd};
+                    var edgeItem={name: edge.target.name, combocount: edge.combocount, termcount: edge.target.termcount,nmd:edge.nmd};
                     this.nmdDetailsModel.push(edgeItem);
                 }
                 else if(edge.relType == "domine"){
-                    var edgeItem={term1: edge.source.node.name, term2: edge.target.node.name, pf1: edge.pf1, pf2: edge.pf2,
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name, pf1: edge.pf1, pf2: edge.pf2,
                         pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
                     this.domineDetailsModel.push(edgeItem);
                 }
             }
-            else if(edge.target.node == this.node){
+            else if(edge.target.name == this.node.name){
                 //don't need to do ngd here, since it is currently doubled, should be able to also remove domine once it is doubled correctly
                 if(edge.relType == "domine"){
-                    var edgeItem={term1: edge.target.node.name, term2: edge.source.node.name, pf1: edge.pf1, pf2: edge.pf2,
+                    var edgeItem={term1: edge.target.name, term2: edge.source.name, pf1: edge.pf1, pf2: edge.pf2,
                         pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
                     this.domineDetailsModel.push(edgeItem);
                 }
@@ -151,6 +151,62 @@ var NodeDetailsModel = Backbone.Model.extend({
                 if(response.highlighting[doc.pmid] != undefined){
                     if(response.highlighting[doc.pmid].abstract_text != undefined){
                         doc.abstract_text = response.highlighting[doc.pmid].abstract_text;
+                    }
+                    if(response.highlighting[doc.pmid].article_title != undefined){
+                        doc.article_title = response.highlighting[doc.pmid].article_title;
+                    }
+                }
+
+                this.docs.push(doc);
+            }
+        }
+
+        return;
+
+    }
+
+});
+
+EdgeDetailsModel = Backbone.Model.extend({
+    //url for this model is the solr connection to retrieve documents related to this node
+    urlRoot: 'http://apollo:4080/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true',
+    url: function(){
+        return this.urlRoot + "&q=%2Btext%3A%28'" + this.source + "'%29&q=%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]";
+    },
+
+    initialize: function(networkModel,edge){
+        //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
+        this.source = edge.source;
+        this.target = edge.target;
+        this.nmdDetailsModel = [];
+        this.domineDetailsModel = [];
+
+        for(var i=0; i< networkModel.edges.length; i++){
+            var edge = networkModel.edges.models[i];
+            if(edge.source.name == this.source && edge.target.name == this.target){
+                if(edge.nmd != null){
+
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name,combocount: edge.combocount, termcount: edge.target.termcount,nmd:edge.nmd};
+                    this.nmdDetailsModel.push(edgeItem);
+                }
+                else if(edge.relType == "domine"){
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name, pf1: edge.pf1, pf2: edge.pf2,
+                        pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
+                    this.domineDetailsModel.push(edgeItem);
+                }
+            }
+        }
+
+    },
+
+    parse: function(response){
+       this.docs=[];
+        if(response.response.docs != null){
+            for (var i=0; i < response.response.docs.length; i++){
+                var doc = response.response.docs[i];
+                if(response.highlighting[doc.pmid] != undefined){
+                    if(response.highlighting[doc.pmid].abstract_text != undefined){
+                          doc.abstract_text = response.highlighting[doc.pmid].abstract_text;
                     }
                     if(response.highlighting[doc.pmid].article_title != undefined){
                         doc.article_title = response.highlighting[doc.pmid].article_title;
