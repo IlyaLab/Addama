@@ -136,13 +136,13 @@ module.exports = Backbone.View.extend({
 
     drawKDE: function() {
         var x_feature = this.selected_features["x"],
-        y_feature = this.selected_features["y"],
-        x_axis = this.getFeatureAxisLabel("x"),
-        y_axis = this.getFeatureAxisLabel("y"),
-        x_values = _.first(x_feature).values || {},
-        y_values = _.first(y_feature).values || {};
+            y_feature = this.selected_features["y"],
+            x_axis = this.getFeatureAxisLabel("x"),
+            y_axis = this.getFeatureAxisLabel("y"),
+            x_values = _.first(x_feature).values || {},
+            y_values = _.first(y_feature).values || {};
         //just take x and y values.  can't handle id's yet.
-        var data_array = _.map(x_values, function(x_val,index) { var obj = {} 
+        var data_array = _.map(x_values, function(x_val,index) { var obj = {}
             obj[x_axis] = x_val;
             obj[y_axis] = y_values[index];
             return obj;
@@ -151,34 +151,41 @@ module.exports = Backbone.View.extend({
         var partitioned_data = {};
 
         if(this.isNominal(x_feature)) {
-            _.each(_.groupBy(data_array,x_axis),function(grouped_values, key) { 
+            _.each(_.groupBy(data_array,x_axis),function(grouped_values, key) {
                 partitioned_data[key] = _.pluck(grouped_values,y_axis);
             });
         } else {
-            _.each(_.groupBy(data_array,y_axis),function(grouped_values, key) { 
+            _.each(_.groupBy(data_array,y_axis),function(grouped_values, key) {
                 partitioned_data[key] = _.pluck(grouped_values,x_axis);
             });
         }
-        
+
         var pairs = _.pairs(partitioned_data);
-        pairs.sort(function(a,b) { return a[0] <= b[0] ? -1 : 1;}); //alphabetically/numerically sort the labels
-        var labels = new Array(pairs.length);
-        var data = new Array(pairs.length);
+
+        pairs.sort(function(a,b) {
+            if (a[0] === 'NA') { return 1;}
+            else if (b[0] === 'NA') { return -1; }
+            return a[0] <= b[0] ? -1 : 1;
+        }); //alphabetically/numerically sort the labels except NA goes last
+
+        var labels = _.pluck(pairs,0); //pull the labels out
+        var data = _.pluck(pairs,1); //pull the data arrays out
 
         var plot = kde_plot()
-                            .data(data)  //array of arrays of continuous data.  each array of data represents one value/category
-                            .height(520)
-                            .width(600)
-                            .margin({top:40, bottom:40, left:40, right:40})
-                            .renderPoints(true)
-                            .renderCounts(true)
-                            .renderMedian(true)
-                            .categoryLabels(labels)  //array of category labels
-                            .xAxisLabel(x_axis)  //print x axis label
-                            .yAxisLabel(y_axis);   //print y axis label
-       
-       plot('.scatterplot-container');
-      
+            .data(data)  //array of arrays of continuous data.  each array of data represents one value/category
+            .height(520)
+            .width(600)
+            .margin({top:40, bottom:40, left:40, right:40})
+            .renderPoints(true)
+            .renderCounts(true)
+            .renderMedian(true)
+            .categoryLabels(labels)  //array of category labels
+            .xAxisLabel(x_axis)  //print x axis label
+            .yAxisLabel(y_axis);   //print y axis label
+
+        this.$el.find(".scatterplot-container").empty();
+        plot('.scatterplot-container');
+
     },
 
     isNominal: function(label) {
