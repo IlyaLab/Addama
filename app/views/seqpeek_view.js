@@ -2,19 +2,16 @@ var Template = require('./templates/seqpeek');
 var LineItemTemplate = require("./templates/line_item");
 
 module.exports = Backbone.View.extend({
-    className: "row-fluid",
     cancers: [],
     current_subtypes: [],
     hideSelector: false,
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initControls', 'initTypeahead', 'initGraph', 'initCancerSelector');
-        _.bindAll(this, 'resetSliders', 'updateGraph', 'reloadModel');
+        _.bindAll(this, 'initControls', 'initGraph', 'initCancerSelector');
+        _.bindAll(this, 'updateGraph', 'reloadModel');
 
         this.reloadModel = _.throttle(this.reloadModel, 1000);
-        
-        $.ajax({ url:"svc/data/lookups/genes", type:"GET", dataType:"text", success:this.initTypeahead });
 
         if (!this.hideSelector) {
             $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
@@ -32,13 +29,7 @@ module.exports = Backbone.View.extend({
     },
 
     initControls: function () {
-        this.$el.find(".slider_scale_width").range_slider_control({ storageId: "slider_scale_width", min: 1000, max: 3000, initialStep: 1500 });
-        this.$el.find(".slider_label_width").range_slider_control({ storageId: "slider_label_width", min: 20, max: 200, initialStep: 70 });
 
-        var lastLabelWidth = 70;
-        this.$el.find(".slider_label_width").bind("slide-to", function (event, value) {
-            lastLabelWidth = value;
-        });
     },
 
     initCancerSelector: function(txt) {
@@ -61,36 +52,6 @@ module.exports = Backbone.View.extend({
             _this.current_subtypes = $(this).find("li.active a").data("id");
             _.defer(_this.reloadModel);
         });
-    },
-
-    initTypeahead:function(txt) {
-        var genelist = txt.trim().split("\n");
-
-        var _this = this;
-        this.$el.find(".genes-typeahead").typeahead({
-            source:function (q, p) {
-                p(_.compact(_.flatten(_.map(q.toLowerCase().split(" "), function (qi) {
-                    return _.map(genelist, function (geneitem) {
-                        if (geneitem.toLowerCase().indexOf(qi) >= 0) return geneitem;
-                    });
-                }))));
-            },
-            updater: function(txt) {
-                if (_.isEqual(_this.current_gene, txt)) {
-                    return _this.current_gene;
-                }
-
-                _this.current_gene = txt;
-                _this.$el.find(".gene-title").html(_this.current_gene);
-                _.defer(_this.reloadModel);
-                return "";
-            }
-        });
-    },
-
-    resetSliders: function () {
-        this.$el.find(".slider_scale_width").range_slider_control("reset");
-        this.$el.find(".slider_label_width").range_slider_control("reset");
     },
 
     reloadModel: function() {
@@ -165,10 +126,7 @@ module.exports = Backbone.View.extend({
                 horizontal_padding: 30,
                 vertical_padding: 30
             },
-
-            // initial values based on slider defaults
-            scale_width: this.$el.find(".slider_scale_width").range_slider_control("value"),
-            band_label_width: this.$el.find(".slider_label_width").range_slider_control("value")
+            band_label_width: 100
         };
 
         this.$el.find(".seqpeek-container").seqpeek(data, options);

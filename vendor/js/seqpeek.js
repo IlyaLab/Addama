@@ -159,6 +159,9 @@
 
             var vert_pad = config.protein_vertical_padding;
 
+            // TODO Make this dependent on label font size
+            var label_offset = 7.0;
+
             // Resolve the maximum height of the mutation shape stack including stems if needed
             var mutations_height = d3.max(subtype.mutations_processed, function(m) {
                 return m.sample_ids.length * config.mutation_shape_width;
@@ -194,6 +197,8 @@
             layout.protein_domains.y = layout.protein_scale_ticks.y + vert_pad + domains_height;
 
             layout.height = mutations_height + protein_scale_height + domains_height;
+
+            layout.label_y = mutations_height / 2.0 + label_offset;
 
             layout.background_ticks.y1 = -mutations_height;
             layout.background_ticks.y2 = 0;
@@ -472,7 +477,7 @@
                 .append("text")
                     .attr("left", 0)
                     .attr("y", function(d) {
-                        return d.layout.height / 2.0;
+                        return d.layout.label_y;
                     })
                     .text(function(d) {
                         return d.label;
