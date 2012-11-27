@@ -30,6 +30,7 @@ import uuid
 from auth_decorator import authenticated
 from data import LocalFileHandler
 from storage import MongoDbLookupHandler, MongoDbPairwiseLookupHandler, MongoDbMutSigHandler, MongoDbFeaturesByLocationHandler, MongoDbStorageHandler, GetUserinfo
+from analysis import RegulomeExplorerDbQueryHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -128,7 +129,8 @@ def main():
         (r"/lookups?(.*)", MongoDbLookupHandler),
         (r"/mutsig_rankings?(.*)", MongoDbMutSigHandler),
         (r"/pw_lookups?(.*)", MongoDbMutSigHandler),
-        (r"/features_by_location?(.*)", MongoDbFeaturesByLocationHandler)
+        (r"/features_by_location?(.*)", MongoDbFeaturesByLocationHandler),
+        (r"/RE/query/?(.*)", RegulomeExplorerDbQueryHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
