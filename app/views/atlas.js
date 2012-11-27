@@ -34,23 +34,6 @@ module.exports = Backbone.View.extend({
             }
             li.toggleClass("active");
         },
-        "click a.scale-item": function(e) {
-            var li = $(e.target).parents("li");
-            if (li.hasClass("active")) {
-                this.$el.find(".atlas-map").resizable("destroy");
-            } else {
-                this.$el.find(".atlas-map").resizable({
-                    "handles":"n, e, s, w, ne, se, sw, nw",
-                    "aspectRatio":true,
-                    "animateEasing":"linear",
-                    "stop":function (stopE, ui) {
-                        var scaleLevel = (ui.size.width / ui.originalSize.width) * 90;
-                        $(stopE.target).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
-                    }
-                });
-            }
-            li.toggleClass("active");
-        },
         "click a.minimize-me": function(e) {
             this.closeMap($(e.target).parents(".atlas-map"));
         },
