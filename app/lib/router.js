@@ -36,18 +36,18 @@ module.exports = Backbone.Router.extend({
         var topnavbar = new TopNavBar();
         $("#navigation-container").append(topnavbar.render().el);
 
-        var DataMenuView = require("../views/data_menu");
-        var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
-        _.each(section_ids, function(section_id) {
-            var dataMenuView = new DataMenuView({ "section": qed.Datamodel.get(section_id) });
-            $(".data-menu").append(dataMenuView.render().el);
-            dataMenuView.on("select-data-item", function(selected) {
-                var modalConfig = _.extend({ sectionId: section_id }, selected);
-                var DataMenuModal = require("../views/data_menu_modal");
-                var dataMenuModal = new DataMenuModal(modalConfig);
-                $("body").append(dataMenuModal.render().el);
-            });
-        });
+//        var DataMenuView = require("../views/data_menu");
+//        var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
+//        _.each(section_ids, function(section_id) {
+//            var dataMenuView = new DataMenuView({ "section": qed.Datamodel.get(section_id) });
+//            $(".data-menu").append(dataMenuView.render().el);
+//            dataMenuView.on("select-data-item", function(selected) {
+//                var modalConfig = _.extend({ sectionId: section_id }, selected);
+//                var DataMenuModal = require("../views/data_menu_modal");
+//                var dataMenuModal = new DataMenuModal(modalConfig);
+//                $("body").append(dataMenuModal.render().el);
+//            });
+//        });
     },
 
     atlasView: function() {
