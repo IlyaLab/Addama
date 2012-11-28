@@ -110,10 +110,7 @@ module.exports = Backbone.View.extend({
                     maps = _.compact(_.map(session_atlas.maps, function(mapFromSession) {
                         var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
                         if (matchedMap) {
-                            return _.extend(_.clone(matchedMap), mapFromSession, {
-                                "assignedPosition": mapFromSession.position,
-                                "assignedZindex": mapFromSession.zindex
-                            });
+                            return _.extend(_.clone(matchedMap), _.clone(mapFromSession));
                         }
                         return null;
                     }));
@@ -126,19 +123,16 @@ module.exports = Backbone.View.extend({
     },
 
     appendAtlasMap: function(map) {
+        map = _.clone(map);
+
         var uid = Math.round(Math.random() * 10000);
         _.each(map.views, function(view, idx) {
             if (idx == 0) view["li_class"] = "active";
             view["uid"] = uid++;
         });
 
-        if (!_.has(map, "position")) {
-            map.assignedPosition = this.nextPosition();
-        }
-
-        if (!_.has(map, "zindex")) {
-            map.assignedZindex = this.nextZindex();
-        }
+        map.assignedPosition = map.position || this.nextPosition();
+        map.assignedZindex = map.zindex || this.nextZindex();
 
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
