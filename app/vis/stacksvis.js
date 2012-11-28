@@ -230,8 +230,8 @@
             });
 
             this.data = {
-                samples:row_value_arrays,
-                row_index_map:row_index_map
+                "samples":row_value_arrays,
+                "row_index_map":row_index_map
             };
         },
 

@@ -15,80 +15,26 @@ module.exports = Backbone.View.extend({
         this.$el.html(Template());
     },
 
-    getColumnModel:function () {
-        if (_.isEmpty(this.model.get("ROWS"))) return {};
-        if (_.isEmpty(this.model.get("COLUMNS"))) return {};
-        if (_.isEmpty(this.model.get("DATA"))) return {};
-
-        var _this = this;
-        this.rowLabels = _.filter(this.model.get("ROWS"), function(row) {
-            return (_this.genes.indexOf(row) >= 0);
-        });
-
-        var unsorted_columns = [];
-        _.each(this.model.get("COLUMNS"), function (column_name, col_idx) {
-            var column = { "name":column_name.trim(), "cluster":"_", "values":[] };
-            _.each(this.rowLabels, function (row_label) {
-                var row_idx = this.model.get("ROWS").indexOf(row_label);
-                var value = this.model.get("DATA")[row_idx][col_idx];
-                if (_.isString(value)) {
-                    value = value.trim().toLowerCase();
-                }
-                column.values.push(value);
-            }, this);
-            unsorted_columns.push(column);
-        }, this);
-
-        var sorted_columns = _.sortBy(unsorted_columns, "values");
-        var grouped_columns = _.groupBy(sorted_columns, "cluster");
-
-        var columns_by_cluster = {};
-        _.each(grouped_columns, function (values, key) {
-            columns_by_cluster[key] = [];
-            _.each(values, function (value) {
-                columns_by_cluster[key].push(value.name);
-            })
-        });
-        return columns_by_cluster;
-    },
-
     renderGraph:function () {
         this.initControls();
-        if (_.isEmpty(this.model.get("ROWS"))) return;
-        if (_.isEmpty(this.model.get("COLUMNS"))) return;
-        if (_.isEmpty(this.model.get("DATA"))) return;
+        var cancerModel = this.model.get("DATA_BY_CANCER")[this.cancers[0].toLowerCase()];
+        if (_.isEmpty(cancerModel.ROWS)) return;
+        if (_.isEmpty(cancerModel.COLUMNS)) return;
+        if (_.isEmpty(cancerModel.DATA)) return;
 
-        if (_.isEmpty(this.rowLabels)) {
-            var rows = this.model.get("ROWS");
-            this.rowLabels = _.first(rows, (rows.length < this.defaultRows) ? rows.length : this.defaultRows);
-        }
+        this.rowLabels = this.genes;
 
-        var columns_by_cluster = this.getColumnModel();
+        var columns_by_cluster = this.getColumnModel(cancerModel);
         var data = {};
+        var cbscale = colorbrewer.RdYlBu[5];
+
         _.each(this.rowLabels, function (rowLabel) {
-            var row_idx = this.model.get("ROWS").indexOf(rowLabel);
-            var categories = _.uniq(this.model.get("DATA")[row_idx]);
-            var numberOfCategories = (categories.length < 3) ? 3 : categories.length;
-
-            var colorscales = function (cell) {
-                return colorbrewer.YlOrBr[numberOfCategories][categories.indexOf(cell)];
-            };
-            if (numberOfCategories > 7) {
-                var colorscaleFn = d3.scale.ordinal().domain(categories)
-                    .range(d3.range(categories.length)
-                    .map(d3.scale.linear().domain([0, categories.length - 1])
-                    .range(["forestgreen", "lightgreen"])
-                    .interpolate(d3.interpolateLab)));
-                colorscales = function (cell) {
-                    return colorscaleFn(categories.indexOf(cell));
-                }
-            }
-
-            _.each(this.model.get("DATA")[row_idx], function (cell, cellIdx) {
-                if (_.isString(cell)) cell = cell.trim();
-                var columnLabel = this.model.get("COLUMNS")[cellIdx].trim();
+            var row_idx = cancerModel.ROWS.indexOf(rowLabel.toLowerCase());
+            _.each(cancerModel.DATA[row_idx], function (cell, cellIdx) {
+                if (_.isString(cell.orig)) cell.orig = cell.orig.trim();
+                var columnLabel = cancerModel.COLUMNS[cellIdx].trim();
                 if (!data[columnLabel]) data[columnLabel] = {};
-                data[columnLabel][rowLabel] = { "value":cell, "row":rowLabel, "colorscale":colorscales(cell), "label":columnLabel + "\n" + rowLabel + "\n" + cell };
+                data[columnLabel][rowLabel] = { "value":cell.value, "row":rowLabel, "colorscale":cbscale[cell.value], "label":columnLabel + "\n" + rowLabel + "\n" + cell.orig };
             }, this);
         }, this);
 
@@ -109,6 +55,52 @@ module.exports = Backbone.View.extend({
         };
 
         this.$el.find(".stacksvis-container").stacksvis(data, _.extend(optns, this.controls.initialValue()));
+    },
+
+    getColumnModel:function (cancerModel) {
+        var discretizeFn = function (val) {
+            if (_.isNumber(val)) {
+                if (val < -1.5) return 4;
+                if (val < -0.5) return 3;
+                if (val < 0.5) return 2;
+                if (val < 1.5) return 1;
+                return 0;
+            }
+            return val;
+        };
+
+        _.each(cancerModel.DATA, function(outer_array, idx) {
+            cancerModel.DATA[idx] = _.map(outer_array, function(x) {
+                return { "value": discretizeFn(x), "orig": x };
+            });
+        });
+
+        var unsorted_columns = [];
+        _.each(cancerModel.COLUMNS, function (column_name, col_idx) {
+            var column = { "name":column_name.trim(), "cluster":"_", "values":[] };
+            _.each(this.rowLabels, function (row_label) {
+                var row_idx = cancerModel.ROWS.indexOf(row_label.toLowerCase());
+                var cell = cancerModel.DATA[row_idx][col_idx];
+                if (_.isString(cell.orig)) {
+                    cell.orig = cell.orig.trim().toLowerCase();
+                }
+                column.values.push(cell.value);
+            }, this);
+            unsorted_columns.push(column);
+        }, this);
+
+        var sorted_columns = _.sortBy(unsorted_columns, "values");
+        var grouped_columns = _.groupBy(sorted_columns, "cluster");
+
+        var columns_by_cluster = {};
+        _.each(grouped_columns, function (values, key) {
+            columns_by_cluster[key] = [];
+            _.each(values, function (value) {
+                columns_by_cluster[key].push(value.name);
+            })
+        });
+
+        return columns_by_cluster;
     },
 
     initControls:function () {
