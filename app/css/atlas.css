@@ -35,7 +35,7 @@ body {
     float: left;
     left: 5px;
     top: 200px;
-    position: absolute;
+    position: fixed;
     border: 1px solid #87cefa;
     border-radius: 15px;
     background: #ffffff;
@@ -110,6 +110,12 @@ body {
 
 .ui-effects-transfer {
     border: 1px dotted black;
+}
+
+.maps-n-genes {
+    position: fixed;
+    top:44px;
+    right:20px;
 }
 
 .maps-n-genes li {
