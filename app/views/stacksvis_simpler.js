@@ -39,12 +39,12 @@ module.exports = Backbone.View.extend({
         }, this);
 
         var optns = {
-            vertical_padding:0,
-            horizontal_padding:0,
+            vertical_padding:1,
+            horizontal_padding:1,
             label_width:100,
             label_fontsize:12,
-            plot_height:600,
-            plot_width:800,
+            plot_height:300,
+            plot_width:600,
             highlight_fill:colorbrewer.RdYlGn[3][2],
             color_fn:function (d) {
                 return d ? d.colorscale : "white";
