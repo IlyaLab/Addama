@@ -46,7 +46,7 @@ module.exports = Backbone.View.extend({
             cluster: cluster,
             rows: this.rowLabels
         });
-        this.$el.find(".selector-modal").html(selectorView.render().el);
+        $("body").append(selectorView.render().el);
 
         var _this = this;
         selectorView.on("selected", function(data) {
@@ -57,7 +57,7 @@ module.exports = Backbone.View.extend({
             localStorage.setItem(_this.storageKeys.rows, _this.rowLabels.join(","));
 
             _this.$el.find(".selected-cluster").html(data.cluster);
-            _this.$el.find(".selector-modal").modal("hide");
+            $(".selector-modal").modal("hide");
             _this.model.trigger("load");
         });
     },
@@ -131,7 +131,7 @@ module.exports = Backbone.View.extend({
 
         if (!this.hideSelector) {
             if (!this.rowLabels || !this.rowLabels.length) {
-                this.$el.find(".selector-modal").modal("show");
+                $(".selector-modal").modal("show");
                 return;
             }
         }
@@ -182,7 +182,7 @@ module.exports = Backbone.View.extend({
 
     initControls:function () {
         this.controls = new ControlsView();
-        this.$el.find(".controls-modal").html(this.controls.render().el);
+        $("body").append(this.controls.render().el);
 
         var vis_container = this.$el.find(".stacksvis-container");
         this.controls.on("updated", function(dim) {

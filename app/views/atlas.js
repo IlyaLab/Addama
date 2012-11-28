@@ -34,23 +34,6 @@ module.exports = Backbone.View.extend({
             }
             li.toggleClass("active");
         },
-        "click a.scale-item": function(e) {
-            var li = $(e.target).parents("li");
-            if (li.hasClass("active")) {
-                this.$el.find(".atlas-map").resizable("destroy");
-            } else {
-                this.$el.find(".atlas-map").resizable({
-                    "handles":"n, e, s, w, ne, se, sw, nw",
-                    "aspectRatio":true,
-                    "animateEasing":"linear",
-                    "stop":function (stopE, ui) {
-                        var scaleLevel = (ui.size.width / ui.originalSize.width) * 90;
-                        $(stopE.target).children().effect("scale", {"scale":"both", "percent":scaleLevel}, 1000);
-                    }
-                });
-            }
-            li.toggleClass("active");
-        },
         "click a.minimize-me": function(e) {
             this.closeMap($(e.target).parents(".atlas-map"));
         },
@@ -127,10 +110,7 @@ module.exports = Backbone.View.extend({
                     maps = _.compact(_.map(session_atlas.maps, function(mapFromSession) {
                         var matchedMap = _.find(maps, function(m) { return _.isEqual(m.id, mapFromSession.id); });
                         if (matchedMap) {
-                            return _.extend(_.clone(matchedMap), mapFromSession, {
-                                "assignedPosition": mapFromSession.position,
-                                "assignedZindex": mapFromSession.zindex
-                            });
+                            return _.extend(_.clone(matchedMap), _.clone(mapFromSession));
                         }
                         return null;
                     }));
@@ -143,19 +123,16 @@ module.exports = Backbone.View.extend({
     },
 
     appendAtlasMap: function(map) {
+        map = _.clone(map);
+
         var uid = Math.round(Math.random() * 10000);
         _.each(map.views, function(view, idx) {
             if (idx == 0) view["li_class"] = "active";
             view["uid"] = uid++;
         });
 
-        if (!_.has(map, "position")) {
-            map.assignedPosition = this.nextPosition();
-        }
-
-        if (!_.has(map, "zindex")) {
-            map.assignedZindex = this.nextZindex();
-        }
+        map.assignedPosition = map.position || this.nextPosition();
+        map.assignedZindex = map.zindex || this.nextZindex();
 
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
         var $atlasMap = this.$el.find(".atlas-zoom").children().last();
@@ -198,7 +175,8 @@ module.exports = Backbone.View.extend({
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options || {});
             var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options || {});
 
-            this.viewsByUri($target, source, view_name, v_options, q_options);
+            var downloadUri = this.viewsByUri($target, source, view_name, v_options, q_options);
+            $target.parents(".atlas-map").find(".download-link").attr("href", downloadUri);
         }
     },
 
@@ -243,6 +221,19 @@ module.exports = Backbone.View.extend({
             console.log("viewsByUri(" + uri + "," + view_name + "):loading view");
             var view = new ViewClass(view_options);
             $(targetEl).html(view.render().el);
+
+            var qsarray = [];
+            _.each(query, function(values, key) {
+                if (_.isArray(values)) {
+                    _.each(values, function(value) {
+                        qsarray.push(key + "=" + value);
+                    })
+                } else {
+                    qsarray.push(key + "=" + values);
+                }
+            });
+            qsarray.push("output=tsv");
+            return "svc/" + serviceUri + "?" + qsarray.join("&");
         }
     },
 
