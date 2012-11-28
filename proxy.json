@@ -58,13 +58,18 @@
         },
         {
             "url":"/svc",
-            "host":"localhost",
+            "host":"breve",
             "port":8000
         },
         {
             "url":"/graph_layout",
-            "host":"localhost",
+            "host":"breve",
             "port":8010
+        },
+        {
+            "url":"/svc/data",
+            "host": "localhost",
+            "port":8080
         }
     ]
 }

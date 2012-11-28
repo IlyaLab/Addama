@@ -86,7 +86,7 @@ line.axis {
      background-color: orange;
  }
 
-
+/*
 thead {
     background-color:  #0061af;
      background-image: -moz-linear-gradient(top, #0077d8, #003f72);
@@ -97,7 +97,7 @@ thead {
  background-image: linear-gradient(top, #0077d8, #003f72);
  background-repeat: repeat-x;
    color: #FFFFFF;
-}
+}  */
 
 div.dataTables_wrapper {
     /*line-height: 10px;

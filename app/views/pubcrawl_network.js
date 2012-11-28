@@ -32,7 +32,7 @@ var NodeTableView = Backbone.View.extend({
 
         var expConfig = [{propName:'abstract_text'}];
         var ViewClass = qed.Views['datatable'];
-        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "docTable",model: this.model.docs});
+        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "nodedocTable",model: this.model.docs});
         this.$el.find("#docTableView").html(this.docView.render().el);
 
         var nmdConfig = [{headerName:'Name', headerWidth: '30%', propName:'name'},
@@ -40,7 +40,7 @@ var NodeTableView = Backbone.View.extend({
             {headerName:'Term Combo Count', headerWidth: '10%', propName: 'combocount'},
             {headerName:'NMD', headerWidth: '10%', propName: 'nmd'}];
 
-        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "nmdTable",model: this.model.nmdDetailsModel});
+        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "nodenmdTable",model: this.model.nmdDetailsModel});
         this.$el.find("#nmdTableView").html(this.nmdView.render().el);
 
         var dataConfig = [{headerName:'Term1', headerWidth: '30%', propName:'term1'},
@@ -53,7 +53,7 @@ var NodeTableView = Backbone.View.extend({
             {headerName:'Domain 1 Count', headerWidth: '10%', propName: 'pf1_count'},
             {headerName:'Domain 2 Count', headerWidth: '10%', propName: 'pf2_count'}];
 
-        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "domineTable",model: this.model.domineDetailsModel});
+        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "nodedomineTable",model: this.model.domineDetailsModel});
         this.$el.find("#domineTableView").html(this.domineView.render().el);
 
         return this;
@@ -71,9 +71,9 @@ var EdgeTableView = Backbone.View.extend({
     render: function(){
 
         var tabs = '<ul class="nav nav-tabs" id="edgeDetailsTabs">' +
-            '<li class="active"><a id="qfDocTab" href="#edocTableView" data-toggle="tab">Medline Documents</a></li>' +
-            '<li><a id="qfNMDTab" href="#enmdTableView" data-toggle="tab">NMD Connections</a></li>' +
-            '<li><a id="qfDomineTab" href="#edomineTableView" data-toggle="tab">Domine Connections</a></li>' +
+            '<li class="active"><a id="edgeDocTab" href="#edocTableView" data-toggle="tab">Medline Documents</a></li>' +
+            '<li><a id="edgeNMDTab" href="#enmdTableView" data-toggle="tab">NMD Connections</a></li>' +
+            '<li><a id="edgeDomineTab" href="#edomineTableView" data-toggle="tab">Domine Connections</a></li>' +
             '</ul>' +
             '<div class="tab-content">' +
             '<div class="tab-pane active queryfiltertable" id="edocTableView"></div>' +
@@ -90,7 +90,7 @@ var EdgeTableView = Backbone.View.extend({
 
         var expConfig = [{propName:'abstract_text'}];
         var ViewClass = qed.Views['datatable'];
-        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "docTable",model: this.model.docs});
+        this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "edgedocTable",model: this.model.docs});
         this.$el.find("#edocTableView").html(this.docView.render().el);
 
         var nmdConfig = [{headerName:'Term1', headerWidth: '20%', propName:'term1'},
@@ -99,7 +99,7 @@ var EdgeTableView = Backbone.View.extend({
             {headerName:'Term Combo Count', headerWidth: '10%', propName: 'combocount'},
             {headerName:'NMD', headerWidth: '20%', propName: 'nmd'}];
 
-        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "nmdTable",model: this.model.nmdDetailsModel});
+        this.nmdView = new ViewClass({dataConfig: nmdConfig, checkbox: false, tableId: "edgenmdTable",model: this.model.nmdDetailsModel});
         this.$el.find("#enmdTableView").html(this.nmdView.render().el);
 
         var dataConfig = [{headerName:'Term1', headerWidth: '10%', propName:'term1'},
@@ -112,7 +112,7 @@ var EdgeTableView = Backbone.View.extend({
             {headerName:'Domain 1 Count', headerWidth: '10%', propName: 'pf1_count'},
             {headerName:'Domain 2 Count', headerWidth: '10%', propName: 'pf2_count'}];
 
-        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "domineTable",model: this.model.domineDetailsModel});
+        this.domineView = new ViewClass({dataConfig: dataConfig, checkbox: false, tableId: "edgedomineTable",model: this.model.domineDetailsModel});
         this.$el.find("#edomineTableView").html(this.domineView.render().el);
 
         return this;
