@@ -43,7 +43,7 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
             json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)
 
-        if self.get_argument("output") == "tsv":
+        if self.get_argument("output", "json") == "tsv":
             WriteTsv(self, json_items)
             self.set_status(200)
             return
@@ -198,7 +198,7 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
             "items": map(self.jsonable_item, items)
         }
 
-        if self.get_argument("output") == "tsv":
+        if self.get_argument("output", "json") == "tsv":
             WriteTsv(self, json_items)
             self.set_status(200)
             return
