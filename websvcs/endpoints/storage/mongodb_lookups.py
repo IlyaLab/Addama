@@ -4,7 +4,7 @@ from itertools import product
 import json
 import tornado.web
 import pymongo
-
+import csv
 
 class MongoDbLookupHandler(tornado.web.RequestHandler):
 
@@ -42,6 +42,11 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
             json_item = self.jsonable_item(item)
             json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)
+
+        if self.get_argument("output") == "tsv":
+            WriteTsv(self, json_items)
+            self.set_status(200)
+            return
 
         self.write({"items": json_items})
         self.set_status(200)
@@ -193,6 +198,11 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
             "items": map(self.jsonable_item, items)
         }
 
+        if self.get_argument("output") == "tsv":
+            WriteTsv(self, json_items)
+            self.set_status(200)
+            return
+
         self.write(json.dumps(result))
         self.set_status(200)
 
@@ -260,3 +270,23 @@ class MongoDbFeaturesByLocationHandler(tornado.web.RequestHandler):
         connection = pymongo.Connection(options.mongo_lookup_uri)
         database = connection[db_name]
         return database[collection_name]
+
+def WriteTsv(handler, items):
+    handler.set_header("Content-Type", "text/tab-separated-values")
+    handler.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
+
+    tsvwriter = csv.writer(handler, delimiter='\t')
+    if len(items) > 0:
+        colheaders = items[0].keys()
+        tsvwriter.writerow(colheaders)
+
+        for item in items:
+            vals = []
+            for colheader in colheaders:
+                val = item[colheader]
+                if isinstance(val, (list, tuple)):
+                    vals.append(len(val))
+                else:
+                    vals.append(val)
+            tsvwriter.writerow(vals)
+
