@@ -372,7 +372,7 @@
             this.vis.x_scale = d3.scale.linear().domain([0, data.protein.length]).range([0, this.config.protein_scale_width]);
 
             // Ordinal scale for vertically positioning InterPro signatures
-            var protein_domain_ids = _.pluck(data.protein.domains, 'id');
+            var protein_domain_ids = _.uniq(_.pluck(data.protein.domains, this.config.protein_domain_key));
             this.vis.domain_scale = d3.scale.ordinal().domain(protein_domain_ids).rangeBands([0, protein_domain_ids.length * this.config.signature_height]);
 
             this.updateVerticalScaleRanges();
@@ -1093,7 +1093,8 @@
                                 return "match " + d.dbname;
                             })
                             .attr("transform", function(d) {
-                                return "translate(0," + that.vis.domain_scale(d.id) + ")";
+                                var category = d[that.config.protein_domain_key];
+                                return "translate(0," + that.vis.domain_scale(category) + ")";
                             });
 
                     domains_g
