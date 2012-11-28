@@ -175,7 +175,8 @@ module.exports = Backbone.View.extend({
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options || {});
             var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options || {});
 
-            this.viewsByUri($target, source, view_name, v_options, q_options);
+            var downloadUri = this.viewsByUri($target, source, view_name, v_options, q_options);
+            $target.parents(".atlas-map").find(".download-link").attr("href", downloadUri);
         }
     },
 
@@ -220,6 +221,19 @@ module.exports = Backbone.View.extend({
             console.log("viewsByUri(" + uri + "," + view_name + "):loading view");
             var view = new ViewClass(view_options);
             $(targetEl).html(view.render().el);
+
+            var qsarray = [];
+            _.each(query, function(values, key) {
+                if (_.isArray(values)) {
+                    _.each(values, function(value) {
+                        qsarray.push(key + "=" + value);
+                    })
+                } else {
+                    qsarray.push(key + "=" + values);
+                }
+            });
+            qsarray.push("output=tsv");
+            return "svc/" + serviceUri + "?" + qsarray.join("&");
         }
     },
 
