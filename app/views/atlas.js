@@ -134,14 +134,10 @@ module.exports = Backbone.View.extend({
 
         if (!_.has(map, "position")) {
             map.assignedPosition = this.nextPosition();
-        } else {
-            map.assignedPosition = map.position;
         }
 
         if (!_.has(map, "zindex")) {
             map.assignedZindex = this.nextZindex();
-        } else {
-            map.assignedZindex = map["zindex"];
         }
 
         this.$el.find(".atlas-zoom").append(AtlasMapTemplate(map));
