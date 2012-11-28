@@ -4,7 +4,7 @@ var LineItemTemplate = require("./templates/line_item");
 module.exports = Backbone.View.extend({
     className: "row-fluid",
     current_cancer: null,
-    selected_genes: { "x":"TP53", "y": "CTCF" },
+    selected_genes: { "x":"TP53", "y": "KRAS" },
     selected_features: { "x":null, "y": null },
 
     initialize: function (options) {
