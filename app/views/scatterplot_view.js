@@ -139,14 +139,22 @@ module.exports = Backbone.View.extend({
             y_feature = this.selected_features["y"],
             x_axis = this.getFeatureAxisLabel("x"),
             y_axis = this.getFeatureAxisLabel("y"),
-            x_values = _.first(x_feature).values || {},
-            y_values = _.first(y_feature).values || {};
+            x_features = this.feature_map[x_feature],
+            y_features = this.feature_map[y_feature];
+
+        if (_.isEmpty(x_features) || _.isEmpty(y_features)) return [];
+
+        var x_values = _.first(x_features).values || {};
+        var y_values = _.first(y_features).values || {};
+
         //just take x and y values.  can't handle id's yet.
-        var data_array = _.map(x_values, function(x_val,index) { var obj = {}
+        var data_array = _.compact(_.map(x_values, function(x_val,index) {
+            if (x_val === 'NA' || y_values[index] === 'NA') {return undefined;}
+            var obj = {};
             obj[x_axis] = x_val;
             obj[y_axis] = y_values[index];
             return obj;
-        });
+        }));
 
         var partitioned_data = {};
 
@@ -173,9 +181,9 @@ module.exports = Backbone.View.extend({
 
         var plot = kde_plot()
             .data(data)  //array of arrays of continuous data.  each array of data represents one value/category
-            .height(520)
-            .width(600)
-            .margin({top:40, bottom:40, left:40, right:40})
+            .height(320)
+            .width(720)
+            .margin({top:40, bottom:40, left:50, right:30})
             .renderPoints(true)
             .renderCounts(true)
             .renderMedian(true)
