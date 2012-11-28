@@ -107,6 +107,7 @@ module.exports = Backbone.View.extend({
             protein_scale_width: 1000,
             protein_scale_y: 40,
             protein_vertical_padding: 10,
+            protein_domain_key: 'dbname',
             signature_height: 10,
             enable_transitions: true,
             enable_mutation_stems: true,
