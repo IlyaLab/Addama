@@ -101,13 +101,15 @@ var NodeCollection = Backbone.Collection.extend({
 
 NodeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
-    urlRoot: 'http://apollo:4080/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true',
+    urlRoot: this.data_uri + '?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000',
     url: function(){
-        return this.urlRoot + "&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]";
+        return this.urlRoot + "&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+            "&hl.q=abstract_text%3Acancer article_title%3Acancer abstract_text%3A"+ this.genes[0].toLowerCase() + " article_title%3A" + this.genes[0].toLowerCase();
     },
 
-    initialize: function(networkModel,nodeName){
+    initialize: function(data_uri,networkModel,nodeName){
         //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
+        this.data_uri=data_uri;
         this.nodeName = nodeName;
         this.nmdDetailsModel = [];
         this.domineDetailsModel = [];
@@ -169,13 +171,15 @@ NodeDetailsModel = Backbone.Model.extend({
 
 EdgeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
-    urlRoot: 'http://apollo:4080/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true',
+    urlRoot: this.data_uri + '?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000',
     url: function(){
-        return this.urlRoot + "&q=%2Btext%3A%28'" + this.source + "'%29&q=%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]";
+        return this.urlRoot + "&q=%2Btext%3A%28'" + this.source + "'%29&q=%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+            "&hl.q=abstract_text%3Acancer article_title%3Acancer abstract_text%3A"+ this.genes[0].toLowerCase() + " article_title%3A" + this.genes[0].toLowerCase();
     },
 
-    initialize: function(networkModel,edge){
+    initialize: function(data_uri, networkModel,edge){
         //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
+        this.data_uri=data_uri;
         this.source = edge.source;
         this.target = edge.target;
         this.nmdDetailsModel = [];

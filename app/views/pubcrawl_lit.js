@@ -27,6 +27,9 @@ module.exports= Backbone.View.extend({
         var expConfig = [{propName:'abstract_text'}];
 
         var ViewClass = qed.Views['datatable'];
+        if(this.docView){
+            this.docView.close();
+        }
         this.docView = new ViewClass({dataConfig: docConfig, expandedConfig: expConfig, checkbox: false, tableId: "pubcrawlLitTable",model: this.model.docs});
         this.$el.find("#pubcrawlLitView").html(this.docView.render().el);
 

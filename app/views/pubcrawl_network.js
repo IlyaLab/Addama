@@ -280,22 +280,41 @@ module.exports = Backbone.View.extend({
      },
 
    showNodeDetails: function(node){
-       this.nodeDetails = new NodeDetailsModel(this.model.networkData,node);
+       if(this.nodeDetails){
+           this.nodeDetails.close();
+       }
+
+       this.nodeDetails = new NodeDetailsModel(this.model.data_uri,this.model.networkData,node);
        var that=this;
        $("#pubcrawlGraphTabs").tabs("option","selected",1);
        var datatable=this.nodeDetails.fetch({success: function(model,response){
-           $("#pubcrawlNodeDetails").html(new NodeTableView({model: model}).render().el);
+           if(that.nodeDetailsView){
+               that.nodeDetailsView.model=model;
+           }
+           else{
+               that.nodeDetailsView= new NodeTableView({model:model});
+           }
+           $("#pubcrawlNodeDetails").html(that.nodeDetailsView.render().el);
            that.$("#pubcrawlGraphTabs").tabs("option","selected",1);
 
        }});
    },
 
     showEdgeDetails: function(edge){
-          this.edgeDetails = new EdgeDetailsModel(this.model.networkData,edge);
+        if(this.edgeDetails){
+            this.edgeDetails.close();
+        }
+          this.edgeDetails = new EdgeDetailsModel(this.model.data_uri,this.model.networkData,edge);
           var that=this;
           $("#pubcrawlGraphTabs").tabs("option","selected",2);
           var datatable=this.edgeDetails.fetch({success: function(model,response){
-              $("#pubcrawlEdgeDetails").html(new EdgeTableView({model: model}).render().el);
+              if(that.edgeDetailsView){
+                  that.edgeDetailsView.model=model;
+              }
+              else{
+                  that.edgeDetailsView = new EdgeTableView({model: model});
+              }
+              $("#pubcrawlEdgeDetails").html(that.edgeDetailsView.render().el);
 
           }});
       }
