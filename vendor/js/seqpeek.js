@@ -437,13 +437,13 @@
         zoomEventHandler: function() {
             var e = d3.event;
 
+            // TODO: Mutation markers and stems do not update while zooming in/out
             this.vis.viewport_scale = [e.scale, e.scale];
             this.vis.viewport_pos = e.translate;
 
             this.applyProteinScales();
             this.updateProteinDomains();
             this.updateMutationMarkers();
-            this.updateStems();
         },
 
         changeSubtypes: function(new_subtypes, config) {
@@ -477,7 +477,7 @@
             });
 
             if (_.isFunction(config.post_process_fn)) {
-                config.post_process_fn(data.cancer_subtypes)
+                config.post_process_fn(data.cancer_subtypes);
             }
 
             // Do data mangling for new subtypes
@@ -617,7 +617,7 @@
             this.updateVerticalGroups();
 
             // Draw the mutation markers for each subtype
-            this.updateMutationMarkers();
+            this.applyMutationMarkers();
 
             // Draw or hide the stems
             this.updateStems();
@@ -681,13 +681,13 @@
                         .append("g")
                             .attr("class", "mutations")
                             .attr("transform", function(d) {
-                                return "translate(0," + (d.layout.mutations.y) + ") scale(1, -1)";
+                                return "translate(" + (that.vis.viewport_pos[0]) + "," + (d.layout.mutations.y) + ") scale(1, -1)";
                             })
                             .style("opacity", 1e-6);
 
                     mutation_group
                         .attr("transform", function(d) {
-                            return "translate(0," + (d.layout.mutations.y) + ") scale(1, -1)";
+                            return "translate(" + (that.vis.viewport_pos[0]) + "," + (d.layout.mutations.y) + ") scale(1, -1)";
                         })
                         .style("opacity", 1.0);
                 });
@@ -994,6 +994,21 @@
 
         updateMutationMarkers: function() {
             var that = this;
+            this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type")
+                .each(function(cancer_data) {
+                    d3.select(this)
+                    .selectAll(".protein")
+                    .selectAll(".mutations")
+                        .attr("transform", function(d) {
+                            return "translate(" + (that.vis.viewport_pos[0]) + "," + (d.layout.mutations.y) + ") scale(1, -1)";
+                        });
+                });
+        },
+
+        applyMutationMarkers: function() {
+            var that = this;
             var mutationIdFn = this.mutationIdFn;
 
             var subtypes = this.vis.root
@@ -1153,7 +1168,7 @@
                                     return {
                                         location: location,
                                         mutations: mutations
-                                    }
+                                    };
                             }, function(d) {
                                 return d.location;
                             }));
@@ -1252,7 +1267,7 @@
                     domains_g
                         .selectAll("rect.domain-location")
                             .attr("x", function(d) {
-                                return d.location.start
+                                return d.location.start;
                             })
                             .attr("width", function(d) {
                                 var aa_length = d.location.end - d.location.start;
