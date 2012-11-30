@@ -360,6 +360,7 @@
         },
 
         draw: function(data, param_config) {
+            var that = this;
             this.config.target_el.innerHTML = "";
             this.data = data;
 
@@ -377,21 +378,57 @@
 
             this.updateVerticalScaleRanges();
 
+            this.vis.viewport_scale = [1, 1];
+            this.vis.viewport_pos = [0, 0];
+            
             var size_info = this.getDefaultVisualizationSize();
 
             this.vis.root = d3.select(this.config.target_el)
                 .append("svg")
                     .attr("width", (2 * this.config.plot.horizontal_padding + size_info.width))
-                    .attr("height", (2 * this.config.plot.vertical_padding + size_info.height));
+                    .attr("height", (2 * this.config.plot.vertical_padding + size_info.height))
+                    .style("pointer-events", "none");
 
             this.vis.root
                 .append("g")
                     .attr("class", "data-area")
                     .attr("width", size_info.width)
                     .attr("height", size_info.height)
-                    .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")");
+                    .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")")
+                    .style("pointer-events", "all");
+
+            // Rectangle for mouse events
+            this.vis.root
+                .selectAll("g.data-area")
+                .append("svg:rect")
+                    .attr("class", "zoom-rect")
+                    .attr("x", this.config.band_label_width)
+                    .attr("y", 0)
+                    .attr("width", this.config.protein_scale_width)
+                    .attr("height", size_info.height)
+                    .style("fill-opacity", 0.0)
+                .call(d3.behavior.zoom().x(this.vis.x_scale).on("zoom", function() {
+                    _.bind(that.zoomEventHandler, that, {}, true)();
+                }));
+
+
+            // Calculate scale factor for protein domains to 1:1 viewport
+            var domain = this.vis.x_scale.domain();
+            this.vis.domain_rect_scale_factor = this.config.protein_scale_width / (domain[1] - domain[0]);
 
             this.render();
+        },
+
+        zoomEventHandler: function() {
+            var e = d3.event;
+
+            this.vis.viewport_scale = [e.scale, e.scale];
+            this.vis.viewport_pos = e.translate;
+
+            this.applyProteinScales();
+            this.updateProteinDomains();
+            this.updateMutationMarkers();
+            this.updateStems();
         },
 
         changeSubtypes: function(new_subtypes, config) {
@@ -648,7 +685,16 @@
                         .append("g")
                             .attr("class", "domains")
                             .attr("transform", function() {
-                                return "translate(0," + (subtype_data.layout.protein_domains.y) + ") scale(1, -1)";
+                                // Transform:
+                                //
+                                // 1. translate (<viewport x>, <domain placement y>)
+                                // 2. scale (<domain rectangle to 1:1 viewport>, 0)
+                                // 3. scale (<viewport x scale>, -1)
+                                var trs =
+                                    "translate(" + (that.vis.viewport_pos[0]) + "," + (subtype_data.layout.protein_domains.y) + ")" +
+                                    "scale(" + that.vis.viewport_scale[0] * that.vis.domain_rect_scale_factor + ", -1)";
+
+                                return trs;
                             })
                             .style("opacity", 1e-6);
 
@@ -661,9 +707,6 @@
                     }
 
                     domains
-                        .attr("transform", function() {
-                            return "translate(0," + (subtype_data.layout.protein_domains.y) + ") scale(1, -1)";
-                        })
                         .style("opacity", 1.0);
 
                     if (that.config.enable_transitions) {
@@ -730,7 +773,7 @@
 
             var buildLocationGroupsAcrossSubtypes = _.once(buildLocationGroups);
 
-            _.each(data.cancer_subtypes, function(subtype, index) {
+            _.each(data.cancer_subtypes, function(subtype) {
                 var layout = {};
                 var location_groups;
 
@@ -870,6 +913,11 @@
                             .text(function(d) {
                                 return d;
                             });
+
+                    scale_ticks
+                        .attr("transform", function(d) {
+                            return "translate(" + that.vis.x_scale(d) + ",0)";
+                        });
 
                     scale_ticks
                         .exit()
@@ -1077,7 +1125,6 @@
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type");
 
-            //that.vis.cancer_types_g
             subtypes
                 .selectAll(".protein")
                 .selectAll(".domains")
@@ -1109,16 +1156,18 @@
                                 });
 
                                 return loc_data;
+                            }, function(d) {
+                                return d.dbname + "+" + d.id;
                             })
                         .enter()
                         .append("rect")
                             .attr("class", "domain-location")
                             .attr("x", function(d) {
-                                return that.vis.x_scale(d.location.start);
+                                return d.location.start;
                             })
                             .attr("width", function(d) {
                                 var aa_length = d.location.end - d.location.start;
-                                return that.vis.x_scale(aa_length);
+                                return aa_length;
                             })
                             .attr("height", that.config.signature_height)
                         .append("svg:title")
@@ -1132,7 +1181,41 @@
                                 value_list.push("location: " + d.location.start + " - " + d.location.end);
                                 return value_list.join("\n");
                             });
+
+                    domains_g
+                        .selectAll("rect.domain-location")
+                            .attr("x", function(d) {
+                                return d.location.start
+                            })
+                            .attr("width", function(d) {
+                                var aa_length = d.location.end - d.location.start;
+                                return aa_length;
+                            });
             });
+        },
+
+        updateProteinDomains: function() {
+            var that = this;
+
+            this.vis.root
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type")
+                .each(function(subtype_data) {
+                    d3.select(this)
+                        .selectAll("g.domains")
+                        .attr("transform", function() {
+                            // Transform:
+                            //
+                            // 1. translate (<viewport x>, <domain placement y>)
+                            // 2. scale (<domain rectangle to 1:1 viewport>, 0)
+                            // 3. scale (<viewport x scale>, -1)
+                            var trs =
+                                "translate(" + (that.vis.viewport_pos[0]) + "," + (subtype_data.layout.protein_domains.y) + ")" +
+                                "scale(" + that.vis.viewport_scale[0] * that.vis.domain_rect_scale_factor + ", -1)";
+
+                            return trs;
+                        });
+                });
         },
 
         updateStems: function() {
@@ -1140,8 +1223,8 @@
             var mutationIdFn = this.mutationIdFn;
 
             var mutation_group = this.vis.root
-                            .selectAll("g.data-area")
-                            .selectAll("g.cancer-type")
+                .selectAll("g.data-area")
+                .selectAll("g.cancer-type")
                 .selectAll(".protein")
                 .selectAll(".mutations");
 
