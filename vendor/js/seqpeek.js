@@ -402,20 +402,17 @@
             // Area for graphical elements with clipping
             this.vis.root
                 .append("svg:svg")
+                    .attr("class", "data-area")
                     .attr("x", (this.config.plot.horizontal_padding + this.config.band_label_width))
                     .attr("y", (this.config.plot.vertical_padding))
                     .attr("width", this.vis.viewport_size[0])
                     .attr("height", this.vis.viewport_size[1])
                     .attr("viewBox", "0 0 " + this.vis.viewport_size[0] + " " + this.vis.viewport_size[1])
-                .append("g")
-                    .attr("class", "data-area")
-                    .attr("width", size_info.width)
-                    .attr("height", size_info.height)
                     .style("pointer-events", "all");
 
             // Rectangle for mouse events
             this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .append("svg:rect")
                     .attr("class", "zoom-rect")
                     .attr("x", 0)
@@ -497,7 +494,7 @@
             // Graphics
             // --------
             var cancer_types_g = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type")
                     .data(data.cancer_subtypes, function(d) {
                         return d.label;
@@ -625,7 +622,7 @@
 
         updateSubtypePositions: function() {
             this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type")
                     .transition()
                     .duration(500)
@@ -642,7 +639,7 @@
             var data = this.data;
 
             var subtypes = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type");
 
             subtypes
@@ -871,7 +868,7 @@
             var that = this;
 
             var subtypes = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type");
 
             subtypes
@@ -995,7 +992,7 @@
         updateMutationMarkers: function() {
             var that = this;
             this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type")
                 .each(function(cancer_data) {
                     d3.select(this)
@@ -1012,7 +1009,7 @@
             var mutationIdFn = this.mutationIdFn;
 
             var subtypes = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type");
 
             subtypes
@@ -1204,7 +1201,7 @@
             var that = this;
 
             var subtypes = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type");
 
             subtypes
@@ -1280,7 +1277,7 @@
             var that = this;
 
             this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type")
                 .each(function(subtype_data) {
                     d3.select(this)
@@ -1305,7 +1302,7 @@
             var mutationIdFn = this.mutationIdFn;
 
             var mutation_group = this.vis.root
-                .selectAll("g.data-area")
+                .selectAll(".data-area")
                 .selectAll("g.cancer-type")
                 .selectAll(".protein")
                 .selectAll(".mutations");
