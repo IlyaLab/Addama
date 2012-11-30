@@ -378,10 +378,11 @@
 
             this.updateVerticalScaleRanges();
 
+            var size_info = this.getDefaultVisualizationSize();
+
+            this.vis.viewport_size = [this.config.protein_scale_width, size_info.height];
             this.vis.viewport_scale = [1, 1];
             this.vis.viewport_pos = [0, 0];
-            
-            var size_info = this.getDefaultVisualizationSize();
 
             this.vis.root = d3.select(this.config.target_el)
                 .append("svg")
@@ -389,12 +390,27 @@
                     .attr("height", (2 * this.config.plot.vertical_padding + size_info.height))
                     .style("pointer-events", "none");
 
+            // Area for labels
             this.vis.root
+                .append("g")
+                    .attr("class", "label-area")
+                    .attr("width", this.config.band_label_width)
+                    .attr("height", size_info.height)
+                    .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")")
+                    .style("pointer-events", "all");
+
+            // Area for graphical elements with clipping
+            this.vis.root
+                .append("svg:svg")
+                    .attr("x", (this.config.plot.horizontal_padding + this.config.band_label_width))
+                    .attr("y", (this.config.plot.vertical_padding))
+                    .attr("width", this.vis.viewport_size[0])
+                    .attr("height", this.vis.viewport_size[1])
+                    .attr("viewBox", "0 0 " + this.vis.viewport_size[0] + " " + this.vis.viewport_size[1])
                 .append("g")
                     .attr("class", "data-area")
                     .attr("width", size_info.width)
                     .attr("height", size_info.height)
-                    .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")")
                     .style("pointer-events", "all");
 
             // Rectangle for mouse events
@@ -402,15 +418,14 @@
                 .selectAll("g.data-area")
                 .append("svg:rect")
                     .attr("class", "zoom-rect")
-                    .attr("x", this.config.band_label_width)
+                    .attr("x", 0)
                     .attr("y", 0)
-                    .attr("width", this.config.protein_scale_width)
-                    .attr("height", size_info.height)
+                    .attr("width", this.vis.viewport_size[0])
+                    .attr("height", this.vis.viewport_size[1])
                     .style("fill-opacity", 0.0)
                 .call(d3.behavior.zoom().x(this.vis.x_scale).on("zoom", function() {
                     _.bind(that.zoomEventHandler, that, {}, true)();
                 }));
-
 
             // Calculate scale factor for protein domains to 1:1 viewport
             var domain = this.vis.x_scale.domain();
@@ -478,6 +493,9 @@
             var that = this;
             var data = this.data;
 
+            // --------
+            // Graphics
+            // --------
             var cancer_types_g = this.vis.root
                 .selectAll("g.data-area")
                 .selectAll("g.cancer-type")
@@ -502,13 +520,62 @@
             subtype
                 .append("g")
                     .attr("class", "protein")
-                    .attr("transform", "translate(" + this.config.band_label_width + ",0)")
+                    .attr("transform", "translate(0,0)")
                 // Vertical reference lines on the protein scale
                 .append("g")
                     .attr("class", "background-ticks")
                     .attr("transform", function(d) {
                         return "translate(0," + (d.layout.mutations.y) + ")";
                     });
+
+            if (that.config.enable_transitions) {
+                cancer_types_g = cancer_types_g
+                    .transition()
+                    .duration(500);
+
+                subtypes_exit = subtypes_exit
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 1e-6);
+            }
+
+            // Update
+            cancer_types_g
+                .attr("height", function(d) {
+                    return d.layout.subtype_height;
+                })
+                .attr("transform", function(d) {
+                    return "translate(0," + d.layout.y + ")";
+                })
+                .style("opacity", 1.0);
+
+            // Exit
+            subtypes_exit
+                .remove();
+
+            // ------
+            // Labels
+            // ------
+            cancer_types_g = this.vis.root
+                .selectAll("g.label-area")
+                .selectAll("g.cancer-type")
+                    .data(data.cancer_subtypes, function(d) {
+                        return d.label;
+                    });
+
+            subtypes_enter = cancer_types_g.enter();
+            subtypes_exit = cancer_types_g.exit();
+
+            subtype = subtypes_enter
+                .append("g")
+                    .attr("class", "cancer-type")
+                    .attr("height", function(d) {
+                        return d.layout.subtype_height;
+                    })
+                    .attr("transform", function(d) {
+                        return "translate(0," + d.layout.y + ")";
+                    })
+                    .style("opacity", 1e-6);
 
             subtype
                 .append("text")
