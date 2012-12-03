@@ -1,5 +1,5 @@
 var Template = require("../views/templates/stacksvis_simpler");
-var ControlsView = require("../views/stacksvis_controls");
+var ControlsView = require("../views/stacksvis_simpler_controls");
 require("../../vis/stacksvis");
 
 module.exports = Backbone.View.extend({
@@ -12,7 +12,7 @@ module.exports = Backbone.View.extend({
 
         this.model.on("load", this.renderGraph);
 
-        this.$el.html(Template());
+        this.$el.html(Template({ "id": Math.round(Math.random() * 100000)}));
     },
 
     renderGraph:function () {
@@ -104,8 +104,7 @@ module.exports = Backbone.View.extend({
     },
 
     initControls:function () {
-        this.controls = new ControlsView();
-        $("body").append(this.controls.render().el);
+        this.controls = new ControlsView({$targetEl:this.$el});
 
         var vis_container = this.$el.find(".stacksvis-container");
         this.controls.on("updated", function (dim) {
