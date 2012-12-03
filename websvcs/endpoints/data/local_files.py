@@ -86,7 +86,7 @@ def WriteTsv(handler, items):
     handler.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
 
     tsvwriter = csv.writer(handler, delimiter='\t')
-    excludedheaders = ["uri","id"]
+    excludedheaders = ["uri","id","p_ns_s"]
     if len(items) > 0:
         colheaders = [a for a in items[0].keys() if a not in excludedheaders]
         tsvwriter.writerow(colheaders)

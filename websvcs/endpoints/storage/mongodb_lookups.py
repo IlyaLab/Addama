@@ -191,20 +191,16 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
 
         collection = self.open_collection("qed_lookups", "mutsig_rankings")
         items = []
-
         if "cancer" in query:
             items = collection.find(query)
 
-        result = {
-            "items": map(self.jsonable_item, items)
-        }
-
+        json_items = map(self.jsonable_item, items)
         if self.get_argument("output", "json") == "tsv":
-            WriteTsv(self, items)
+            WriteTsv(self, json_items)
             self.set_status(200)
             return
 
-        self.write(json.dumps(result))
+        self.write(json.dumps({ "items": json_items }))
         self.set_status(200)
 
     def jsonable_item(self, item):
@@ -277,7 +273,7 @@ def WriteTsv(handler, items):
     handler.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
 
     tsvwriter = csv.writer(handler, delimiter='\t')
-    excludedheaders = ["uri","id"]
+    excludedheaders = ["uri","id","p_ns_s"]
     if len(items) > 0:
         colheaders = [a for a in items[0].keys() if a not in excludedheaders]
         tsvwriter.writerow(colheaders)
