@@ -27,11 +27,12 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
             normalize_fn = lambda x: x.lower()
 
         for key in args.keys():
-            iargs = args[key]
-            if len(iargs) == 1:
-                query[key] = normalize_fn(args[key][0])
-            else:
-                query[key] = {"$in": map(normalize_fn, args[key])}
+            if key != "output":
+                iargs = args[key]
+                if len(iargs) == 1:
+                    query[key] = normalize_fn(args[key][0])
+                else:
+                    query[key] = {"$in": map(normalize_fn, args[key])}
 
         query_limit = options.mongo_lookup_query_limit
         json_items = []

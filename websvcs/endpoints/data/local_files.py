@@ -1,7 +1,9 @@
-from tornado.options import options
+from tornado.options import options, logging
 import tornado.web
 import os
 import sys
+import json
+import csv
 from auth_decorator import authenticated
 
 class LocalFileHandler(tornado.web.RequestHandler):
@@ -50,6 +52,13 @@ class LocalFileHandler(tornado.web.RequestHandler):
                 self.write({ "directories": dirs, "files": files })
             else:
                 rfile = open(options.data_path + filepath)
+                outputArg = self.get_argument("output", "json")
+                if outputArg == "tsv" and filepath.endswith(".json"):
+                    json_items = json.loads(rfile.read())
+                    WriteTsv(self, json_items["items"])
+                    self.set_status(200)
+                    return
+
                 while True:
                     thisline = rfile.readline()
                     if thisline.startswith("##"):
@@ -71,3 +80,23 @@ def _writeFilteredRow(self,line,cols):
 
         self.write("\t".join([vs[i] for i in cols]))
         self.write("\n")
+
+def WriteTsv(handler, items):
+    handler.set_header("Content-Type", "text/tab-separated-values")
+    handler.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
+
+    tsvwriter = csv.writer(handler, delimiter='\t')
+    excludedheaders = ["uri","id"]
+    if len(items) > 0:
+        colheaders = [a for a in items[0].keys() if a not in excludedheaders]
+        tsvwriter.writerow(colheaders)
+        for item in items:
+            vals = []
+            for colheader in colheaders:
+                val = item[colheader]
+                if isinstance(val, (list, tuple)):
+                    vals.append(len(val))
+                else:
+                    vals.append(val)
+            tsvwriter.writerow(vals)
+
