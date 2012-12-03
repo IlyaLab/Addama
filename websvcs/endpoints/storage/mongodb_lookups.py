@@ -200,7 +200,7 @@ class MongoDbMutSigHandler(tornado.web.RequestHandler):
         }
 
         if self.get_argument("output", "json") == "tsv":
-            WriteTsv(self, json_items)
+            WriteTsv(self, items)
             self.set_status(200)
             return
 
