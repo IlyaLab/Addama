@@ -277,10 +277,10 @@ def WriteTsv(handler, items):
     handler.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
 
     tsvwriter = csv.writer(handler, delimiter='\t')
+    excludedheaders = ["uri","id"]
     if len(items) > 0:
-        colheaders = items[0].keys()
+        colheaders = [a for a in items[0].keys() if a not in excludedheaders]
         tsvwriter.writerow(colheaders)
-
         for item in items:
             vals = []
             for colheader in colheaders:
