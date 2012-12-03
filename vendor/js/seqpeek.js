@@ -367,7 +367,13 @@
             _.extend(this.config, param_config);
 
             this.processData();
-            this.vis = {};
+            this.vis = {
+                refs: {
+                    labels: {},
+                    panel: {},
+                    symbols: {}
+                }
+            };
 
             // Linear scale for location in protein
             this.vis.x_scale = d3.scale.linear().domain([0, data.protein.length]).range([0, this.config.protein_scale_width]);
@@ -399,6 +405,17 @@
                     .attr("transform", "translate(" + this.config.plot.horizontal_padding + "," + this.config.plot.vertical_padding + ")")
                     .style("pointer-events", "all");
 
+            // Area for scale lines, reference lines and tick marks
+            this.vis.root
+                .append("g")
+                    .attr("class", "panel-area")
+                    .attr("x", 0.0)
+                    .attr("y", 0.0)
+                    .attr("width", this.vis.viewport_size[0])
+                    .attr("height", this.vis.viewport_size[1])
+                    .attr("transform", "translate(" + (this.config.plot.horizontal_padding + this.config.band_label_width) + "," + this.config.plot.vertical_padding + ")")
+                    .style("pointer-events", "none");
+
             // Area for graphical elements with clipping
             this.vis.root
                 .append("svg:svg")
@@ -407,7 +424,6 @@
                     .attr("y", (this.config.plot.vertical_padding))
                     .attr("width", this.vis.viewport_size[0])
                     .attr("height", this.vis.viewport_size[1])
-                    .attr("viewBox", "0 0 " + this.vis.viewport_size[0] + " " + this.vis.viewport_size[1])
                     .style("pointer-events", "all");
 
             // Rectangle for mouse events
@@ -438,9 +454,7 @@
             this.vis.viewport_scale = [e.scale, e.scale];
             this.vis.viewport_pos = e.translate;
 
-            this.applyProteinScales();
-            this.updateProteinDomains();
-            this.updateMutationMarkers();
+            this.applyViewportChange();
         },
 
         changeSubtypes: function(new_subtypes, config) {
@@ -517,13 +531,7 @@
             subtype
                 .append("g")
                     .attr("class", "protein")
-                    .attr("transform", "translate(0,0)")
-                // Vertical reference lines on the protein scale
-                .append("g")
-                    .attr("class", "background-ticks")
-                    .attr("transform", function(d) {
-                        return "translate(0," + (d.layout.mutations.y) + ")";
-                    });
+                    .attr("transform", "translate(0,0)");
 
             if (that.config.enable_transitions) {
                 cancer_types_g = cancer_types_g
@@ -549,6 +557,8 @@
             // Exit
             subtypes_exit
                 .remove();
+
+            this.vis.refs.symbols.protein = this.vis.root.selectAll(".data-area g.protein");
 
             // ------
             // Labels
@@ -609,15 +619,70 @@
             subtypes_exit
                 .remove();
 
+            // -----
+            // Panel
+            // -----
+            cancer_types_g = this.vis.root
+                .selectAll("g.panel-area")
+                .selectAll("g.cancer-type")
+                    .data(data.cancer_subtypes, function(d) {
+                        return d.label;
+                    });
+
+            subtypes_enter = cancer_types_g.enter();
+            subtypes_exit = cancer_types_g.exit();
+
+            subtype = subtypes_enter
+                .append("g")
+                    .attr("class", "cancer-type")
+                    .attr("height", function(d) {
+                        return d.layout.subtype_height;
+                    })
+                    .attr("transform", function(d) {
+                        return "translate(0," + d.layout.y + ")";
+                    })
+                    .style("opacity", 1e-6);
+
+            subtype
+                .append("g")
+                    .attr("class", "protein")
+                    .attr("transform", "translate(0,0)")
+                // Vertical reference lines on the protein scale
+                .append("g")
+                    .attr("class", "background-ticks")
+                    .attr("transform", function(d) {
+                        return "translate(0," + (d.layout.mutations.y) + ")";
+                    });
+
+            if (that.config.enable_transitions) {
+                cancer_types_g = cancer_types_g
+                    .transition()
+                    .duration(500);
+
+                subtypes_exit = subtypes_exit
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 1e-6);
+            }
+
+            // Update
+            cancer_types_g
+                .attr("height", function(d) {
+                    return d.layout.subtype_height;
+                })
+                .attr("transform", function(d) {
+                    return "translate(0," + d.layout.y + ")";
+                })
+                .style("opacity", 1.0);
+
+            // Exit
+            subtypes_exit
+                .remove();
+
+            this.vis.refs.panel.protein = this.vis.root.selectAll(".panel-area g.protein");
+
             this.updateMutationLayout();
-
-            this.updateVerticalGroups();
-
-            // Draw the mutation markers for each subtype
-            this.applyMutationMarkers();
-
-            // Draw or hide the stems
-            this.updateStems();
+            this.applyLayoutChange();
         },
 
         updateSubtypePositions: function() {
@@ -634,32 +699,33 @@
                     });
         },
 
-        updateVerticalGroups: function() {
+        applyLayoutChange: function() {
+            this.applyDataElements();
+            this.applyPanelElements();
+
+            this.applyReferenceLines();
+            this.applyProteinScales();
+            this.applyProteinDomains();
+
+            this.applyMutationGroups();
+            this.applyMutationMarkers();
+            this.applyStems();
+        },
+
+        applyViewportChange: function() {
+            this.updateReferenceLines();
+            this.updateProteinScaleTicks();
+            this.updateProteinDomains();
+            this.updateMutationMarkers();
+        },
+
+        applyMutationGroups: function() {
             var that = this;
             var data = this.data;
 
             var subtypes = this.vis.root
                 .selectAll(".data-area")
                 .selectAll("g.cancer-type");
-
-            subtypes
-                .each(function(subtype_data) {
-                    var background_lines = d3
-                        .select(this)
-                        .selectAll(".protein")
-                        .selectAll("g.background-ticks");
-
-                    if (that.config.enable_transitions) {
-                        background_lines = background_lines
-                            .transition()
-                            .duration(500);
-                    }
-
-                    background_lines
-                        .attr("transform", function(d) {
-                            return "translate(0," + (d.layout.mutations.y) + ")";
-                        });
-                });
 
             subtypes
                 .each(function(subtype_data) {
@@ -688,51 +754,15 @@
                         })
                         .style("opacity", 1.0);
                 });
+        },
 
-            subtypes
-                .each(function(subtype_data) {
-                    var protein_scales = d3
-                        .select(this)
-                        .selectAll(".protein")
-                        .selectAll("g.scale")
-                            .data(function(d) {
-                                return (d.layout.protein_scale_ticks.enabled ||
-                                    d.layout.protein_scale_line.enabled) === true ? [subtype_data] : [];
-                            });
+        applyDataElements: function() {
+            var that = this;
+            var data = this.data;
 
-                    protein_scales
-                        .enter()
-                        .append("g")
-                            .attr("class", "scale")
-                            .attr("transform", function() {
-                                return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
-                            })
-                            .style("opacity", 1e-6);
-
-                    var protein_scales_exit = protein_scales.exit();
-
-                    if (that.config.enable_transitions) {
-                        protein_scales = protein_scales
-                            .transition()
-                            .duration(500);
-                    }
-
-                    protein_scales
-                        .attr("transform", function() {
-                            return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
-                        })
-                        .style("opacity", 1.0);
-
-                    if (that.config.enable_transitions) {
-                        protein_scales_exit = protein_scales_exit
-                            .transition()
-                            .duration(500)
-                            .style("opacity", 1e-6);
-                    }
-
-                    protein_scales_exit
-                        .remove();
-                });
+            var subtypes = this.vis.root
+                .selectAll(".data-area")
+                .selectAll("g.cancer-type");
 
             subtypes
                 .each(function(subtype_data) {
@@ -783,9 +813,78 @@
                     domains_exit
                         .remove();
                 });
+        },
 
-            this.applyProteinScales();
-            this.applyProteinDomains();
+        applyPanelElements: function() {
+            var that = this;
+
+            var subtypes = this.vis.root
+                .selectAll(".panel-area")
+                .selectAll("g.cancer-type");
+
+            subtypes
+                .each(function(subtype_data) {
+                    var background_lines = d3
+                        .select(this)
+                        .selectAll(".protein")
+                        .selectAll("g.background-ticks");
+
+                    if (that.config.enable_transitions) {
+                        background_lines = background_lines
+                            .transition()
+                            .duration(500);
+                    }
+
+                    background_lines
+                        .attr("transform", function(d) {
+                            return "translate(0," + (d.layout.mutations.y) + ")";
+                        });
+                });
+
+            subtypes
+                .each(function(subtype_data) {
+                    var protein_scales = d3
+                        .select(this)
+                        .selectAll(".protein")
+                        .selectAll("g.scale")
+                            .data(function(d) {
+                                return (d.layout.protein_scale_ticks.enabled ||
+                                    d.layout.protein_scale_line.enabled) === true ? [subtype_data] : [];
+                            });
+
+                    protein_scales
+                        .enter()
+                        .append("g")
+                            .attr("class", "scale")
+                            .attr("transform", function() {
+                                return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
+                            })
+                            .style("opacity", 1e-6);
+
+                    var protein_scales_exit = protein_scales.exit();
+
+                    if (that.config.enable_transitions) {
+                        protein_scales = protein_scales
+                            .transition()
+                            .duration(500);
+                    }
+
+                    protein_scales
+                        .attr("transform", function() {
+                            return "translate(0," + (subtype_data.layout.protein_scale_ticks.y) + ")";
+                        })
+                        .style("opacity", 1.0);
+
+                    if (that.config.enable_transitions) {
+                        protein_scales_exit = protein_scales_exit
+                            .transition()
+                            .duration(500)
+                            .style("opacity", 1e-6);
+                    }
+
+                    protein_scales_exit
+                        .remove();
+                });
         },
 
         updateMutationLayout: function() {
@@ -864,15 +963,19 @@
             });
         },
 
-        applyProteinScales: function() {
+        getVisibleTicks: function() {
+            var min_x = 0,
+                max_x = this.data.protein.length;
+
+            return _.filter(this.vis.x_scale.ticks(20), function(tick) {
+                return tick >= min_x && max_x >= tick;
+            });
+        },
+
+        applyReferenceLines: function() {
             var that = this;
 
-            var subtypes = this.vis.root
-                .selectAll(".data-area")
-                .selectAll("g.cancer-type");
-
-            subtypes
-                .selectAll(".protein")
+            this.vis.refs.panel.protein
                 .selectAll("g.background-ticks")
                 .each(function(subtype_data) {
                     var layout = subtype_data.layout;
@@ -880,7 +983,7 @@
                     var background_tick = d3.select(this)
                         .selectAll(".loc-tick")
                             .data(function() {
-                                return that.vis.x_scale.ticks(20);
+                                return that.getVisibleTicks();
                             }, String);
 
                     background_tick
@@ -903,9 +1006,93 @@
                         .attr("y1", layout.background_ticks.y1)
                         .attr("y2", layout.background_ticks.y2);
             });
+    
+        },
 
-            subtypes
-                .selectAll(".protein")
+        updateReferenceLines: function() {
+            var that = this;
+
+            this.vis.refs.panel.protein
+                .selectAll("g.background-ticks")
+                .each(function(subtype_data) {
+                    var layout = subtype_data.layout;
+
+                    var ref_line = d3.select(this).selectAll(".loc-tick")
+                        .data(function() {
+                            return that.getVisibleTicks();
+                        }, String);
+
+                    ref_line
+                        .enter()
+                        .append("g")
+                            .attr("class", "loc-tick")
+                            .attr("transform", function(d) {
+                                return "translate(" + that.vis.x_scale(d) + ",0)";
+                            })
+                        .append("svg:line")
+                            .attr("y1", layout.background_ticks.y1)
+                            .attr("y2", layout.background_ticks.y2)
+                            .style("stroke-width", 1.0)
+                            .style("stroke", "#ccc");
+
+                    ref_line
+                        .attr("transform", function(d) {
+                            return "translate(" + that.vis.x_scale(d) + ",0)";
+                        });
+
+                    ref_line
+                        .exit()
+                        .remove();
+            });
+        },
+
+        updateProteinScaleTicks: function() {
+            var that = this;
+            
+            this.vis.refs.panel.protein
+                .selectAll(".scale")
+                .each(function(subtype_data) {
+                    var scale_ticks = d3.select(this)
+                        .selectAll(".loc-tick")
+                        .data(function(d) {
+                            if (d.layout.protein_scale_ticks.enabled === true) {
+                                return that.getVisibleTicks();
+                            }
+
+                            return [];
+                        }, String);
+
+                    scale_ticks
+                        .enter()
+                        .append("g")
+                            .attr("class", "loc-tick")
+                            .attr("transform", function(d) {
+                                return "translate(" + that.vis.x_scale(d) + ",0)";
+                            })
+                        .append("svg:text")
+                            .attr("text-anchor", "middle")
+                            .attr("y", function() {
+                                return 0;
+                            })
+                            .text(function(d) {
+                                return d;
+                            });
+
+                    scale_ticks
+                        .attr("transform", function(d) {
+                            return "translate(" + that.vis.x_scale(d) + ",0)";
+                        });
+
+                    scale_ticks
+                        .exit()
+                        .remove();
+                });
+        },
+
+        applyProteinScales: function() {
+            var that = this;
+
+            this.vis.refs.panel.protein
                 .selectAll(".scale")
                 .each(function(subtype_data) {
                     var scale_line = d3.select(this)
@@ -951,42 +1138,9 @@
 
                     scale_line_exit
                         .remove();
-
-                    var scale_ticks = d3.select(this)
-                        .selectAll(".loc-tick")
-                        .data(function(d) {
-                            if (d.layout.protein_scale_ticks.enabled === true) {
-                                return that.vis.x_scale.ticks(20);
-                            }
-
-                            return [];
-                        }, String);
-
-                    scale_ticks
-                        .enter()
-                        .append("g")
-                            .attr("class", "loc-tick")
-                            .attr("transform", function(d) {
-                                return "translate(" + that.vis.x_scale(d) + ",0)";
-                            })
-                        .append("svg:text")
-                            .attr("text-anchor", "middle")
-                            .attr("y", function() {
-                                return 0;
-                            })
-                            .text(function(d) {
-                                return d;
-                            });
-
-                    scale_ticks
-                        .attr("transform", function(d) {
-                            return "translate(" + that.vis.x_scale(d) + ",0)";
-                        });
-
-                    scale_ticks
-                        .exit()
-                        .remove();
             });
+
+            this.updateProteinScaleTicks();
         },
 
         updateMutationMarkers: function() {
@@ -1008,12 +1162,7 @@
             var that = this;
             var mutationIdFn = this.mutationIdFn;
 
-            var subtypes = this.vis.root
-                .selectAll(".data-area")
-                .selectAll("g.cancer-type");
-
-            subtypes
-                .selectAll(".protein")
+            this.vis.refs.symbols.protein
                 .selectAll(".mutations")
                 .each(function(mutation_data) {
                     var location_groups = mutation_data.mutation_layout.location_groups;
@@ -1297,7 +1446,7 @@
                 });
         },
 
-        updateStems: function() {
+        applyStems: function() {
             var that = this;
             var mutationIdFn = this.mutationIdFn;
 
@@ -1366,7 +1515,7 @@
             this.config.enable_mutation_stems = stems_enabled;
 
             this.updateVerticalScaleRanges();
-            this.updateStems();
+            this.applyStems();
             this.render();
         },
 
