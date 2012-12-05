@@ -62,7 +62,8 @@ $(function () {
             "pubcrawl_network": require("views/pubcrawl_network"),
             "pubcrawl_lit": require("views/pubcrawl_lit"),
             "items_grid": require("views/items_grid_view"),
-            "Atlas": require("views/atlas")
+            "Atlas": require("views/atlas"),
+            "atlas_quick_tutorial": require("views/atlas_quick_tutorial")
         },
         Lookups:{
             Labels:{}

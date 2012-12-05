@@ -29,7 +29,7 @@ module.exports = Backbone.View.extend({
         _.extend(this, options);
         _.bindAll(this, "initialValue");
 
-        this.$el.html(Template({}));
+        this.$el = options.$targetEl;
 
         var _this = this;
         _.each(this.initialState, function(inSt, selector) {

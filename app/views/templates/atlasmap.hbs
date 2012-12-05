@@ -3,12 +3,20 @@
         <li>
             <h5><a href="#" onclick="return false;">{{label}}</a></h5>
         </li>
-        <li><a href="#" onclick="return false;" class="info-me"> <i class="icon-info-sign"/></i> </a></li>
-        <li><a href="#" onclick="return false;" class="notes-me"> <i class="icon-pencil"/></i> </a></li>
-        <li><a href="#" onclick="return false;" class="minimize-me"> <i class="icon-minus"/></i> </a></li>
-        <li><a href="#" onclick="return false;" class="refresh-me"> <i class="icon-refresh"/></i> </a></li>
-        <li><a href="#" onclick="return false;" class="move-me"> <i class="icon-move"/></i> </a></li>
-        <li><a href="#" target="_blank" class="download-link"> <i class="icon-download"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="info-me"> <i class="icon-info-sign" /></i> </a></li>
+        <li><a href="#" onclick="return false;" class="notes-me disabled" rel="tooltip" title="Take Notes (todo:notes_view)"> <i class="icon-pencil"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="minimize-me" rel="tooltip" title="Minimize Map"> <i class="icon-minus"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="refresh-me" rel="tooltip" title="Refresh Data"> <i class="icon-refresh"/></i> </a></li>
+        <li><a href="#" onclick="return false;" class="move-me" rel="tooltip" title="Move Map In Canvas"> <i class="icon-move"/></i> </a></li>
+        <li class="dropdown">
+            <a href="#" class="download-link dropdown-toggle" data-toggle="dropdown" onclick="return false" rel="tooltip" title="Download Data"> <i class="icon-download"/></i> </a>
+            <ul class="dropdown-menu">
+                <li class="nav-header">Download</li>
+                <div class="download-links">
+                    <li><a href="#" onclick="return false;">None Available</a></li>
+                </div>
+            </ul>
+        </li>
     </ul>
     <ul class="nav nav-tabs">
         {{#each views}}
@@ -17,7 +25,7 @@
     </ul>
     <div class="tab-content">
         {{#each views}}
-        <div id="tab_{{uid}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-view="{{id}}"></div>
+        <div id="tab_{{uid}}" class="tab-pane {{li_class}} map-contents container-fluid" data-source="{{source}}" data-label="{{label}}" data-view="{{id}}"></div>
         {{/each}}
     </div>
 </div>

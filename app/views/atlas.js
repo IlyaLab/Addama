@@ -1,6 +1,7 @@
 var AtlasTemplate = require("../views/templates/atlas");
 var AtlasMapTemplate = require("../views/templates/atlasmap");
 var LineItemTemplate = require("../views/templates/line_item");
+var OpenLinkTemplate = require("../views/templates/open_link");
 
 module.exports = Backbone.View.extend({
     "last-z-index": 10,
@@ -154,8 +155,17 @@ module.exports = Backbone.View.extend({
     },
 
     loadMapData: function(atlasMap) {
+        var UL = $(atlasMap).find(".download-links");
+        UL.empty();
         _.each($(atlasMap).find(".map-contents"), function(mc) {
-            _.defer(this.loadMapContents, mc);
+            _.defer(function(_this) {
+                var downloadUrl = _this.loadMapContents(mc);
+                if (downloadUrl) {
+                    _.defer(function() {
+                        UL.append(OpenLinkTemplate({ "label": $(mc).data("label"), "url": downloadUrl }))
+                    });
+                }
+            }, this);
         }, this);
     },
 
@@ -175,9 +185,9 @@ module.exports = Backbone.View.extend({
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options || {});
             var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options || {});
 
-            var downloadUri = this.viewsByUri($target, source, view_name, v_options, q_options);
-            $target.parents(".atlas-map").find(".download-link").attr("href", downloadUri);
+            return this.viewsByUri($target, source, view_name, v_options, q_options);
         }
+        return null;
     },
 
     viewsByUri: function(targetEl, uri, view_name, options, query) {
