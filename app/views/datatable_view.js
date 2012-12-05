@@ -73,7 +73,7 @@ module.exports = Backbone.View.extend({
             }
         }
 
-        this.oTable=this.$el.find("#" + this.tableId).dataTable({
+        thisView.oTable=this.$el.find("#" + this.tableId).dataTable({
             "sDom": "<'row'<'span3'l><'span4'f>r>t<'row'<'span3'i><'span4'p>>",
             "sPaginationType": "bootstrap",
             "bAutoWidth":false,
@@ -128,7 +128,7 @@ module.exports = Backbone.View.extend({
             });
         }
 
-        return this;
+        return thisView;
     },
 
 

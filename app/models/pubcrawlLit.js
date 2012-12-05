@@ -2,9 +2,10 @@
 
 module.exports = Backbone.Model.extend({
         //url for this model is the solr connection to retrieve documents related to this node
-    urlRoot: 'http://apollo:4080/solr/core0/select/?',
+
     url: function(){
-        return this.urlRoot + "q=%2Btext%3A%28'" + this.genes[0].toLowerCase() + "'%29+%2Btext%3A%28'cancer'%29&fq=pub_date_year:[1991 TO 2012]&qt=distributed_select&sort=pub_date_year desc&wt=json&hl=true&hl.fl=article_title,abstract_text&rows=1000&hl.snippets=100&hl.fragsize=50000&h.mergeContiguous=true";
+        return this.get("data_uri") + "/solr/core0/select/?q=%2Btext%3A%28'" + this.genes[0].toLowerCase() + "'%29+%2Btext%3A%28'cancer'%29&fq=pub_date_year:[1991 TO 2012]&qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&" +
+            "hl.q=abstract_text%3Acancer article_title%3Acancer abstract_text%3A"+ this.genes[0].toLowerCase() + " article_title%3A" + this.genes[0].toLowerCase();
     },
 
     initialize: function (options) {

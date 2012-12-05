@@ -78,10 +78,11 @@ line.axis {
     border-radius: 4px;
 }
 
-.nocheckbox_table tbody tr:hover td,
-.nocheckbox_table tbody tr:hover th {
-    background-color: orange;
-}
+ .nocheckbox_table tbody tr:hover td,
+ .nocheckbox_table tbody tr:hover th {
+     background-color: orange;
+ }
+
 
 /*thead {*/
     /*background-color: #0061af;*/
