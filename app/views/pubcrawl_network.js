@@ -1,5 +1,131 @@
 var Template = require('./templates/pubcrawl_network');
 
+var NodeDetailsModel = Backbone.Model.extend({
+    //url for this model is the solr connection to retrieve documents related to this node
+
+    url: function(){
+        return this.data_uri + "/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+            "&hl.q=abstract_text%3A"+ this.nodeName + " article_title%3A" + this.nodeName;
+    },
+
+    initialize: function(data){
+        //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
+        this.data_uri=data.data_uri;
+        this.nodeName = data.nodeName;
+        this.nmdDetailsModel = [];
+        this.domineDetailsModel = [];
+        for(var i=0; i< data.networkModel.nodes.length; i++){
+            if(data.networkModel.nodes.models[i].name == data.nodeName){
+                this.node = data.networkModel.nodes.models[i];
+                break;
+            }
+        }
+        for(var i=0; i< data.networkModel.edges.length; i++){
+            var edge = data.networkModel.edges.models[i];
+            if(edge.source.name == this.node.name){
+                if(edge.relType == "ngd"){
+
+                    var edgeItem={name: edge.target.name, combocount: edge.combocount, termcount: edge.target.termcount,nmd:edge.nmd};
+                    this.nmdDetailsModel.push(edgeItem);
+                }
+                else if(edge.relType == "domine"){
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name, pf1: edge.pf1, pf2: edge.pf2,
+                        pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
+                    this.domineDetailsModel.push(edgeItem);
+                }
+            }
+            else if(edge.target.name == this.node.name){
+                //don't need to do ngd here, since it is currently doubled, should be able to also remove domine once it is doubled correctly
+                if(edge.relType == "domine"){
+                    var edgeItem={term1: edge.target.name, term2: edge.source.name, pf1: edge.pf1, pf2: edge.pf2,
+                        pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
+                    this.domineDetailsModel.push(edgeItem);
+                }
+            }
+        }
+
+    },
+
+    parse: function(response){
+        this.docs=[];
+        if(response.response.docs != null){
+            for (var i=0; i < response.response.docs.length; i++){
+                var doc = response.response.docs[i];
+                if(response.highlighting[doc.pmid] != undefined){
+                    if(response.highlighting[doc.pmid].abstract_text != undefined){
+                        doc.abstract_text = response.highlighting[doc.pmid].abstract_text;
+                    }
+                    if(response.highlighting[doc.pmid].article_title != undefined){
+                        doc.article_title = response.highlighting[doc.pmid].article_title;
+                    }
+                }
+
+                this.docs.push(doc);
+            }
+        }
+
+        return;
+
+    }
+
+});
+
+var EdgeDetailsModel = Backbone.Model.extend({
+    //url for this model is the solr connection to retrieve documents related to this node
+    url: function(){
+        return this.data_uri + "/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.source + "'%29%20%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+            "&hl.q=abstract_text%3A" + this.target + " article_title%3A" + this.target + " abstract_text%3A"+ this.source + " article_title%3A" + this.source;
+    },
+
+    initialize: function(data){
+        //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
+        this.data_uri=data.data_uri;
+        this.source = data.edge.source;
+        this.target = data.edge.target;
+        this.nmdDetailsModel = [];
+        this.domineDetailsModel = [];
+
+        for(var i=0; i< data.networkModel.edges.length; i++){
+            var edge = data.networkModel.edges.models[i];
+            if(edge.source.name == this.source && edge.target.name == this.target){
+                if(edge.nmd != null){
+
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name,combocount: edge.combocount, termcount: edge.target.termcount,nmd:edge.nmd};
+                    this.nmdDetailsModel.push(edgeItem);
+                }
+                else if(edge.relType == "domine"){
+                    var edgeItem={term1: edge.source.name, term2: edge.target.name, pf1: edge.pf1, pf2: edge.pf2,
+                        pf1_count: edge.pf1_count, pf2_count: edge.pf2_count, type: edge.type, uni1: edge.uni1, uni2: edge.uni2};
+                    this.domineDetailsModel.push(edgeItem);
+                }
+            }
+        }
+
+    },
+
+    parse: function(response){
+       this.docs=[];
+        if(response.response.docs != null){
+            for (var i=0; i < response.response.docs.length; i++){
+                var doc = response.response.docs[i];
+                if(response.highlighting[doc.pmid] != undefined){
+                    if(response.highlighting[doc.pmid].abstract_text != undefined){
+                          doc.abstract_text = response.highlighting[doc.pmid].abstract_text;
+                    }
+                    if(response.highlighting[doc.pmid].article_title != undefined){
+                        doc.article_title = response.highlighting[doc.pmid].article_title;
+                    }
+                }
+
+                this.docs.push(doc);
+            }
+        }
+
+        return;
+
+    }
+
+});
 
 var NodeTableView = Backbone.View.extend({
 
@@ -280,13 +406,11 @@ module.exports = Backbone.View.extend({
      },
 
    showNodeDetails: function(node){
-       if(this.nodeDetails){
-           this.nodeDetails.close();
-       }
 
-       this.nodeDetails = new NodeDetailsModel(this.model.data_uri,this.model.networkData,node);
+
+       this.nodeDetails = new NodeDetailsModel({data_uri:"svc/" +this.model_unit.catalog.solr.service,networkModel:this.model.networkData,nodeName:node});
        var that=this;
-       $("#pubcrawlGraphTabs").tabs("option","selected",1);
+      $("#pubcrawlGraphTabs").tabs("option","selected",1);
        var datatable=this.nodeDetails.fetch({success: function(model,response){
            if(that.nodeDetailsView){
                that.nodeDetailsView.model=model;
@@ -301,10 +425,8 @@ module.exports = Backbone.View.extend({
    },
 
     showEdgeDetails: function(edge){
-        if(this.edgeDetails){
-            this.edgeDetails.close();
-        }
-          this.edgeDetails = new EdgeDetailsModel(this.model.data_uri,this.model.networkData,edge);
+
+          this.edgeDetails = new EdgeDetailsModel({data_uri:"svc/" +this.model_unit.catalog.solr.service,networkModel:this.model.networkData,edge:edge});
           var that=this;
           $("#pubcrawlGraphTabs").tabs("option","selected",2);
           var datatable=this.edgeDetails.fetch({success: function(model,response){
