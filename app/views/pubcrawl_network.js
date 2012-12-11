@@ -4,13 +4,12 @@ var NodeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
 
     url: function(){
-        return this.data_uri + "/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+        return this.get("data_uri") + "?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.nodeName + "'%29&fq=pub_date_year:[1991 TO 2012]" +
             "&hl.q=abstract_text%3A"+ this.nodeName + " article_title%3A" + this.nodeName;
     },
 
     initialize: function(data){
         //setup the various model items by finding all edges with the nodeName and putting into the appropriate jsonarray
-        this.data_uri=data.data_uri;
         this.nodeName = data.nodeName;
         this.nmdDetailsModel = [];
         this.domineDetailsModel = [];
@@ -73,7 +72,7 @@ var NodeDetailsModel = Backbone.Model.extend({
 var EdgeDetailsModel = Backbone.Model.extend({
     //url for this model is the solr connection to retrieve documents related to this node
     url: function(){
-        return this.data_uri + "/solr/core0/select/?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.source + "'%29%20%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]" +
+        return this.get("data_uri") + "?qt=distributed_select&sort=pub_date_year desc&wt=json&rows=1000&q=%2Btext%3A%28'" + this.source + "'%29%20%2Btext%3A%28'" + this.target + "'%29&fq=pub_date_year:[1991 TO 2012]" +
             "&hl.q=abstract_text%3A" + this.target + " article_title%3A" + this.target + " abstract_text%3A"+ this.source + " article_title%3A" + this.source;
     },
 
@@ -408,7 +407,7 @@ module.exports = Backbone.View.extend({
    showNodeDetails: function(node){
 
 
-       this.nodeDetails = new NodeDetailsModel({data_uri:"svc/" +this.model_unit.catalog.solr.service,networkModel:this.model.networkData,nodeName:node});
+       this.nodeDetails = new NodeDetailsModel({data_uri:"svc/" +this.catalog_unit.detailsService,networkModel:this.model.networkData,nodeName:node});
        var that=this;
       $("#pubcrawlGraphTabs").tabs("option","selected",1);
        var datatable=this.nodeDetails.fetch({success: function(model,response){
@@ -426,7 +425,7 @@ module.exports = Backbone.View.extend({
 
     showEdgeDetails: function(edge){
 
-          this.edgeDetails = new EdgeDetailsModel({data_uri:"svc/" +this.model_unit.catalog.solr.service,networkModel:this.model.networkData,edge:edge});
+          this.edgeDetails = new EdgeDetailsModel({data_uri:"svc/" +this.catalog_unit.detailsService,networkModel:this.model.networkData,edge:edge});
           var that=this;
           $("#pubcrawlGraphTabs").tabs("option","selected",2);
           var datatable=this.edgeDetails.fetch({success: function(model,response){
