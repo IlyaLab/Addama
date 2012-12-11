@@ -8,10 +8,23 @@ module.exports = Backbone.View.extend({
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initControls', 'initGraph', 'initCancerSelector');
-        _.bindAll(this, 'updateGraph', 'reloadModel');
+        _.bindAll(this, 'initControls', 'initGraph', 'initCancerSelector', 'updateGraph', 'reloadModel', 'setContainerSize');
 
         this.reloadModel = _.throttle(this.reloadModel, 1000);
+
+        var that = this,
+            firstVisUpdate = _.once(this.initGraph),
+            restVisUpdate = _.after(2, this.updateGraph);
+
+        // Create a function that updates the visualization.
+        // When called for the first time, it sets up the SVG element and renders the data.
+        // On subsequent calls, it only re-renders.
+        var updateFn = function() {
+            firstVisUpdate();
+            restVisUpdate();
+
+            that.setContainerSize();
+        };
 
         if (!this.hideSelector) {
             $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
@@ -21,7 +34,7 @@ module.exports = Backbone.View.extend({
             this.current_gene = this.genes[0];
         }
 
-        this.model.on("load", this.initGraph);
+        this.model.on("load", updateFn);
 
         this.$el.html(Template({ "title": this.current_gene }));
 
@@ -124,8 +137,8 @@ module.exports = Backbone.View.extend({
                 Missense_Mutation: 'blue'
             },
             plot: {
-                horizontal_padding: 30,
-                vertical_padding: 30
+                horizontal_padding: 0,
+                vertical_padding: 0
             },
             band_label_width: 100
         };
@@ -135,8 +148,6 @@ module.exports = Backbone.View.extend({
 
     updateGraph: function() {
         var data = this.model.get("data");
-
-        this.initGraph();
 
         var postProcessFn = function(subtypes) {
             _.chain(subtypes)
@@ -176,6 +187,10 @@ module.exports = Backbone.View.extend({
             "subtype_order": this.current_subtypes,
             "post_process_fn": postProcessFn
         });
-    }
+    },
 
+    setContainerSize: function() {
+        var size = this.$el.find(".seqpeek-container").seqpeek("get_size");
+        this.$el.find(".seqpeek-container").css("width", size.width).css("height", size.height + 2.0);
+    }
 });

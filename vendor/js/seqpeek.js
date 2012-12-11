@@ -351,12 +351,20 @@
 
             // Add height of the last cancer
             layout = that.doSubtypeLayout(_.last(data.cancer_subtypes), test_config, last_layout);
-            max_height += (layout.height + that.config.protein_vertical_padding);
+            //max_height += (layout.height + that.config.protein_vertical_padding);
+            max_height += layout.height;
 
             return {
                 width: this.config.band_label_width + this.config.protein_scale_width,
                 height: max_height
             };
+        },
+
+        getSize: function() {
+            return {
+                width: this.vis.size_info.width + 2.0 * this.config.plot.horizontal_padding,
+                height: this.vis.size_info.height + 2.0 * this.config.plot.vertical_padding
+            }
         },
 
         draw: function(data, param_config) {
@@ -385,6 +393,7 @@
             this.updateVerticalScaleRanges();
 
             var size_info = this.getDefaultVisualizationSize();
+            this.vis.size_info = size_info;
 
             this.vis.viewport_size = [this.config.protein_scale_width, size_info.height];
             this.vis.viewport_scale = [1, 1];
@@ -1626,6 +1635,14 @@
                     vis.changeSubtypes(new_subtypes, order);
                 }
             });
+        },
+        get_size: function() {
+            var vis = $(this).data("SeqPeek");
+            if (vis) {
+                return vis.getSize();
+            }
+
+            return null;
         },
         set_subtype_order: function() {
             return this;
