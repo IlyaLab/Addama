@@ -1,4 +1,4 @@
-Template = require("../views/templates/atlas_quick_tutorial");
+var Template = require("../views/templates/atlas_quick_tutorial");
 
 module.exports = Backbone.View.extend({
     initialize: function(options) {
