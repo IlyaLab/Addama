@@ -57,6 +57,17 @@ module.exports = Backbone.View.extend({
             }
 
             $target.css("z-index", this.nextZindex());
+        },
+        "click .cancers-btn":function () {
+            var cancerUL = this.$el.find(".cancer-selector");
+            var tumorBtn = this.$el.find(".cancers-btn");
+
+            _.defer(function() {
+                cancerUL.toggle("fade", { "duration":500 });
+            });
+
+            if (this.cancerControlOpen) cancerUL.effect("transfer", { "to":tumorBtn }, 750);
+            this.cancerControlOpen = !this.cancerControlOpen;
         }
     },
 
@@ -98,7 +109,7 @@ module.exports = Backbone.View.extend({
                         });
                     });
                 }
-                
+
                 if (session_atlas.cancers) {
                     _.each(this.$el.find(".cancer-selector li"), function(li) {
                         var cancer = $(li).find("a").data("id");
@@ -277,6 +288,9 @@ module.exports = Backbone.View.extend({
 
         UL.find(".toggle-active").click(function(e) {
             $(e.target).parent().toggleClass("active");
+            var notactive = UL.find("li:not(.active)");
+            notactive.detach();
+            UL.append(notactive);
         });
 
         UL.sortable();
