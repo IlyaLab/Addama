@@ -9,6 +9,7 @@ module.exports = Backbone.View.extend({
     "lastPosition": {
         "top": 0, "left": 0
     },
+    "viewsByUid": {},
 
     events: {
         "click a.refresh-loaded": function() {
@@ -139,9 +140,13 @@ module.exports = Backbone.View.extend({
 
         var uid = Math.round(Math.random() * 10000);
         _.each(map.views, function(view, idx) {
+            if (!_.has(view, "view")) view["view"] = view["id"];
+
             if (idx == 0) view["li_class"] = "active";
-            view["uid"] = uid++;
-        });
+            view["uid"] = ++uid;
+
+            this.viewsByUid[uid] = view;
+        }, this);
 
         map.assignedPosition = map.position || this.nextPosition();
         map.assignedZindex = map.zindex || this.nextZindex();
@@ -182,10 +187,8 @@ module.exports = Backbone.View.extend({
 
     loadMapContents: function(contentContainer, view_options, query_options) {
         var $target = $(contentContainer);
-        var source = $target.data("source");
         var view_name = $target.data("view");
-        var linked_to = $target.data("linked");
-        if (source && view_name) {
+        if (view_name) {
             var afn = function(link) {
                 return $(link).data("id")
             };
@@ -196,25 +199,36 @@ module.exports = Backbone.View.extend({
             var v_options = _.extend({ "genes": geneList, "cancers": cancerList, "hideSelector": true }, view_options || {});
             var q_options = _.extend({ "gene": geneList, "cancer": cancerList }, query_options || {});
 
-            return this.viewsByUri($target, source, view_name, v_options, q_options);
+            return this.viewsByUri($target, $target.data("source"), view_name, v_options, q_options);
         }
         return null;
     },
 
     viewsByUri: function(targetEl, uri, view_name, options, query) {
-//        console.log("viewsByUri(" + uri + "," + view_name + "," + JSON.stringify(options) + "," + JSON.stringify(query) + ")");
         var ViewClass = qed.Views[view_name];
         if (ViewClass) {
-            var parts = uri.split("/");
-            var data_root = parts[0];
-            var analysis_id = parts[1];
-            var dataset_id = parts[2];
-            var model_unit = qed.Datamodel.get(data_root)[analysis_id];
-            var catalog = model_unit.catalog;
-            var catalog_unit = catalog[dataset_id];
-            var modelName = model_unit.model || catalog_unit.model;
-            var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
-            var Model = qed.Models[modelName || "Default"];
+            var Model = qed.Models["Default"];
+            var serviceUri;
+            var analysis_id;
+            var dataset_id;
+            var model_unit;
+            var catalog_unit;
+            if (uri) {
+                var parts = uri.split("/");
+                var data_root = parts[0];
+                analysis_id = parts[1];
+                dataset_id = parts[2];
+                if (analysis_id && dataset_id) {
+                    model_unit = qed.Datamodel.get(data_root)[analysis_id];
+                    if (model_unit && model_unit.catalog) {
+                        catalog_unit = model_unit.catalog[dataset_id];
+                        if (catalog_unit) {
+                            serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
+                            Model = qed.Models[model_unit.model || catalog_unit.model || "Default"];
+                        }
+                    }
+                }
+            }
 
             var model_optns = _.extend(options, {
                 "data_uri": "svc/" + serviceUri,
@@ -223,39 +237,50 @@ module.exports = Backbone.View.extend({
                 "model_unit": model_unit,
                 "catalog_unit": catalog_unit
             });
-            // TODO: Determine which views need annotations
-            // qed.FetchAnnotations(dataset_id);
 
             var model = new Model(model_optns);
-            _.defer(function() {
-                model.fetch({
-                    "data": query,
-                    "traditional": true,
-                    success:function () {
-                        model.trigger("load");
-                    }
+            if (serviceUri) {
+                _.defer(function() {
+                    model.fetch({
+                        "data": query,
+                        "traditional": true,
+                        success:function () {
+                            model.trigger("load");
+                        }
+                    });
                 });
-            });
+            } else {
+                _.defer(function() {
+                    model.trigger("load");
+                });
+            }
 
-            var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
+            var atlas_view_options = this.viewsByUid[$(targetEl).data("uid")] || {};
+            var model_unit_view_options = (model_unit && model_unit.view_options) ? model_unit.view_options : {};
+            var view_options = _.extend({"model":model}, model_unit_view_options, atlas_view_options, (options || {}));
 
             console.log("viewsByUri(" + uri + "," + view_name + "):loading view");
             var view = new ViewClass(view_options);
             $(targetEl).html(view.render().el);
 
-            var qsarray = [];
-            _.each(query, function(values, key) {
-                if (_.isArray(values)) {
-                    _.each(values, function(value) {
-                        qsarray.push(key + "=" + value);
-                    })
-                } else {
-                    qsarray.push(key + "=" + values);
-                }
-            });
-            qsarray.push("output=tsv");
-            return "svc/" + serviceUri + "?" + qsarray.join("&");
+            if (serviceUri) return "svc/" + serviceUri + "?" + this.outputTsvQuery(query);
         }
+        return null;
+    },
+
+    outputTsvQuery: function(query) {
+        var qsarray = [];
+        _.each(query, function(values, key) {
+            if (_.isArray(values)) {
+                _.each(values, function(value) {
+                    qsarray.push(key + "=" + value);
+                })
+            } else {
+                qsarray.push(key + "=" + values);
+            }
+        });
+        qsarray.push("output=tsv");
+        return qsarray.join("&");
     },
 
     closeMap: function(atlasMap) {
