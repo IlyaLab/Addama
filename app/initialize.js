@@ -63,6 +63,7 @@ $(function () {
             "pubcrawl_lit": require("views/pubcrawl_lit"),
             "items_grid": require("views/items_grid_view"),
             "Atlas": require("views/atlas"),
+            "atlas_maptext": require("views/atlas_maptext_view"),
             "atlas_quick_tutorial": require("views/atlas_quick_tutorial")
         },
         Lookups:{
