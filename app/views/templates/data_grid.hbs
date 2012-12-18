@@ -1,6 +1,6 @@
-<table class="table table-striped table-bordered table-hover table-condensed">
+<table class="table table-striped table-bordered table-condensed">
     <thead>
-    <tr>
+    <tr class="{{header_cls}}">
         <td>&nbsp;</td>
         {{#each headers}}
         <td>{{id}}</td>
@@ -10,7 +10,7 @@
     <tbody>
     {{#each rows}}
     <tr>
-        <td>{{label}}</td>
+        <td class="{{label_cls}}">{{label}}</td>
         {{#each values}}
             <td class="{{cell_cls}}">{{cell_value}}</td>
         {{/each}}

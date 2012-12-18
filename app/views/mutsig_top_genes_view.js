@@ -31,14 +31,16 @@ module.exports = Backbone.View.extend({
             _.each(this.genes, function(g) {
                 if (_.isEqual(g.toLowerCase(), item["cell_value"].toLowerCase())) {
                     item["cell_cls"] = "highlight-cell";
+                } else {
+                    item["cell_cls"] = "plain-cell";
                 }
             });
         }, this);
 
         var _this = this;
         this.$el.html(Template({
+            "header_cls": "centered-header",
             "headers": headers,
-            "rows2": [],
             "rows": _.map(rowlabels, function(rowlabel) {
                 var rank_data = data[rowlabel];
                 var row_data = _.groupBy(rank_data, 'cancer');

@@ -22,12 +22,14 @@ module.exports = Backbone.View.extend({
 
         _.each(items, function(item) {
             item["cell_value"] = item[this.cell_attribute];
+            item["cell_cls"] = "plain-cell";
         }, this);
 
         this.$el.html(Template({
+            "header_cls": "centered-header",
             "headers": headers,
             "rows": _.map(rowlabels, function(rowlabel) {
-                return { "label": rowlabel, "values": data[rowlabel] };
+                return { "label": rowlabel, "label_cls": "plain-cell", "values": data[rowlabel] };
             })
         }));
     }

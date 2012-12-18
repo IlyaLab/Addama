@@ -103,9 +103,24 @@ body {
     position: absolute;
 }
 
-.highlight-cell {
+.table tr.centered-header td {
+    font-weight: bolder;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: #D9EDF7;
+}
+
+.table td.highlight-cell {
     font-weight: bolder;
     color: #4b0082;
+    border-bottom: 1px solid #4b0082;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.table td.plain-cell {
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .ui-effects-transfer {
