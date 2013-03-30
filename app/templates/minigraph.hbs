@@ -1,0 +1,17 @@
+<div class="row well">
+    {{#each nodetypes}}
+        <div class="span3">
+            {{label}}
+            {{#each nodes}}
+                <div class="node-info">
+                    {{label}}
+                    <ul>
+                        {{#each measures}}
+                        <li>{{label}}:{{value}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            {{/each}}
+        </div>
+    {{/each}}
+</div>
