@@ -16,11 +16,10 @@ module.exports = Backbone.View.extend({
             return {
                 "label": type,
                 "nodes": _.map(group, function (item) {
-                    var keys = _.without(_.keys(item), "id", "type");
                     return {
                         "uid": item["uid"],
                         "label": item["id"],
-                        "measures": _.map(keys, function (key) {
+                        "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
                             return { "label": key, "value": item[key] }
                         })
                     };
