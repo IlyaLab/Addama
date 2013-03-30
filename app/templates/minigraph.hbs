@@ -1,9 +1,9 @@
-<div class="row well">
+<div class="row">
     {{#each nodetypes}}
-        <div class="span3">
+        <div class="span4 offset1">
             {{label}}
             {{#each nodes}}
-                <div class="node-info">
+                <div id="{{uid}}" class="node-info well">
                     {{label}}
                     <ul>
                         {{#each measures}}
