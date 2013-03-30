@@ -13,6 +13,7 @@ $(function () {
             "Mutations":require("models/mutations_interpro"),
             "PubcrawlNetwork":require("models/pubcrawlNetwork"),
             "PubcrawlLit": require("models/pubcrawlLit"),
+            "MiniGraph": require("models/minigraph"),
             "Default":Backbone.Model.extend({
                 url: function() {
                     return this.get("data_uri");
@@ -39,6 +40,9 @@ $(function () {
             ],
             "Mutations": [
                 { "id":"seqpeek", label:"Mutation Viewer" }
+            ],
+            "MiniGraph": [
+                { "id": "minigraph", label: "MiniGraph" }
             ]
         },
         Views:{
@@ -62,6 +66,7 @@ $(function () {
             "pubcrawl_network": require("views/pubcrawl_network"),
             "pubcrawl_lit": require("views/pubcrawl_lit"),
             "items_grid": require("views/items_grid_view"),
+            "minigraph": require("views/minigraph"),
             "Atlas": require("views/atlas"),
             "atlas_maptext": require("views/atlas_maptext_view"),
             "atlas_quick_tutorial": require("views/atlas_quick_tutorial")

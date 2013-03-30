@@ -28,7 +28,8 @@ module.exports = Backbone.Router.extend({
         "parcoords": require("../views/parcoords_view"),
         "mutsig_grid_view": require("../views/mutsig_grid_view"),
         "scatterplot": require("../views/scatterplot_view"),
-        "seqpeek": require("../views/seqpeek_view")
+        "seqpeek": require("../views/seqpeek_view"),
+        "minigraph": require("../views/minigraph")
     },
 
     initTopNavBar:function() {
@@ -79,7 +80,7 @@ module.exports = Backbone.Router.extend({
             }
         }
     },
-    
+
     mutsig_grid_view:function () {
         var MutSigGrid = require("../views/mutsig_grid_view");
         var mutsigGridView = new MutSigGrid();
@@ -111,7 +112,7 @@ module.exports = Backbone.Router.extend({
     },
 
     home_view:function () {
-        this.navigate("#atlas", {trigger: true});
+//        this.navigate("#atlas", {trigger: true});
 //        var HomeView = require("../views/home_view");
 //        var homeView = new HomeView();
 //        this.$el.html(homeView.render().el);
