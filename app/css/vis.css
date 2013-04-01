@@ -308,3 +308,12 @@ i.icon-mirBase {
     height: 700px;
     width: 700px;
 }
+
+.node-info {
+    padding: 5px 5px 5px 5px;
+}
+
+.minigraph-legend {
+    border: 3px solid steelblue;
+    border-radius: 25%;
+}

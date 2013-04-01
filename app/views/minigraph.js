@@ -25,7 +25,7 @@ module.exports = Backbone.View.extend({
                         "label": item["id"],
                         "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
                             measure_keys.push(key);
-                            return { "label": key, "value": item[key], "color": colormap[key] || defaultColor };
+                            return { "key": key, "value": item[key], "color": colormap[key] || defaultColor };
                         })
                     };
                 })
@@ -45,10 +45,13 @@ module.exports = Backbone.View.extend({
         _.each(this.$el.find(".node-measures"), this.renderBar);
 
         this.renderConnections();
+
+        this.$el.find(".minigraph-legend").draggable();
     },
 
     renderBar: function (el) {
         var height = 15;
+        var datakey = $(el).data("key");
         var datavalue = $(el).data("value");
         var datacolor = $(el).data("color");
 
@@ -68,9 +71,7 @@ module.exports = Backbone.View.extend({
             .style("stroke", "white")
             .style("fill", datacolor)
             .append("svg:title")
-            .text(function (d) {
-                return d;
-            });
+            .text(datakey + " " + datavalue);
     },
 
     renderConnections: function () {
