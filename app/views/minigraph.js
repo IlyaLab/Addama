@@ -14,6 +14,8 @@ module.exports = Backbone.View.extend({
         });
 
         var colormap = this.options.annotations.colors || {};
+        var defaultColor = "steelblue";
+        var measure_keys = [];
         var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
             return {
                 "label": type,
@@ -22,7 +24,8 @@ module.exports = Backbone.View.extend({
                         "uid": item["uid"],
                         "label": item["id"],
                         "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
-                            return { "label": key, "value": item[key], "color": colormap[key] || "steelblue" };
+                            measure_keys.push(key);
+                            return { "label": key, "value": item[key], "color": colormap[key] || defaultColor };
                         })
                     };
                 })
@@ -30,7 +33,14 @@ module.exports = Backbone.View.extend({
         });
 
         var nodesById = _.groupBy(nodes, "id");
-        this.$el.html(Template({ "nodetypes": nodetypes }));
+        var legends = _.map(colormap, function(color, label) {
+            return { "color": color, "label": label }
+        });
+        _.each(_.difference(_.uniq(measure_keys), _.keys(colormap)), function(missing) {
+            legends.push({ "color": defaultColor, "label": missing })
+        });
+
+        this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
 
         _.each(this.$el.find(".node-measures"), this.renderBar);
 
