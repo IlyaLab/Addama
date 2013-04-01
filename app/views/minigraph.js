@@ -4,7 +4,7 @@ module.exports = Backbone.View.extend({
     initialize: function () {
         _.bindAll(this, "renderData");
         this.model.on("load", this.renderData);
-        $(window).on("resize", this.renderData);
+        $(window).on("resize", jsPlumb.repaintEverything);
     },
 
     renderData: function () {
@@ -12,6 +12,7 @@ module.exports = Backbone.View.extend({
         _.each(nodes, function (node) {
             node.uid = _.uniqueId("node_");
         });
+
         var colormap = this.options.annotations.colors || {};
         var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
             return {
@@ -21,8 +22,7 @@ module.exports = Backbone.View.extend({
                         "uid": item["uid"],
                         "label": item["id"],
                         "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
-                            var color = colormap[key] || "steelblue";
-                            return { "label": key, "value": item[key], "color": color };
+                            return { "label": key, "value": item[key], "color": colormap[key] || "steelblue" };
                         })
                     };
                 })
@@ -67,8 +67,9 @@ module.exports = Backbone.View.extend({
         var jsPlumbConfig = {
             anchors: ["RightMiddle", "LeftMiddle"],
             paintStyle: { lineWidth: 2, strokeStyle: "#4212AF" },
-            endpointStyle: { radius: 4 },
-            connector: "StateMachine"
+            endpointStyle: { radius: 8, fillStyle: "#E79544" },
+            connector: "StateMachine",
+            isContinuous: true
         };
 
         var nodesById = _.groupBy(this.model.get("nodes"), "id");
