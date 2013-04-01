@@ -1,17 +1,15 @@
 <div class="row">
     {{#each nodetypes}}
-        <div class="span4 offset1">
-            <h4>{{label}}</h4>
-            {{#each nodes}}
-                <div id="{{uid}}" class="node-info well">
-                    {{label}}
-                    <ul>
-                        {{#each measures}}
-                        <li>{{label}}:{{value}}</li>
-                        {{/each}}
-                    </ul>
-                </div>
+    <div class="span3 offset1">
+        <h4>{{label}}</h4>
+        {{#each nodes}}
+        <div id="{{uid}}" class="node-info well">
+            {{label}}
+            {{#each measures}}
+            <div class="node-measures" data-value="{{value}}" data-color={{color}}></div>
             {{/each}}
         </div>
+        {{/each}}
+    </div>
     {{/each}}
 </div>
