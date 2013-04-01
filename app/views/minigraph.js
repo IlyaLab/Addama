@@ -78,7 +78,7 @@ module.exports = Backbone.View.extend({
             anchors: ["RightMiddle", "LeftMiddle"],
             paintStyle: { lineWidth: 2, strokeStyle: "#4212AF" },
             endpointStyle: { radius: 8, fillStyle: "#E79544" },
-            connector: "StateMachine",
+            connector: "Straight",
             isContinuous: true
         };
 
