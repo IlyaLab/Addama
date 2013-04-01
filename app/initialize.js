@@ -151,4 +151,24 @@ $(function () {
         }
         return qed.Annotations[dataset_id];
     };
+    qed.FetchAnnotationsByUri = function (uri) {
+        if (_.isEmpty(qed.Annotations[uri])) {
+
+            var Model = Backbone.Model.extend({
+                url:function () {
+                    return "svc/" + uri + "_annotations.json";
+                }
+            });
+
+            var annotations = new Model();
+            annotations.fetch({
+                "async":false,
+                "dataType":"json",
+                "success":function () {
+                    qed.Annotations[uri] = annotations.attributes;
+                }
+            });
+        }
+        return qed.Annotations[uri];
+    };
 });

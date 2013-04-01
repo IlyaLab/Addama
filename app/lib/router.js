@@ -130,14 +130,16 @@ module.exports = Backbone.Router.extend({
         var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
         var Model = qed.Models[modelName || "Default"];
 
-        var model_optns = _.extend(options || {}, {
+        var annotations = _.extend({}, qed.FetchAnnotations(dataset_id), qed.FetchAnnotationsByUri(serviceUri));
+
+        var model_optns = _.extend(options || { }, {
             "data_uri": "svc/" + serviceUri,
             "analysis_id": analysis_id,
             "dataset_id": dataset_id,
             "model_unit": model_unit,
-            "catalog_unit": catalog_unit
+            "catalog_unit": catalog_unit,
+            "annotations": annotations
         });
-        qed.FetchAnnotations(dataset_id);
 
         var model = new Model(model_optns);
         _.defer(function() {
@@ -149,7 +151,7 @@ module.exports = Backbone.Router.extend({
             });
         });
 
-        var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
+        var view_options = _.extend({ "model":model, "annotations": annotations }, model_unit.view_options, (options || {}));
 
         var ViewClass = qed.Views[view_name];
         var view = new ViewClass(view_options);
