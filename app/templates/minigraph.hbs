@@ -1,7 +1,9 @@
 <ul class="minigraph-legend pull-right well nav nav-list">
     {{#each legends}}
     <li>
-        <span style="background-color: {{color}}; color: {{color}}; height: 20px;">&nbsp;&nbsp;&nbsp;</span>
+        <span style="background-color: {{color}}; height: 20px;">
+            <a href="#" onclick="return false;" class="color-picker" data-key="{{label}}">&nbsp;&nbsp;&nbsp;</a>
+        </span>
         {{label}}
     </li>
     {{/each}}
@@ -14,7 +16,7 @@
         <div id="{{uid}}" class="node-info well">
             {{label}}
             {{#each measures}}
-            <div class="node-measures" data-key="{{key}}" data-value="{{value}}" data-color="{{color}}"></div>
+            <div class="node-measures" data-key="{{key}}" data-value="{{value}}"></div>
             {{/each}}
         </div>
         {{/each}}

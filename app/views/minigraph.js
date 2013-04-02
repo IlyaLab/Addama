@@ -1,8 +1,35 @@
 var Template = require("../templates/minigraph");
 
 module.exports = Backbone.View.extend({
+    defaultColor:"#4682B4",
+
+    events: {
+        "click .color-picker": function (e) {
+            var colorpicker = $(e.target);
+
+            var colormap = this.options.annotations.colors;
+            if (!colormap) colormap = this.options.annotations.colors = {};
+
+            var renderBar = this.renderBar;
+            var nodemeasures = this.$el.find(".node-measures");
+
+            new Color.Picker({
+                color: this.defaultColor,
+                display: true,
+                autoclose: true,
+                size: 200,
+                callback: function (rgba) {
+                    var newcode = "#" + Color.Space(rgba, "RGB>STRING");
+                    colormap[colorpicker.data("key")] = newcode;
+                    colorpicker.parent().css({ "background-color": newcode })
+                    _.each(nodemeasures, renderBar);
+                }
+            }).toggle(true);
+        }
+    },
+
     initialize: function () {
-        _.bindAll(this, "renderData");
+        _.bindAll(this, "renderData", "renderBar");
         this.model.on("load", this.renderData);
         $(window).on("resize", jsPlumb.repaintEverything);
     },
@@ -13,8 +40,6 @@ module.exports = Backbone.View.extend({
             node.uid = _.uniqueId("node_");
         });
 
-        var colormap = this.options.annotations.colors || {};
-        var defaultColor = "steelblue";
         var measure_keys = [];
         var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
             return {
@@ -25,24 +50,24 @@ module.exports = Backbone.View.extend({
                         "label": item["id"],
                         "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
                             measure_keys.push(key);
-                            return { "key": key, "value": item[key], "color": colormap[key] || defaultColor };
-                        })
+                            return { "key": key, "value": item[key] };
+                        }, this)
                     };
-                })
+                }, this)
             }
-        });
+        }, this);
 
-        var nodesById = _.groupBy(nodes, "id");
-        var legends = _.map(colormap, function(color, label) {
+        var colormap = this.options.annotations.colors || {};
+        var legends = _.map(colormap, function (color, label) {
             return { "color": color, "label": label }
         });
-        _.each(_.difference(_.uniq(measure_keys), _.keys(colormap)), function(missing) {
-            legends.push({ "color": defaultColor, "label": missing })
-        });
+        _.each(_.difference(_.uniq(measure_keys), _.keys(colormap)), function (missing) {
+            legends.push({ "color": this.defaultColor, "label": missing })
+        }, this);
 
         this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
 
-        _.each(this.$el.find(".node-measures"), this.renderBar);
+        _.each(this.$el.find(".node-measures"), this.renderBar, this);
 
         this.renderConnections();
 
@@ -50,10 +75,13 @@ module.exports = Backbone.View.extend({
     },
 
     renderBar: function (el) {
+        $(el).empty();
+
         var height = 15;
         var datakey = $(el).data("key");
         var datavalue = $(el).data("value");
-        var datacolor = $(el).data("color");
+        var colormap = this.options.annotations.colors || {};
+        var datacolor = colormap[datakey] || this.defaultColor;
 
         var svg = d3.select(el)
             .append("svg")
