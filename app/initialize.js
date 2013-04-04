@@ -46,7 +46,7 @@ $(function () {
             ]
         },
         Views:{
-            "grid":require("views/grid_view"),
+            "grid":require("views/items_grid_view"),
             "circ":require("views/circvis_view"),
             "stacksvis":require("views/stacksvis_container"),
             "stacksvis2":require("views/stacksvis_simpler"),

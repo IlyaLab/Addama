@@ -20,12 +20,9 @@ exports.config =
           'vendor/js/vq.js'
         ]
         after: [
-          'vendor/js/d3.parcoords.js',
-          'vendor/js/slick.core.js',
-          'vendor/js/slick.grid.js',
-          'vendor/js/slick.rowselectionmodel.js'
+          'vendor/js/d3.parcoords.js'
         ]
-   
+
     stylesheets:
       defaultExtension: 'less'
       joinTo: 'css/app.css'

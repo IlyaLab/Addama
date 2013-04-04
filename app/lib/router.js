@@ -18,7 +18,7 @@ module.exports = Backbone.Router.extend({
     },
 
     views: {
-        "grid": require("../views/grid_view"),
+        "grid": require("../views/items_grid_view"),
         "circ": require("../views/circvis_view"),
         "stacksvis": require("../views/stacksvis_container"),
         "graph": require("../views/graphtree_view"),
