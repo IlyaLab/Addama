@@ -156,7 +156,7 @@ $(function () {
 
             var Model = Backbone.Model.extend({
                 url:function () {
-                    return "svc/" + uri + "_annotations.json";
+                    return "svc/" + uri + "/annotations.json";
                 }
             });
 
