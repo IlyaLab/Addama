@@ -65,10 +65,16 @@ module.exports = Backbone.View.extend({
             legends.push({ "color": this.defaultColor, "label": missing })
         }, this);
 
+        var panelSpacing = 20;
+        var heightBw = 3;
+        var barMargin = 10;
+        if (_.has(this.options.annotations, "panelSpacing")) panelSpacing = this.options.annotations.panelSpacing;
+        if (_.has(this.options.annotations, "height")) heightBw = this.options.annotations.height;
+        if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
+
         this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
-        this.$el.find(".node-info").css({
-            "margin-bottom": this.options.annotations.panelSpacing || 20
-        });
+        this.$el.find(".node-info").css({ "margin-bottom": panelSpacing });
+        this.$el.find(".node-measures").css({ "height": heightBw, "margin": barMargin });
 
         _.each(this.$el.find(".node-measures"), this.renderBar, this);
 
@@ -80,7 +86,9 @@ module.exports = Backbone.View.extend({
     renderBar: function (el) {
         $(el).empty();
 
-        var barheight = this.options.annotations.barheight || 15;
+        var barHeight = 15;
+        if (_.has(this.options.annotations, "barHeight")) barHeight = this.options.annotations.barHeight;
+
         var datakey = $(el).data("key");
         var datavalue = $(el).data("value");
         var colormap = this.options.annotations.colors || {};
@@ -88,7 +96,7 @@ module.exports = Backbone.View.extend({
 
         var svg = d3.select(el)
             .append("svg")
-            .attr("height", barheight)
+            .attr("height", barHeight)
             .style("margin-left", 10)
             .style("shape-rendering", "crispEdges");
 
@@ -98,7 +106,7 @@ module.exports = Backbone.View.extend({
             .append("rect")
             .attr("y", 0)
             .attr("width", d3.scale.linear().domain([0, 1]).range([0, 100]))
-            .attr("height", barheight)
+            .attr("height", barHeight)
             .style("stroke", datacolor)
             .style("fill", datacolor)
             .append("svg:title")
@@ -106,7 +114,9 @@ module.exports = Backbone.View.extend({
     },
 
     renderConnections: function () {
-        var lineWidth = this.options.annotations.lineWidth || 2;
+        var lineWidth = 2;
+        if (_.has(this.options.annotations, "lineWidth")) lineWidth = this.options.annotations.lineWidth;
+
         var jsPlumbConfig = {
             anchors: ["RightMiddle", "LeftMiddle"],
             paintStyle: { "lineWidth": lineWidth, "strokeStyle": "#4212AF" },
