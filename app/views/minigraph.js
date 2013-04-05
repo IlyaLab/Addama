@@ -68,12 +68,15 @@ module.exports = Backbone.View.extend({
         var panelSpacing = 20;
         var heightBw = 3;
         var barMargin = 10;
+        var backgroundColor = "lightgray";
         if (_.has(this.options.annotations, "panelSpacing")) panelSpacing = this.options.annotations.panelSpacing;
         if (_.has(this.options.annotations, "height")) heightBw = this.options.annotations.height;
         if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
+        if (_.has(this.options.annotations, "backgroundColor")) backgroundColor = this.options.annotations.backgroundColor;
 
         this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
         this.$el.find(".node-info").css({ "margin-bottom": panelSpacing });
+        this.$el.find(".node-info").css({ "background-color": backgroundColor });
         this.$el.find(".node-measures").css({ "height": heightBw, "margin": barMargin });
 
         _.each(this.$el.find(".node-measures"), this.renderBar, this);
