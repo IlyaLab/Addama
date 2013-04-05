@@ -14,7 +14,9 @@ module.exports = Backbone.View.extend({
         var headers = _.without(_.keys(items[0]), "uri", "id");
         var rows = _.map(items, function (item) {
             return { "values":_.map(headers, function (header) {
-                return item[header];
+                var val = item[header];
+                if (_.isArray(val)) return val.length;
+                return val;
             })};
         });
 
