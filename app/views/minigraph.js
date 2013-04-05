@@ -96,7 +96,7 @@ module.exports = Backbone.View.extend({
             .attr("y", 0)
             .attr("width", d3.scale.linear().domain([0, 1]).range([0, 100]))
             .attr("height", height)
-            .style("stroke", "white")
+            .style("stroke", datacolor)
             .style("fill", datacolor)
             .append("svg:title")
             .text(datakey + " " + datavalue);
