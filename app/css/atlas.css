@@ -1,11 +1,3 @@
-body {
-    background-color: #E6E5E6;
-    background-image: url(https://www.systemsbiology.org/sites/all/themes/isb/images/bg.png);
-    background-position-x: 50%;
-    background-position-y: 0%;
-    background-size: initial;
-}
-
 .atlas-body {
     padding: 5px;
     top: 100px;
