@@ -21,7 +21,7 @@ module.exports = Backbone.View.extend({
                 callback: function (rgba) {
                     var newcode = "#" + Color.Space(rgba, "RGB>STRING");
                     colormap[colorpicker.data("key")] = newcode;
-                    colorpicker.parent().css({ "background-color": newcode })
+                    colorpicker.parent().css({ "background-color": newcode });
                     _.each(nodemeasures, renderBar);
                 }
             }).toggle(true);
@@ -66,6 +66,9 @@ module.exports = Backbone.View.extend({
         }, this);
 
         this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
+        this.$el.find(".node-info").css({
+            "margin-bottom": this.options.annotations.panelSpacing || 20
+        });
 
         _.each(this.$el.find(".node-measures"), this.renderBar, this);
 
@@ -77,7 +80,7 @@ module.exports = Backbone.View.extend({
     renderBar: function (el) {
         $(el).empty();
 
-        var height = 15;
+        var barheight = this.options.annotations.barheight || 15;
         var datakey = $(el).data("key");
         var datavalue = $(el).data("value");
         var colormap = this.options.annotations.colors || {};
@@ -85,7 +88,7 @@ module.exports = Backbone.View.extend({
 
         var svg = d3.select(el)
             .append("svg")
-            .attr("height", height)
+            .attr("height", barheight)
             .style("margin-left", 10)
             .style("shape-rendering", "crispEdges");
 
@@ -95,7 +98,7 @@ module.exports = Backbone.View.extend({
             .append("rect")
             .attr("y", 0)
             .attr("width", d3.scale.linear().domain([0, 1]).range([0, 100]))
-            .attr("height", height)
+            .attr("height", barheight)
             .style("stroke", datacolor)
             .style("fill", datacolor)
             .append("svg:title")
@@ -103,10 +106,11 @@ module.exports = Backbone.View.extend({
     },
 
     renderConnections: function () {
+        var lineWidth = this.options.annotations.lineWidth || 2;
         var jsPlumbConfig = {
             anchors: ["RightMiddle", "LeftMiddle"],
-            paintStyle: { lineWidth: 2, strokeStyle: "#4212AF" },
-            endpointStyle: { radius: 8, fillStyle: "#E79544" },
+            paintStyle: { "lineWidth": lineWidth, "strokeStyle": "#4212AF" },
+            endpointStyle: { "radius": 8, "fillStyle": "#E79544" },
             connector: "Straight",
             isContinuous: true
         };

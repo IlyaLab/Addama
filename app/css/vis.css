@@ -310,7 +310,12 @@ i.icon-mirBase {
 }
 
 .node-info {
-    padding: 5px 5px 5px 5px;
+    padding: 5px 5px 10px 5px;
+}
+
+.node-measures {
+    margin-top: 2px;
+    line-height: 0;
 }
 
 .minigraph-legend {
