@@ -1,3 +1,24 @@
+var TsvParse = function(text) {
+    var header;
+    return d3.tsv.parseRows(text, function (row, i) {
+        if (i) {
+            var o = {}, j = -1, m = header.length;
+            while (++j < m) {
+                var rowvalue = row[j];
+                if (_.isString(rowvalue)) rowvalue = rowvalue.trim();
+                o[header[j]] = rowvalue;
+            }
+            return o;
+        } else {
+            header = _.map(row, function(k) {
+                if (_.isString(k)) return k.trim();
+                return k;
+            });
+            return null;
+        }
+    });
+};
+
 var BasicModel = Backbone.Model.extend({
 
     url: function () {
@@ -5,7 +26,7 @@ var BasicModel = Backbone.Model.extend({
     },
 
     parse: function (txt) {
-        return { "items": d3.tsv.parse(txt) };
+        return { "items": TsvParse(txt) };
     },
 
     fetch: function (options) {
@@ -20,7 +41,7 @@ module.exports = Backbone.Model.extend({
     },
 
     parse: function (txt) {
-        var items = d3.tsv.parse(txt);
+        var items = TsvParse(txt);
 
         var _this = this;
         var edges = new BasicModel({ "url": this.get_base_uri("edges") });
