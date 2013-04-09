@@ -10,7 +10,7 @@
 </ul>
 <div class="row">
     {{#each nodetypes}}
-    <div class="span3 offset1">
+    <div class="span2 {{#if notFirst}}offset1{{/if}}">
         <h4>{{label}}</h4>
         {{#each nodes}}
         <div id="{{uid}}" class="node-info well">
