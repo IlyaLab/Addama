@@ -230,7 +230,8 @@ module.exports = Backbone.View.extend({
                 }
             }
 
-            var model_optns = _.extend(options, {
+            var atlas_view_options = this.viewsByUid[$(targetEl).data("uid")] || {};
+            var model_optns = _.extend(options, atlas_view_options, {
                 "data_uri": "svc/" + serviceUri,
                 "analysis_id": analysis_id,
                 "dataset_id": dataset_id,
@@ -255,7 +256,6 @@ module.exports = Backbone.View.extend({
                 });
             }
 
-            var atlas_view_options = this.viewsByUid[$(targetEl).data("uid")] || {};
             var model_unit_view_options = (model_unit && model_unit.view_options) ? model_unit.view_options : {};
             var view_options = _.extend({"model":model}, model_unit_view_options, atlas_view_options, (options || {}));
 

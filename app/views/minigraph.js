@@ -36,47 +36,31 @@ module.exports = Backbone.View.extend({
 
     renderData: function () {
         var nodes = this.model.get("nodes");
-        _.each(nodes, function (node) {
-            node.uid = _.uniqueId("node_");
-        });
 
-        var measure_keys = [];
-        var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
-            return {
-                "label": type,
-                "nodes": _.map(group, function (item) {
-                    return {
-                        "uid": item["uid"],
-                        "label": item["id"],
-                        "measures": _.map(_.without(_.keys(item), "id", "type", "uid"), function (key) {
-                            measure_keys.push(key);
-                            return { "key": key, "value": item[key] };
-                        }, this)
-                    };
-                }, this)
-            }
-        }, this);
+        var measure_keys = this.model.get("measureKeys");
 
         var colormap = this.options.annotations.colors || {};
-        var legends = _.map(colormap, function (color, label) {
-            return { "color": color, "label": label }
-        });
-        _.each(_.difference(_.uniq(measure_keys), _.keys(colormap)), function (missing) {
-            legends.push({ "color": this.defaultColor, "label": missing })
+        var legends = _.map(measure_keys, function (measure_key) {
+            return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
         }, this);
 
         var panelSpacing = 20;
+        var panelColor;
         var heightBw = 3;
         var barMargin = 10;
         var backgroundColor = "lightgray";
         if (_.has(this.options.annotations, "panelSpacing")) panelSpacing = this.options.annotations.panelSpacing;
+        if (_.has(this.options.annotations, "panelColor")) panelColor = this.options.annotations.panelColor;
         if (_.has(this.options.annotations, "height")) heightBw = this.options.annotations.height;
         if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
         if (_.has(this.options.annotations, "backgroundColor")) backgroundColor = this.options.annotations.backgroundColor;
 
-        this.$el.html(Template({ "nodetypes": nodetypes, "legends": legends }));
+        // TODO : Deprecate this
+        if (!panelColor) panelColor = backgroundColor;
+
+        this.$el.html(Template({ "nodetypes": this.model.get("nodesByType"), "legends": legends }));
         this.$el.find(".node-info").css({ "margin-bottom": panelSpacing });
-        this.$el.find(".node-info").css({ "background-color": backgroundColor });
+        this.$el.find(".node-info").css({ "background-color": panelColor });
         this.$el.find(".node-measures").css({ "height": heightBw, "margin": barMargin });
 
         _.each(this.$el.find(".node-measures"), this.renderBar, this);

@@ -1,4 +1,4 @@
-var TsvParse = function(text) {
+var TsvParse = function (text) {
     var header;
     return d3.tsv.parseRows(text, function (row, i) {
         if (i) {
@@ -10,7 +10,7 @@ var TsvParse = function(text) {
             }
             return o;
         } else {
-            header = _.map(row, function(k) {
+            header = _.map(row, function (k) {
                 if (_.isString(k)) return k.trim();
                 return k;
             });
@@ -41,7 +41,7 @@ module.exports = Backbone.Model.extend({
     },
 
     parse: function (txt) {
-        var items = TsvParse(txt);
+        var nodes = TsvParse(txt);
 
         var _this = this;
         var edges = new BasicModel({ "url": this.get_base_uri("edges") });
@@ -52,7 +52,36 @@ module.exports = Backbone.Model.extend({
             }
         });
 
-        return { "nodes": items };
+        var param_measure_types = [];
+        if (_.has(this.attributes, "measure_type")) {
+            param_measure_types = this.get(this.get("measure_type")) || [];
+        }
+
+        _.each(nodes, function (node) {
+            node.uid = _.uniqueId("node_");
+        });
+
+        var measure_keys = [];
+        var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
+            return {
+                "label": type,
+                "nodes": _.map(group, function (item) {
+                    var targeted_keys = _.without(_.keys(item), "id", "type", "uid");
+                    if (!_.isEmpty(param_measure_types)) targeted_keys = _.intersection(param_measure_types, targeted_keys);
+
+                    return {
+                        "uid": item["uid"],
+                        "label": item["id"],
+                        "measures": _.map(targeted_keys, function (key) {
+                            measure_keys.push(key);
+                            return { "key": key, "value": item[key] };
+                        }, this)
+                    };
+                }, this)
+            }
+        }, this);
+
+        return { "nodes": nodes, "nodesByType": nodetypes, "measureKeys": _.uniq(measure_keys) };
     },
 
     fetch: function (options) {
