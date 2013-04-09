@@ -52,9 +52,9 @@ module.exports = Backbone.Model.extend({
             }
         });
 
-        var param_measure_types = [];
-        if (_.has(this.attributes, "measure_type")) {
-            param_measure_types = this.get(this.get("measure_type")) || [];
+        var measured_values = [];
+        if (_.has(this.attributes, "measured_values")) {
+            measured_values = this.get(this.get("measured_values")) || [];
         }
 
         _.each(nodes, function (node) {
@@ -67,7 +67,7 @@ module.exports = Backbone.Model.extend({
                 "label": type,
                 "nodes": _.map(group, function (item) {
                     var targeted_keys = _.without(_.keys(item), "id", "type", "uid");
-                    if (!_.isEmpty(param_measure_types)) targeted_keys = _.intersection(param_measure_types, targeted_keys);
+                    if (!_.isEmpty(measured_values)) targeted_keys = _.intersection(measured_values, targeted_keys);
 
                     return {
                         "uid": item["uid"],
