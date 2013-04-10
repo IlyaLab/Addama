@@ -1,25 +1,27 @@
-<ul class="minigraph-legend pull-right well nav nav-list">
-    {{#each legends}}
-    <li>
-        <span style="background-color: {{color}}; height: 20px;">
-            <a href="#" onclick="return false;" class="color-picker" data-key="{{label}}">&nbsp;&nbsp;&nbsp;</a>
-        </span>
-        {{label}}
-    </li>
-    {{/each}}
-</ul>
 <div class="row">
     {{#each nodetypes}}
-    <div class="span2 {{#if notFirst}}offset1{{/if}}">
+    <div class="span3 offset1">
         <h4>{{label}}</h4>
         {{#each nodes}}
         <div id="{{uid}}" class="node-info well">
             {{label}}
-            {{#each measures}}
-            <div class="node-measures" data-key="{{key}}" data-value="{{value}}"></div>
-            {{/each}}
+            <ul class="nav nav-list">
+                {{#each measures}}
+                <li><span class="node-measures" data-key="{{key}}" data-value="{{value}}" title="{{key}} {{value}}">&nbsp;</span></li>
+                {{/each}}
+            </ul>
         </div>
         {{/each}}
     </div>
     {{/each}}
 </div>
+<ul class="minigraph-legend pull-right well nav nav-list">
+    {{#each legends}}
+    <li>
+            <span style="background-color: {{color}}; height: 20px;">
+                <a href="#" onclick="return false;" class="color-picker" data-key="{{label}}">&nbsp;&nbsp;&nbsp;</a>
+            </span>
+        {{label}}
+    </li>
+    {{/each}}
+</ul>

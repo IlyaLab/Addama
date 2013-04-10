@@ -62,11 +62,9 @@ module.exports = Backbone.Model.extend({
         });
 
         var measure_keys = [];
-        var count = 0;
         var nodetypes = _.map(_.groupBy(nodes, "type"), function (group, type) {
             return {
                 "label": type,
-                "notFirst": (count++ > 0),
                 "nodes": _.map(group, function (item) {
                     var targeted_keys = _.without(_.keys(item), "id", "type", "uid");
                     if (!_.isEmpty(measured_values)) targeted_keys = _.intersection(measured_values, targeted_keys);

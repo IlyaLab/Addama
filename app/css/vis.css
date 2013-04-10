@@ -313,9 +313,12 @@ i.icon-mirBase {
     padding: 5px 5px 10px 5px;
 }
 
-.node-measures {
-    margin-top: 2px;
+.node-info li {
     line-height: 0;
+}
+
+.node-measures {
+    display: inline-block;
 }
 
 .minigraph-legend {

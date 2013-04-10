@@ -1,7 +1,8 @@
 var Template = require("../templates/minigraph");
 
 module.exports = Backbone.View.extend({
-    defaultColor:"#4682B4",
+    defaultColor: "#4682B4",
+    barscale: d3.scale.linear().domain([0, 1]).range([0, 80]),
 
     events: {
         "click .color-picker": function (e) {
@@ -44,24 +45,14 @@ module.exports = Backbone.View.extend({
             return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
         }, this);
 
+        this.$el.html(Template({ "nodetypes": this.model.get("nodesByType"), "legends": legends }));
+
         var panelSpacing = 20;
-        var panelColor;
-        var heightBw = 3;
-        var barMargin = 10;
-        var backgroundColor = "lightgray";
+        var panelColor = "lightgray";
         if (_.has(this.options.annotations, "panelSpacing")) panelSpacing = this.options.annotations.panelSpacing;
         if (_.has(this.options.annotations, "panelColor")) panelColor = this.options.annotations.panelColor;
-        if (_.has(this.options.annotations, "height")) heightBw = this.options.annotations.height;
-        if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
-        if (_.has(this.options.annotations, "backgroundColor")) backgroundColor = this.options.annotations.backgroundColor;
-
-        // TODO : Deprecate this
-        if (!panelColor) panelColor = backgroundColor;
-
-        this.$el.html(Template({ "nodetypes": this.model.get("nodesByType"), "legends": legends }));
         this.$el.find(".node-info").css({ "margin-bottom": panelSpacing });
         this.$el.find(".node-info").css({ "background-color": panelColor });
-        this.$el.find(".node-measures").css({ "height": heightBw, "margin": barMargin });
 
         _.each(this.$el.find(".node-measures"), this.renderBar, this);
 
@@ -71,43 +62,36 @@ module.exports = Backbone.View.extend({
     },
 
     renderBar: function (el) {
-        $(el).empty();
-
         var barHeight = 15;
+        var barMargin = 2;
         if (_.has(this.options.annotations, "barHeight")) barHeight = this.options.annotations.barHeight;
+        if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
 
-        var datakey = $(el).data("key");
-        var datavalue = $(el).data("value");
         var colormap = this.options.annotations.colors || {};
-        var datacolor = colormap[datakey] || this.defaultColor;
+        var datacolor = colormap[$(el).data("key")] || this.defaultColor;
 
-        var svg = d3.select(el)
-            .append("svg")
-            .attr("height", barHeight)
-            .style("margin-left", 10)
-            .style("shape-rendering", "crispEdges");
-
-        svg.selectAll("rect")
-            .data([datavalue])
-            .enter()
-            .append("rect")
-            .attr("y", 0)
-            .attr("width", d3.scale.linear().domain([0, 1]).range([0, 100]))
-            .attr("height", barHeight)
-            .style("stroke", datacolor)
-            .style("fill", datacolor)
-            .append("svg:title")
-            .text(datakey + " " + datavalue);
+        $(el).css({
+            "padding-right": this.barscale($(el).data("value")),
+            "background": datacolor,
+            "margin": barMargin,
+            "height": barHeight
+        });
     },
 
     renderConnections: function () {
         var lineWidth = 2;
+        var lineColor = "#4212AF";
+        var connectorRadius = 8;
+        var connectorFill = "#E79544";
         if (_.has(this.options.annotations, "lineWidth")) lineWidth = this.options.annotations.lineWidth;
+        if (_.has(this.options.annotations, "lineColor")) lineColor = this.options.annotations.lineColor;
+        if (_.has(this.options.annotations, "connectorRadius")) connectorRadius = this.options.annotations.connectorRadius;
+        if (_.has(this.options.annotations, "connectorFill")) connectorFill = this.options.annotations.connectorFill;
 
         var jsPlumbConfig = {
             anchors: ["RightMiddle", "LeftMiddle"],
-            paintStyle: { "lineWidth": lineWidth, "strokeStyle": "#4212AF" },
-            endpointStyle: { "radius": 8, "fillStyle": "#E79544" },
+            paintStyle: { "lineWidth": lineWidth, "strokeStyle": lineColor },
+            endpointStyle: { "radius": connectorRadius, "fillStyle": connectorFill },
             connector: "Straight",
             isContinuous: true
         };
