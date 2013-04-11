@@ -7,8 +7,9 @@
             {{label}}
             <ul class="nav nav-list">
                 {{#each measures}}
-                <li><span class="node-measures" data-key="{{key}}" title="{{key}} {{value}}"
-                          style="background:{{color}}; padding-right: {{barlength}}px;">&nbsp;</span></li>
+                <li title="{{key}}: {{value}}" data-placement="left">
+                    <span class="node-measures" data-key="{{key}}" style="background:{{color}}; padding-right: {{barlength}}px;">&nbsp;</span>
+                </li>
                 {{/each}}
             </ul>
         </div>

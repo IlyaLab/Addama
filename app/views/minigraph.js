@@ -57,6 +57,8 @@ module.exports = Backbone.View.extend({
             "background-color": this.getAnnotation("panelColor", "lightgray")
         });
 
+        this.$el.find(".node-info li").tooltip({});
+
         this.$el.find(".node-measures").css({
             "margin": this.getAnnotation("barMargin", 2),
             "height": this.getAnnotation("barHeight", 15)

@@ -317,7 +317,7 @@ i.icon-mirBase {
     line-height: 0;
 }
 
-.node-measures {
+.node-info li span {
     display: inline-block;
 }
 
