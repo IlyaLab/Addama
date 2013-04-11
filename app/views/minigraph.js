@@ -7,11 +7,7 @@ module.exports = Backbone.View.extend({
     events: {
         "click .color-picker": function (e) {
             var colorpicker = $(e.target);
-
-            var colormap = this.options.annotations.colors;
-            if (!colormap) colormap = this.options.annotations.colors = {};
-
-            var renderBar = this.renderBar;
+            var keycode = colorpicker.data("key");
             var nodemeasures = this.$el.find(".node-measures");
 
             new Color.Picker({
@@ -21,77 +17,65 @@ module.exports = Backbone.View.extend({
                 size: 200,
                 callback: function (rgba) {
                     var newcode = "#" + Color.Space(rgba, "RGB>STRING");
-                    colormap[colorpicker.data("key")] = newcode;
                     colorpicker.parent().css({ "background-color": newcode });
-                    _.each(nodemeasures, renderBar);
+                    _.each(nodemeasures, function(nodemeasure) {
+                        if (_.isEqual($(nodemeasure).data("key"), keycode)) {
+                            $(nodemeasure).css({ "background": newcode });
+                        }
+                    });
                 }
             }).toggle(true);
         }
     },
 
     initialize: function () {
-        _.bindAll(this, "renderData", "renderBar");
+        _.bindAll(this, "renderData");
         this.model.on("load", this.renderData);
         $(window).on("resize", jsPlumb.repaintEverything);
     },
 
     renderData: function () {
-        var nodes = this.model.get("nodes");
-
-        var measure_keys = this.model.get("measureKeys");
-
-        var colormap = this.options.annotations.colors || {};
-        var legends = _.map(measure_keys, function (measure_key) {
+        var colormap = this.getAnnotation("colors", {});
+        var legends = _.map(this.model.get("measureKeys"), function (measure_key) {
             return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
         }, this);
 
+        _.each(this.model.get("nodesByType"), function(nodesContainer) {
+            _.each(nodesContainer.nodes, function(node) {
+                _.each(node.measures, function(measure) {
+                    measure.color = colormap[measure.key] || this.defaultColor;
+                    measure.barlength = Math.round(this.barscale(measure.value));
+                }, this);
+            }, this);
+        }, this);
+
         this.$el.html(Template({ "nodetypes": this.model.get("nodesByType"), "legends": legends }));
+        this.$el.find(".minigraph-legend").draggable();
 
-        var panelSpacing = 20;
-        var panelColor = "lightgray";
-        if (_.has(this.options.annotations, "panelSpacing")) panelSpacing = this.options.annotations.panelSpacing;
-        if (_.has(this.options.annotations, "panelColor")) panelColor = this.options.annotations.panelColor;
-        this.$el.find(".node-info").css({ "margin-bottom": panelSpacing });
-        this.$el.find(".node-info").css({ "background-color": panelColor });
+        this.$el.find(".node-info").css({
+            "margin-bottom": this.getAnnotation("panelSpacing", 20),
+            "background-color": this.getAnnotation("panelColor", "lightgray")
+        });
 
-        _.each(this.$el.find(".node-measures"), this.renderBar, this);
+        this.$el.find(".node-measures").css({
+            "margin": this.getAnnotation("barMargin", 2),
+            "height": this.getAnnotation("barHeight", 15)
+        });
 
         this.renderConnections();
-
-        this.$el.find(".minigraph-legend").draggable();
-    },
-
-    renderBar: function (el) {
-        var barHeight = 15;
-        var barMargin = 2;
-        if (_.has(this.options.annotations, "barHeight")) barHeight = this.options.annotations.barHeight;
-        if (_.has(this.options.annotations, "barMargin")) barMargin = this.options.annotations.barMargin;
-
-        var colormap = this.options.annotations.colors || {};
-        var datacolor = colormap[$(el).data("key")] || this.defaultColor;
-
-        $(el).css({
-            "padding-right": this.barscale($(el).data("value")),
-            "background": datacolor,
-            "margin": barMargin,
-            "height": barHeight
-        });
     },
 
     renderConnections: function () {
-        var lineWidth = 2;
-        var lineColor = "#4212AF";
-        var connectorRadius = 8;
-        var connectorFill = "#E79544";
-        if (_.has(this.options.annotations, "lineWidth")) lineWidth = this.options.annotations.lineWidth;
-        if (_.has(this.options.annotations, "lineColor")) lineColor = this.options.annotations.lineColor;
-        if (_.has(this.options.annotations, "connectorRadius")) connectorRadius = this.options.annotations.connectorRadius;
-        if (_.has(this.options.annotations, "connectorFill")) connectorFill = this.options.annotations.connectorFill;
-
         var jsPlumbConfig = {
             anchors: ["RightMiddle", "LeftMiddle"],
-            paintStyle: { "lineWidth": lineWidth, "strokeStyle": lineColor },
-            endpointStyle: { "radius": connectorRadius, "fillStyle": connectorFill },
+            paintStyle: {
+                "lineWidth": this.getAnnotation("lineWidth", 2),
+                "strokeStyle": this.getAnnotation("lineColor", "#4212AF")
+            },
+            endpointStyle: {
+                "radius": this.getAnnotation("connectorRadius", 8),
+                "fillStyle": this.getAnnotation("connectorFill", "#E79544")
+            },
             connector: "Straight",
             isContinuous: true
         };
@@ -102,5 +86,10 @@ module.exports = Backbone.View.extend({
             var target = _.first(nodesById[edge.target]);
             jsPlumb.connect(_.extend(jsPlumbConfig, {source: source.uid, target: target.uid}));
         });
+    },
+
+    getAnnotation: function(key, defaultValue) {
+        if (this.options && this.options.annotations && _.has(this.options.annotations, key)) return this.options.annotations[key];
+        return defaultValue;
     }
 });
