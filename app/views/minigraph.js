@@ -40,16 +40,19 @@ module.exports = Backbone.View.extend({
             return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
         }, this);
 
-        _.each(this.model.get("nodesByType"), function(nodesContainer) {
-            _.each(nodesContainer.nodes, function(node) {
-                _.each(node.measures, function(measure) {
-                    measure.color = colormap[measure.key] || this.defaultColor;
-                    measure.barlength = Math.round(this.barscale(measure.value));
-                }, this);
+        _.each(this.model.get("nodes"), function(node) {
+            node.measures = _.map(_.without(_.keys(node), "id", "type"), function(key) {
+                return {
+                    "key": key,
+                    "value": node[key],
+                    "color": colormap[key] || this.defaultColor,
+                    "barlength": Math.round(this.barscale(node[key]))
+                }
             }, this);
+            node.uid = _.uniqueId("node_");
         }, this);
 
-        this.$el.html(Template({ "nodetypes": this.model.get("nodesByType"), "legends": legends }));
+        this.$el.html(Template({ "nodesByType": _.groupBy(this.model.get("nodes"), "type"), "legends": legends }));
         this.$el.find(".minigraph-legend").draggable();
 
         this.$el.find(".node-info").css({
