@@ -61,7 +61,12 @@ module.exports = Backbone.View.extend({
 
     renderData: function () {
         var colormap = this.getAnnotation("colors", {}),
-            nodeWidths = this.getAnnotation("nodeWidth", {
+            columnOffsets = this.getAnnotation("columnOffsets", {
+                Gene: 1,
+                Pathway: 1,
+                Hallmark: 1
+            }),
+            nodeWidths = this.getAnnotation("nodeWidths", {
                 Gene: 200,
                 Pathway: 200,
                 Hallmark: 200
@@ -92,6 +97,7 @@ module.exports = Backbone.View.extend({
 
         _.each(nodesByType, function(nodeData, typeKey) {
             nodeData.width = nodeWidths[typeKey];
+            nodeData.offset =  columnOffsets[typeKey];
         });
 
         this.$el.html(Template({
