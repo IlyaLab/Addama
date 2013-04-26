@@ -34,14 +34,55 @@ module.exports = Backbone.View.extend({
         $(window).on("resize", jsPlumb.repaintEverything);
     },
 
+    processVerticalLocations: function(nodes) {
+        var defaultSpacing = 100;
+
+        if (nodes.length < 0) {
+            return;
+        }
+
+        _.chain(nodes)
+            .groupBy('type')
+            .each(function(groupData, typeKey) {
+                var curY = 0;
+
+                _.each(groupData, function(node) {
+                    if (_.has(node, '_yloc')) {
+                        curY = node['_yloc'];
+                    }
+                    else {
+                        curY += defaultSpacing;
+                    }
+
+                    node['_top'] = curY;
+                });
+            });
+    },
+
     renderData: function () {
-        var colormap = this.getAnnotation("colors", {});
-        var legends = _.map(this.model.get("measureKeys"), function (measure_key) {
-            return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
-        }, this);
+        var colormap = this.getAnnotation("colors", {}),
+            columnOffsets = this.getAnnotation("columnOffsets", {
+                Gene: 1,
+                Pathway: 1,
+                Hallmark: 1
+            }),
+            nodeWidths = this.getAnnotation("nodeWidths", {
+                Gene: 200,
+                Pathway: 200,
+                Hallmark: 200
+            });
+
+        var legends = _.chain(this.model.get("measureKeys"))
+            .without("_yloc")
+            .map(function (measure_key) {
+                return { "color": colormap[measure_key] || this.defaultColor, "label": measure_key };
+            }, this)
+            .value();
+
+        this.processVerticalLocations(this.model.get("nodes"));
 
         _.each(this.model.get("nodes"), function(node) {
-            node.measures = _.map(_.without(_.keys(node), "id", "type"), function(key) {
+            node.measures = _.map(_.without(_.keys(node), "id", "type", "_yloc", "_top"), function(key) {
                 return {
                     "key": key,
                     "value": node[key],
@@ -52,7 +93,18 @@ module.exports = Backbone.View.extend({
             node.uid = _.uniqueId("node_");
         }, this);
 
-        this.$el.html(Template({ "nodesByType": _.groupBy(this.model.get("nodes"), "type"), "legends": legends }));
+        var nodesByType = _.groupBy(this.model.get("nodes"), "type");
+
+        _.each(nodesByType, function(nodeData, typeKey) {
+            nodeData.width = nodeWidths[typeKey];
+            nodeData.offset =  columnOffsets[typeKey];
+        });
+
+        this.$el.html(Template({
+            "nodesByType": nodesByType,
+            "legends": legends
+        }));
+
         this.$el.find(".minigraph-legend").draggable();
 
         this.$el.find(".node-info").css({
