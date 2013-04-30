@@ -1,7 +1,7 @@
 var Splitiscope = function (config) {
     config = config || {};
 
-    //defaults
+//defaults
     var __ = {
         width: 500,
         height: 400,
@@ -28,13 +28,13 @@ var Splitiscope = function (config) {
         },
         radius: 4,
         dataType: {
-            "x": "n",
-            "y": "n",
-            "mix": "nn"
+            "x": 'n',
+            "y": 'n',
+            "mix": 'nn'
         },
         data: {x: [], y: [], class: [] },
         splits: {},
-        id: "id",
+        id: 'id',
         axes: {
             labels: {
                 "x": "X Axis",
@@ -45,11 +45,11 @@ var Splitiscope = function (config) {
                 "y": "y"
             }
         },
-        categoryColor: function () {
+        categoryColor: function (d) {
             return __.pointColors[0]
         },
         class: {label: "", list: []},
-        clear: true
+        clear: true,
     };
 
     _.extend(__, config);
@@ -93,12 +93,12 @@ var Splitiscope = function (config) {
         selected = {x: null, y: null},
         padding = { top: 24, bottom: 4, left: 30, right: 24 },
         split_data = {x: {}, y: {}},
-        shapes = ["square", "circle", "cross", "diamond", "triangle-down", "triangle-up"],
+        shapes = ['square', 'circle', 'cross', 'diamond', 'triangle-down', 'triangle-up'],
         symbolSize = Math.pow(__.radius, 2),
         symbol = d3.svg.symbol().size(symbolSize).type(shapes[0]),
         symbolMap = d3.scale.ordinal().domain([0, 5]).range(shapes),
         symbolFunction = _.compose(symbol.type, symbolMap),
-        splitStrokeColors = ["red", "green", "black"],
+        splitStrokeColors = ['red', 'green', 'black'],
         colorCategories = [],
         strokeFunction = function (index) {
             return splitStrokeColors[index];
@@ -113,14 +113,14 @@ var Splitiscope = function (config) {
 
     // side effects for setters
     var side_effects = d3.dispatch.apply(this, d3.keys(__))
-        .on("radius", function () {
+        .on("radius", function (d) {
             symbolSize = Math.pow(__.radius, 2);
         })
-        .on("data", function () {
+        .on("data", function (d) {
             clearAllSplitSelections();
             clearAllSplitPointers();
             parseData();
-            console.log("splitscope: data loaded");
+            console.log('splitscope: data loaded');
         })
         .on("class", setClassScales)
         .on("splits", parseSplits)
@@ -136,11 +136,13 @@ var Splitiscope = function (config) {
 
         //draw chart
         splitiscope.svg = selection
-            .append("svg")
-            .attr("class", "splitiscope")
-            .append("svg")
-            .attr("viewBox", "0 0 " + __.width + " " + __.height)
-            .attr("preserveAspectRatio", "xMinYMin meet");
+            .append('svg')
+            .attr('class', 'splitiscope')
+            .append('svg')
+            .attr('viewBox', '0 0 ' + __.width + ' ' + __.height)
+            .attr('preserveAspectRatio', 'xMinYMin meet');
+        // .attr('height',__.height)
+        // .attr('width',__.width );
 
         splitiscope.svg.append("defs").append("svg:clipPath")
             .attr("id", "plot_clip")
@@ -151,25 +153,28 @@ var Splitiscope = function (config) {
             .attr("width", plotWidth())
             .attr("height", plotHeight());
 
-        var plot_offset = splitiscope.svg.append("g")
-            .attr("transform", "translate(" + __.margin.left + "," + __.margin.top + ")");
+        var plot_offset = splitiscope.svg.append('g')
+            .attr('transform', 'translate(' + __.margin.left + ',' + __.margin.top + ')');
 
-        bottom_surface = plot_offset.append("g")
-            .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+        bottom_surface = plot_offset.append('g')
+            .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
 
-        partition_surface = bottom_surface.append("g");
+        partition_surface = bottom_surface.append('g');
 
-        var top_surface = plot_offset.append("g");
+        var top_surface = plot_offset.append('g');
 
-        split_surface = top_surface.append("g")
-            .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+        split_surface = top_surface.append('g')
+            .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')');
 
-        data_surface = top_surface.append("g")
-            .attr("transform", "translate(" + padding.left + "," + padding.top + ")")
-            .attr("clip-path", "url(#plot_clip)");
-        data_surface.append("g").attr("class", "kde_surface");
-        data_surface.append("g").attr("class", "data");
-        data_surface.append("g").attr("class", "data_labels");
+        data_surface = top_surface.append('g')
+            .attr('transform', 'translate(' + padding.left + ',' + padding.top + ')')
+            .attr('clip-path', 'url(#plot_clip)');
+        data_surface.append('g').attr('class', 'kde_surface');
+        data_surface.append('g').attr('class', 'data');
+        data_surface.append('g').attr('class', 'data_labels');
+
+        //initialize colorBy class variables
+        setClassScales();
 
         return splitiscope;
     };
@@ -200,7 +205,7 @@ var Splitiscope = function (config) {
                 return obj;
             };
         });
-    }
+    };
 
     splitiscope.render = function () {
 
@@ -219,72 +224,74 @@ var Splitiscope = function (config) {
 
     function drawSplitLabel() {
 
-        if (bottom_surface.select(".split_labels").node() !== null) {
+        if (bottom_surface.select('.split_labels').node() !== null) {
             return;
         }
-        var split_labels = bottom_surface.append("g")
-            .attr("class", "split_labels");
-        split_labels.append("text")
-            .attr("class", "x")
-            .attr("transform", "translate(0," + plotHeight() + ")")
-            .text("");
+        var split_labels = bottom_surface.append('g')
+            .attr('class', 'split_labels');
+        split_labels.append('text')
+            .attr('class', 'x')
+            .attr('transform', 'translate(0,' + plotHeight() + ')')
+            .text('');
 
-        split_labels.append("text")
-            .attr("class", "y")
-            .attr("transform", "translate(0,0)")
-            .text("");
+        split_labels.append('text')
+            .attr('class', 'y')
+            .attr('transform', 'translate(0,0)')
+            .text('');
     }
 
     function updateSplitTextLabel(position, axis) {
-        var format = d3.format(".3f");
+        var format = d3.format('.3f');
         if (position === null) {
-            bottom_surface.select(".split_labels ." + axis)
-                .text("");
+            bottom_surface.select('.split_labels .' + axis)
+                .text('');
             return;
         }
         var transform = {
-            "x": axis === "x" ? position : plotWidth() + 2,
-            "y": axis === "y" ? position : plotHeight() + 2
+            "x": axis === 'x' ? position : plotWidth() + 2,
+            "y": axis === 'y' ? position : plotHeight() + 2
         };
-        bottom_surface.select(".split_labels ." + axis)
+        bottom_surface.select('.split_labels .' + axis)
             .text(format(scales[axis].invert(position)))
-            .attr("transform", "translate(" + transform.x + "," + transform.y + ")");
+            .attr('transform', 'translate(' + transform.x + ',' + transform.y + ')');
     }
 
     function drawAxes() {
         var textpaths = {
-                "x": "M 0 " + (plotHeight() + 28) + " L " + plotWidth() + " " + (plotHeight() + 28),
-                "y": "M " + (plotWidth() + 45) + " 0 L " + (plotWidth() + 45) + " " + plotHeight()
+                "x": 'M 0 ' + (plotHeight() + 28) + ' L ' + plotWidth() + ' ' + (plotHeight() + 28),
+                "y": 'M ' + (plotWidth() + 45) + ' 0 L ' + (plotWidth() + 45) + ' ' + plotHeight()
             },
             tick_transform = {
-                "x": "translate(0," + (plotHeight()) + ")",
-                "y": "translate(" + (plotWidth()) + ",0)"
+                "x": 'translate(0,' + (plotHeight()) + ')',
+                "y": 'translate(' + (plotWidth()) + ',0)'
             };
 
-        if (bottom_surface.select(".axis").node() !== null) return updateAxes();
-        _.each(["x", "y"], function (axis) {
-            var axisEl = bottom_surface.append("g")
-                .attr("class", axis + " axis");
+        if (bottom_surface.select('.axis').node() !== null) return updateAxes();
+        _.each(['x', 'y'], function (axis) {
+            var axisEl = bottom_surface.append('g')
+                .attr('class', axis + ' axis');
 
             adjustTicks(axis);
 
-            splitiscope.svg.select("defs").append("path")
-                .attr("id", axis + "_axis_alignment")
-                .attr("d", textpaths[axis]);
+            splitiscope.svg.select('defs').append('path')
+                .attr('id', axis + '_axis_alignment')
+                .attr('d', textpaths[axis]);
 
-            axisEl.append("g")
-                .attr("class", "ticks")
-                .attr("transform", tick_transform[axis])
+            axisEl.append('g')
+                .attr('class', 'ticks')
+                .attr('transform', tick_transform[axis])
                 .call(axisFn[axis]);
 
-            axisEl.append("text")
-                .style("text-anchor", "middle")
-                .append("textPath")
-                .attr("class", "axis_label")
-                .attr("xlink:href", "#" + axis + "_axis_alignment")
-                .attr("startOffset", "50%")
+            axisEl.append('text')
+                .style('text-anchor', 'middle')
+                .append('textPath')
+                .attr('class', 'axis_label')
+                .attr('xlink:href', '#' + axis + '_axis_alignment')
+                .attr('startOffset', '50%')
                 .text(__.axes.labels[axis]);
+
         });
+
     }
 
     function adjustTicks(axis) {
@@ -292,16 +299,16 @@ var Splitiscope = function (config) {
                 "y": [ 0, -1 * plotWidth() + 10 ],
                 "x": [ 0, 0]//-1*plotHeight()]
             },
-            axisEl = bottom_surface.select("." + axis + ".axis");
+            axisEl = bottom_surface.select('.' + axis + '.axis');
 
-        axisEl.select(".categorical_ticks").remove();
+        axisEl.select('.categorical_ticks').remove();
 
         var decimalFormat = d3.format(".4r"),
             format = (isNumerical(scales[axis].domain()) && !isInt(scales[axis].domain()) ) ? decimalFormat : null;
 
-        if (__.dataType[axis] === "c") {
+        if (__.dataType[axis] === 'c') {
 
-            var ordinal = axisEl.append("g").attr("class", "categorical_ticks"),
+            var ordinal = axisEl.append('g').attr('class', 'categorical_ticks'),
                 ticks = scales[axis].range();
 
             axisFn[axis].tickSize(tickSizes[axis][0]);
@@ -311,36 +318,36 @@ var Splitiscope = function (config) {
                 halfBand = band / 2;
 
             var lines = ordinal
-                .selectAll("line")
+                .selectAll('line')
                 .data(ticks);
 
-            if (axis == "y") {
+            if (axis == 'y') {
                 lines.enter()
-                    .append("line")
-                    .style("stroke", "#888")
-                    .style("stroke-width", "2px")
-                    .attr("x1", 10)
-                    .attr("x2", plotWidth())
-                    .attr("y1", function (point) {
+                    .append('line')
+                    .style('stroke', '#888')
+                    .style('stroke-width', '2px')
+                    .attr('x1', 10)
+                    .attr('x2', plotWidth())
+                    .attr('y1', function (point) {
                         return point + halfBand + 2;
                     })
-                    .attr("y2", function (point) {
+                    .attr('y2', function (point) {
                         return point + halfBand + 2;
                     });
             }
             else {
                 lines.enter()
-                    .append("line")
-                    .style("stroke", "#888")
-                    .style("stroke-width", "2px")
-                    .attr("x1", function (point) {
+                    .append('line')
+                    .style('stroke', '#888')
+                    .style('stroke-width', '2px')
+                    .attr('x1', function (point) {
                         return point - halfBand;
                     })
-                    .attr("x2", function (point) {
+                    .attr('x2', function (point) {
                         return point - halfBand;
                     })
-                    .attr("y1", 10)
-                    .attr("y2", plotHeight() - 10);
+                    .attr('y1', 10)
+                    .attr('y2', plotHeight() - 10);
             }
 
         } else axisFn[axis].tickSize(tickSizes[axis][1]);
@@ -350,41 +357,41 @@ var Splitiscope = function (config) {
     }
 
     function updateAxes() {
-        _.each(["y", "x"], function (axis) {
-            var axisEl = bottom_surface.select("." + axis + ".axis");
-            axisEl.select(".ticks").transition().duration(update_duration).call(axisFn[axis].scale(scales[axis]));
+        _.each(['y', 'x'], function (axis) {
+            var axisEl = bottom_surface.select('.' + axis + '.axis');
+            axisEl.select('.ticks').transition().duration(update_duration).call(axisFn[axis].scale(scales[axis]));
             adjustTicks(axis);
         });
     }
 
     function updateAxisLabels() {
-        var y_axis = bottom_surface.select(".y.axis"),
-            x_axis = bottom_surface.select(".x.axis");
+        var y_axis = bottom_surface.select('.y.axis'),
+            x_axis = bottom_surface.select('.x.axis');
 
-        y_axis.select(".axis_label").text(__.axes.labels.y);
-        x_axis.select(".axis_label").text(__.axes.labels.x);
+        y_axis.select('.axis_label').text(__.axes.labels.y);
+        x_axis.select('.axis_label').text(__.axes.labels.x);
     }
 
     function drawScatterplot(data_points) {
 
         data_points
-            .attr("d", symbolFunction(0).size(symbolSize)())
+            .attr('d', symbolFunction(0).size(symbolSize)())
             .transition()
             .duration(update_duration)
-            .attr("transform", function (point) {
-                return "translate(" + scales.x(point[__.axes.attr.x]) + "," +
-                    scales.y(point[ __.axes.attr.y ]) + ")";
+            .attr('transform', function (point) {
+                return 'translate(' + scales.x(point[__.axes.attr.x]) + ',' +
+                    scales.y(point[ __.axes.attr.y ]) + ')';
             })
 
-            .style("fill-opacity", function (point) {
+            .style('fill-opacity', function (point) {
                 return _.isUndefined(point.splits_on_x) ?
                     0.8 : caseSplitsOpacityscale(point.splits_on_x);
             })
-            .style("stroke-width", "0px")
+            .style('stroke-width', "0px")
             .call(colorDataPoint);
 
-        var data_text = data_surface.select(".data_labels")
-            .selectAll(".data_totals")
+        var data_text = data_surface.select('.data_labels')
+            .selectAll('.data_totals')
             .data([], String);
 
         data_text.exit().remove();
@@ -401,6 +408,8 @@ var Splitiscope = function (config) {
         _.each(scales.y.domain(), function (label, index) {
             yInversed[label] = index;
         });
+
+        var totalWidth = colorCategories.length * 15;
 
         var d = {};
         _.each(scales.x.domain(), function (label) {
@@ -433,15 +442,16 @@ var Splitiscope = function (config) {
             });
         });
 
-        var height_axis = "y",
+        var height_axis = 'y',
             extent = scales[height_axis].range(),
             band = ((scales[height_axis].rangeExtent()[1] - scales[height_axis].rangeExtent()[0]) / extent.length);
 
-        var width_axis = "x",
+        var width_axis = 'x',
             width_extent = scales[width_axis].range(),
             width_band = ((scales[width_axis].rangeExtent()[1] - scales[width_axis].rangeExtent()[0]) / width_extent.length);
 
         var barHeight = (band - 25) / ( d3.max(e) + 1 ) ,
+            halfBarHeight = barHeight / 2,
             barWidth = ( width_band / 2) / colorCategories.length,
             halfBarWidth = barWidth / 2,
             barSpacing = barWidth / colorCategories.length,
@@ -451,8 +461,8 @@ var Splitiscope = function (config) {
             if (label === "undefined") {
                 label = undefined;
             }
-            position = colorCategories.indexOf(label);
-            midpoint = last_index / 2;
+            position = colorCategories.indexOf(label),
+                midpoint = last_index / 2;
             var offset = (position - midpoint) * (barWidth + (barSpacing * last_index));
             return Math.round(offset);
         }
@@ -460,16 +470,16 @@ var Splitiscope = function (config) {
         data_points
             .transition()
             .duration(update_duration)
-            .style("fill-opacity", 0.8)
-            .attr("d", "M 0 0 L " + halfBarWidth + " 0 L " +
-                halfBarWidth + " -" + barHeight + " L -" + halfBarWidth + " -" +
-                barHeight + " L -" + halfBarWidth + " 0 L 0 0")
-            .attr("transform",
+            .style('fill-opacity', 0.8)
+            .attr('d', 'M 0 0 L ' + halfBarWidth + ' 0 L ' +
+                halfBarWidth + ' -' + barHeight + ' L -' + halfBarWidth + ' -' +
+                barHeight + ' L -' + halfBarWidth + ' 0 L 0 0')
+            .attr('transform',
             function (point, i) {
-                return "translate(" +
+                return 'translate(' +
                     (scales.x(point[__.axes.attr.x]) + category_offset(String(point[__.class.label])) ) +
-                    "," +
-                    (scales.y(point[__.axes.attr.y]) + band / 2 - (e[i] * barHeight)) + ")";
+                    ',' +
+                    (scales.y(point[__.axes.attr.y]) + band / 2 - (e[i] * barHeight)) + ')';
             })
             .call(colorDataPoint);
 
@@ -478,7 +488,7 @@ var Splitiscope = function (config) {
         }
 
         function text_color(point) {
-            return addOffset(point) ? "#fff" : null;
+            return addOffset(point) ? '#fff' : null;
         }
 
         function addOffset(point) {
@@ -487,58 +497,61 @@ var Splitiscope = function (config) {
 
         function text_styling(selector, point) {
             selector
-                .style("stroke", null)
-                .style("fill", text_color)
-                .style("visibility", function (point) {
-                    return +point[3] <= 0 ? "hidden" : null;
+                .style('stroke', null)
+                .style('fill', text_color)
+                .style('visibility', function (point) {
+                    return +point[3] <= 0 ? 'hidden' : null;
                 })
-                .attr("transform", function (point) {
-                    return "translate(" +
+                .attr('transform', function (point) {
+                    return 'translate(' +
                         (scales.x(point[0]) + category_offset(point[2])) +
-                        "," +
+                        ',' +
                         (scales.y(point[1]) + band / 2 - vertical_offset(point) +
-                            (addOffset(point) * 20) ) + ")";
+                            (addOffset(point) * 20) ) + ')';
                 });
         }
 
-        var data_text = data_surface.select(".data_labels")
-            .selectAll(".data_totals")
+        var data_text = data_surface.select('.data_labels')
+            .selectAll('.data_totals')
             .data(f, String);
 
         data_text.enter()
             .append("text")
-            .attr("class", "data_totals")
-            .style("text-anchor", "middle")
-            .text(function (point) {
+            .attr('class', 'data_totals')
+            .style('text-anchor', 'middle')
+            .text(function (point, i) {
                 return point[3];
             })
-            .attr("transform", function (point) {
-                return "translate(" +
+            .attr('transform', function (point) {
+                return 'translate(' +
                     (scales.x(point[0]) + category_offset(point[2])) +
-                    "," +
-                    scales.y(point[1]) + ")";
+                    ',' +
+                    scales.y(point[1]) + ')';
             });
 
         data_text.transition()
             .duration(update_duration)
-            .call(text_styling);
+            .call(text_styling)
 
         data_text.exit().remove();
+
     }
 
 
     function drawMultipleKDE(data_points) {
 
-        var num_axis = __.dataType.x === "n" ? "x" : "y",
+        var num_axis = __.dataType.x === 'n' ? 'x' : 'y',
             num_domain = scales[num_axis].domain(),
-            cat_axis = num_axis === "x" ? "y" : "x",
+            cat_axis = num_axis === 'x' ? 'y' : 'x',
+            cat_domain = _.map(scales[cat_axis].domain(), String),
             cat_extent = scales[cat_axis].range(),
             cat_band = ((scales[cat_axis].rangeExtent()[1] - scales[cat_axis].rangeExtent()[0]) / cat_extent.length),
             cat_scale = d3.scale.linear(),
             maxKDEValues, maxKDEValue;
 
         var data = {},
-            kde_categories = _.keys(kde);
+            kde_categories = _.keys(kde),
+            color_categories = _.keys(kde[kde_categories[0]]);
 
         if (kde_categories.length) {
             _.each(kde_categories, function (d) {
@@ -556,25 +569,25 @@ var Splitiscope = function (config) {
             });
             maxKDEValue = _.max(maxKDEValues);
             cat_scale = d3.scale.linear().domain([0, maxKDEValue]).range([-1 * cat_band / 2, cat_band / 2 - 10]);
-            if (cat_axis === "y") cat_scale.range([cat_band / 2, -1 * cat_band / 2 + 10]);
+            if (cat_axis === 'y') cat_scale.range([cat_band / 2, -1 * cat_band / 2 + 10]);
         }
 
-        var kde_category = data_surface.select(".kde_surface").selectAll(".kde_group")
+        var kde_category = data_surface.select('.kde_surface').selectAll('.kde_group')
             .data(kde_categories, String);
 
         kde_category.enter()
-            .append("g")
-            .attr("class", "kde_group");
+            .append('g')
+            .attr('class', 'kde_group')
 
         kde_category.transition()
             .duration(update_duration)
-            .attr("transform", function (c) {
-                return "translate(" +
-                    (cat_axis === "y" ? "0, " : "") + scales[cat_axis](c) +
-                    (cat_axis === "x" ? ", 0" : "") + ")";
+            .attr('transform', function (c) {
+                return 'translate(' +
+                    (cat_axis === 'y' ? '0, ' : '') + scales[cat_axis](c) +
+                    (cat_axis === 'x' ? ', 0' : '') + ')';
             });
 
-        var kde_ensemble = kde_category.selectAll(".kde_ensemble")
+        var kde_ensemble = kde_category.selectAll('.kde_ensemble')
             .data(function (kde_cat) {
                 return d3.entries(data[kde_cat]);
             }, function (d) {
@@ -582,13 +595,13 @@ var Splitiscope = function (config) {
             });
 
         kde_ensemble.enter()
-            .append("g")
-            .attr("class", "kde_ensemble")
+            .append('g')
+            .attr('class', 'kde_ensemble')
             .style("fill", function (d) {
                 return __.categoryColor(d.key);
             });
 
-        var kde_plot = kde_ensemble.selectAll(".kde_plot")
+        var kde_plot = kde_ensemble.selectAll('.kde_plot')
             .data(function (d) {
                 return [d.value];
             }, function (d) {
@@ -597,7 +610,7 @@ var Splitiscope = function (config) {
         );
 
         var g = kde_plot.enter()
-            .append("g")
+            .append('g')
             .attr("class", "kde_plot");
 
         g.append("path")
@@ -605,12 +618,12 @@ var Splitiscope = function (config) {
             .style("fill", "none")
             .style("stroke", "black");
 
-        g.append("path")
+        g.append('path')
             .attr("class", "kde_area")
-            .style("fill-opacity", 0.3)
+            .style('fill-opacity', 0.3)
             .style("stroke", "none");
 
-        kde_plot.transition().select(".kde_line")
+        kde_plot.transition().select('.kde_line')
             .duration(update_duration)
             .attr("d", d3.svg.line()
                 [cat_axis](function (p) {
@@ -621,15 +634,15 @@ var Splitiscope = function (config) {
             })
                 .interpolate("basis"));
 
-        kde_plot.transition().select(".kde_area")
+        kde_plot.transition().select('.kde_area')
             .duration(update_duration)
             .attr("d", d3.svg.area()
                 .interpolate("basis")
                 [num_axis](function (p) {
                 return scales[num_axis](p[0]);
             })
-                [cat_axis + "0"](cat_scale(0))
-                [cat_axis + "1"](function (p) {
+                [cat_axis + '0'](cat_scale(0))
+                [cat_axis + '1'](function (p) {
                 return cat_scale(p[1]);
             })
             );
@@ -642,87 +655,89 @@ var Splitiscope = function (config) {
 
     function colorDataPoint(selector, point) {
         selector
-            .style("fill", function (point) {
+            .style('fill', function (point) {
                 return  __.categoryColor(String(point[__.class.label]));
             })
-            .style("stroke", null);
+            .style('stroke', null);
         return selector;
     }
 
 
     function clearDataPoints() {
-        var data_points = data_surface.select(".data").selectAll(".data_point").data([], String);
+        var data_points = data_surface.select('.data').selectAll('.data_point').data([], String);
         data_points.exit().remove();
+        return;
     }
 
     function clearDataLabels() {
-        var data_text = data_surface.select(".data_labels")
-            .selectAll(".data_totals")
+        var data_text = data_surface.select('.data_labels')
+            .selectAll('.data_totals')
             .data([], String);
 
         data_text.exit().remove();
+        return;
     }
 
     function clearKDE() {
-        var kde = data_surface.select(".kde_surface").selectAll("g").data([], String);
+        var kde = data_surface.select('.kde_surface').selectAll('g').data([], String);
         kde.exit().remove();
     }
 
     function cleanDisplay() {
-        if (__.dataType["mix"] !== "cc") clearDataLabels();
-        if (__.dataType["mix"] !== "nc" && __.dataType["mix"] !== "cn") clearKDE();
-        if (__.dataType["mix"] !== "nn" && __.dataType["mix"] !== "cc") clearDataPoints();
+        if (__.dataType['mix'] !== 'cc') clearDataLabels();
+        if (__.dataType['mix'] !== 'nc' && __.dataType['mix'] !== 'cn') clearKDE();
+        if (__.dataType['mix'] !== 'nn' && __.dataType['mix'] !== 'cc') clearDataPoints();
     }
 
     function drawData() {
 
-        var data_points = data_surface.select(".data")
-            .selectAll(".data_point")
+        var data_points = data_surface.select('.data')
+            .selectAll('.data_point')
             .data(data_array, function (d) {
                 return d[__.id];
             });
 
         data_points.enter()
-            .append("path")
-            .attr("class", "data_point")
-            .style("fill", "#fff")
-            .style("stroke", "#fff");
+            .append('path')
+            .attr('class', 'data_point')
+            .style('fill', '#fff')
+            .style('stroke', '#fff');
 
         data_points.exit()
             .transition()
             .duration(update_duration / 2)
-            .style("fill-opacity", 0)
-            .style("stroke-opacity", 0)
+            .style('fill-opacity', 0)
+            .style('stroke-opacity', 0)
             .remove();
 
         cleanDisplay();
 
-        if (__.dataType["mix"] === "nn") {
+        if (__.dataType['mix'] === 'nn') {
             drawScatterplot(data_points);
         }
-        else if (( __.dataType["x"] == "n") ^ ( __.dataType["y"] == "n" )) {
+        else if (( __.dataType['x'] == 'n') ^ ( __.dataType['y'] == 'n' )) {
             drawMultipleKDE(data_points);
         }
-        else if (__.dataType["mix"] === "cc") drawMultipleBarchart(data_points);
+        else if (__.dataType['mix'] === 'cc') drawMultipleBarchart(data_points);
 
     }
 
     splitiscope.resize = function () {
 
         splitiscope.svg
-            .attr("height", plotHeight())
-            .attr("width", plotWidth())
+            .attr('height', plotHeight())
+            .attr('width', plotWidth())
             .attr("transform", "translate(" + __.margin.left + "," + __.margin.top + ")");
         return this;
     };
 
     function drawSplits() {
 
-        _.each(["x", "y"], function (axis) {
-            var split_group = d3.select("." + axis + ".split_group").node();
-            if (_.isNull(split_group)) split_surface.append("g").attr("class", "" + axis + " split_group");
+        _.each(['x', 'y'], function (axis) {
+            var split_group = d3.select('.' + axis + '.split_group').node();
+            if (_.isNull(split_group)) split_surface.append('g').attr('class', '' + axis + ' split_group');
 
-            if (__.dataType[axis] === "n") {
+            if (__.dataType[axis] === 'n') {
                 drawNumericalAxisSplits(axis);
             } else {
                 drawCategoricalAxisSplits(axis);
@@ -731,70 +746,72 @@ var Splitiscope = function (config) {
     }
 
     function clearAllSplitPointers() {
-        _.each(["x", "y"], clearSplitPointer);
+        _.each(['x', 'y'], clearSplitPointer);
     }
 
     function clearSplitPointer(axis) {
-        d3.select("." + axis + ".split_group").selectAll("." + axis + ".split_pointer")
+        d3.select('.' + axis + '.split_group').selectAll('.' + axis + '.split_pointer')
             .transition()
             .duration(update_duration)
-            .style("stroke-opacity", 0)
+            .style('stroke-opacity', 0)
             .remove();
     }
 
-    function styleSplitSelector(split_selector) {
+    function styleSplitSelector(split_selector, axis) {
         split_selector
-            .style("fill", "#eee")
-            .style("fill-opacity", 0.3)
-            .style("stroke", "#888")
-            .style("stroke-width", 2.0);
+            .style('fill', '#eee')
+            .style('fill-opacity', 0.3)
+            .style('stroke', '#888')
+            .style('stroke-width', 2.0)
+
     }
 
     function defineCategoricalSplitShape(selection, axis) {
-        var extent = scales[axis].range(),
+        var domain = scales[axis].domain(),
+            extent = scales[axis].range(),
             band = ((scales[axis].rangeExtent()[1] - scales[axis].rangeExtent()[0]) / extent.length) - 10;
 
-        if (axis === "x") {
-            selection.attr("transform", function (d) {
-                return "translate(" + (scales[axis](d) - band / 2) + ",0)";
+        if (axis === 'x') {
+            selection.attr('transform', function (d) {
+                return 'translate(' + (scales[axis](d) - band / 2) + ',0)';
             })
-                .attr("x", 0)
-                .attr("width", band)
-                .attr("y", -1 * padding.top)
-                .attr("height", padding.top);
+                .attr('x', 0)
+                .attr('width', band)
+                .attr('y', -1 * padding.top)
+                .attr('height', padding.top);
         } else {
-            selection.attr("transform", function (d) {
-                return "translate(0," + ( scales[axis](d) - band / 2 ) + ")";
+            selection.attr('transform', function (d) {
+                return 'translate(0,' + ( scales[axis](d) - band / 2 ) + ')';
             })
-                .attr("x", -1 * padding.left)
-                .attr("width", padding.left)
-                .attr("y", 0)
-                .attr("height", band);
+                .attr('x', -1 * padding.left)
+                .attr('width', padding.left)
+                .attr('y', 0)
+                .attr('height', band);
         }
     }
 
     function drawCategoricalAxisSplits(axis) {
 
-        split_group = split_surface.select("." + axis + ".split_group");
+        split_group = split_surface.select('.' + axis + '.split_group');
 
         var domain = scales[axis].domain();
 
-        var splits = split_group.selectAll("rect")
+        var splits = split_group.selectAll('rect')
             .data(domain, String);
 
         splits.enter()
-            .append("rect")
+            .append('rect')
             .call(defineCategoricalSplitShape, axis)
             .call(styleSplitSelector, axis)
-            .on("mouseover", function () {
+            .on('mouseover', function () {
                 d3.select(this)
-                    .style("fill-opacity", 1.0);
+                    .style('fill-opacity', 1.0);
             })
-            .on("mouseout", function () {
+            .on('mouseout', function () {
                 d3.select(this)
-                    .style("fill-opacity", 0.3);
+                    .style('fill-opacity', 0.3);
             })
-            .on("click", function (val) {
+            .on('click', function (val) {
                 if (_.contains(selected[axis], val)) {
                     removeCategoricalSplitValue(val, axis);
                 }
@@ -815,42 +832,42 @@ var Splitiscope = function (config) {
 
         var extent = scales[axis].range();
 
-        if (axis === "x") {
+        if (axis === 'x') {
             selection
-                .attr("x", extent[0])
-                .attr("width", extent[1] - extent[0])
-                .attr("y", -1 * padding.top)
-                .attr("height", padding.top);
+                .attr('x', extent[0])
+                .attr('width', extent[1] - extent[0])
+                .attr('y', -1 * padding.top)
+                .attr('height', padding.top);
         } else {
-            selection.attr("x", -1 * padding.left)
-                .attr("width", padding.left)
-                .attr("y", extent[1])
-                .attr("height", extent[0] - extent[1])
+            selection.attr('x', -1 * padding.left)
+                .attr('width', padding.left)
+                .attr('y', extent[1])
+                .attr('height', extent[0] - extent[1])
         }
     }
 
     function drawNumericalAxisSplits(axis) {
 
-        var split_group = split_surface.select("." + axis + ".split_group");
+        var split_group = split_surface.select('.' + axis + '.split_group');
 
-        var splits = split_group.selectAll("rect")
+        var splits = split_group.selectAll('rect')
             .data(["ZZZ"], String);
 
-        var mouse_position_index = (axis === "y") + 0;
+        var mouse_position_index = (axis === 'y') + 0;
 
         splits.enter()
-            .append("rect")
+            .append('rect')
             .call(defineNumericalSplitShape, axis)
             .call(styleSplitSelector, axis)
-            .on("mouseover", function () {
+            .on('mouseover', function () {
                 var position = d3.mouse(this)[mouse_position_index];
                 if (selected[axis] === null) selectSplitValue(position, axis);
             })
-            .on("mousemove", mousemove_fn(axis))
-            .on("mouseout", function () {
+            .on('mousemove', mousemove_fn(axis))
+            .on('mouseout', function () {
                 if (selected[axis] === null) clearSplitSelection(axis);
             })
-            .on("click", function () {
+            .on('click', function () {
                 var position = d3.mouse(this)[mouse_position_index];
                 selectSplitValue(position, axis);
                 if (selected[axis] !== null) {
@@ -868,26 +885,26 @@ var Splitiscope = function (config) {
     }
 
     function appendNumericalSplitPointer(selection, axis, position) {
-        if (axis === "x") {
-            selection.append("path")
-                .attr("class", axis + " split_pointer")
-                .attr("transform", "translate(" + position + ",0)")
-                .attr("d", function () {
+        if (axis === 'x') {
+            selection.append('path')
+                .attr('class', axis + ' split_pointer')
+                .attr('transform', 'translate(' + position + ',0)')
+                .attr('d', function (d, i) {
                     return "M" + 0 + ",-" + padding.top + "v" + padding.top;
                 })
-                .style("stroke", "#cc6432")
-                .style("stroke-width", 4.0)
-                .style("fill", "#cc6432");
+                .style('stroke', '#cc6432')
+                .style('stroke-width', 4.0)
+                .style('fill', '#cc6432');
         } else {
-            selection.append("path")
-                .attr("class", "y split_pointer")
-                .attr("transform", "translate(0," + position + ")")
-                .attr("d", function () {
+            selection.append('path')
+                .attr('class', 'y split_pointer')
+                .attr('transform', 'translate(0,' + position + ')')
+                .attr('d', function (d, i) {
                     return "M" + "-" + padding.left + ",0h" + padding.left;
                 })
-                .style("stroke", "#cc6432")
-                .style("stroke-width", 4.0)
-                .style("fill", "#cc6432");
+                .style('stroke', '#cc6432')
+                .style('stroke-width', 4.0)
+                .style('fill', '#cc6432');
         }
 
     }
@@ -901,75 +918,75 @@ var Splitiscope = function (config) {
             [
                 pad,
                 pad,
-                split_data["x"].span ? split_data["x"].span - pad : displayWidth() + pad,
-                split_data["y"].span ? split_data["y"].span - pad : displayHeight()
+                split_data['x'].span ? split_data['x'].span - pad : displayWidth() + pad,
+                split_data['y'].span ? split_data['y'].span - pad : displayHeight()
             ],
             [
-                split_data["x"].span ? split_data["x"].span : displayWidth(),
+                split_data['x'].span ? split_data['x'].span : displayWidth(),
                 pad,
-                split_data["x"].span ? displayWidth() - split_data["x"].span + double_pad : 0,
-                split_data["y"].span ? split_data["y"].span - pad : displayHeight()
+                split_data['x'].span ? displayWidth() - split_data['x'].span + double_pad : 0,
+                split_data['y'].span ? split_data['y'].span - pad : displayHeight()
             ],
             [
                 pad,
-                split_data["y"].span ? split_data["y"].span : displayHeight(),
-                split_data["x"].span ? split_data["x"].span - pad : displayWidth() + pad,
-                split_data["y"].span ? displayHeight() - split_data["y"].span + pad : 0
+                split_data['y'].span ? split_data['y'].span : displayHeight(),
+                split_data['x'].span ? split_data['x'].span - pad : displayWidth() + pad,
+                split_data['y'].span ? displayHeight() - split_data['y'].span + pad : 0,
             ],
             [
-                split_data["x"].span ? split_data["x"].span : displayWidth(),
-                split_data["y"].span ? split_data["y"].span : displayHeight(),
-                split_data["x"].span ? displayWidth() - split_data["x"].span + double_pad : 0,
-                split_data["y"].span ? displayHeight() - split_data["y"].span + pad : 0
+                split_data['x'].span ? split_data['x'].span : displayWidth(),
+                split_data['y'].span ? split_data['y'].span : displayHeight(),
+                split_data['x'].span ? displayWidth() - split_data['x'].span + double_pad : 0,
+                split_data['y'].span ? displayHeight() - split_data['y'].span + pad : 0
             ]
         ];
 
-        if (_.isNull(split_data["x"].span) && _.isNull(split_data["y"].span)) {
+        if (_.isNull(split_data['x'].span) && _.isNull(split_data['y'].span)) {
             partition_splits = [];
         }
 
-        var partitions = partition_surface.selectAll(".partition")
+        var partitions = partition_surface.selectAll('.partition')
             .data(partition_splits);
 
         partitions
             .enter()
-            .append("rect")
-            .attr("class", "partition")
-            .attr("x", function (val) {
+            .append('rect')
+            .attr('class', 'partition')
+            .attr('x', function (val) {
                 return val[0];
             })
-            .attr("y", function (val) {
+            .attr('y', function (val) {
                 return val[1];
             })
-            .attr("width", function (val) {
+            .attr('width', function (val) {
                 return val[2];
             })
-            .attr("height", function (val) {
+            .attr('height', function (val) {
                 return val[3];
             })
-            .style("fill", function (d, i) {
+            .style('fill', function (d, i) {
                 return __.partitionColors[i]
             })
-            .style("fill-opacity", 0.3)
-            .style("stroke", "none")
-            .style("stroke-opacity", "0.6")
-            .style("stroke-width", 4.0)
-            .on("mouseover", function () {
-                d3.selectAll(".partition").style("stroke", "none");
-                d3.select(this).style("stroke", "#22D");
+            .style('fill-opacity', 0.3)
+            .style('stroke', 'none')
+            .style('stroke-opacity', '0.6')
+            .style('stroke-width', 4.0)
+            .on('mouseover', function () {
+                d3.selectAll('.partition').style('stroke', 'none');
+                d3.select(this).style('stroke', '#22D');
             })
-            .on("mouseout", function () {
+            .on('mouseout', function () {
                 var el = d3.event.relatedTarget;
-                if (d3.select(el).classed("data_point") || el.nodeName == "line") {
+                if (d3.select(el).classed('data_point') || el.nodeName == 'line') {
                     return;
                 }
-                d3.select(this).style("stroke", "none");
+                d3.select(this).style('stroke', 'none');
             })
-            .on("click", function (dims) {
+            .on('click', function (dims) {
                 var split_obj = {};
-                if (!_.isNull(split_data["x"].span)) {
+                if (!_.isNull(split_data['x'].span)) {
                     split_obj[__.axes.attr.x] = {};
-                    if (__.dataType.x === "n") {
+                    if (__.dataType.x === 'n') {
                         var x = {low: scales.x.invert(dims[0]), high: scales.x.invert(dims[2] + dims[0])};
                         split_obj[__.axes.attr.x] = _.clone(x);
                     } else {
@@ -980,9 +997,9 @@ var Splitiscope = function (config) {
                         split_obj[__.axes.attr.x] = { values: _.map(xSelectedVals, scales.x.invert) };
                     }
                 }
-                if (!_.isNull(split_data["y"].span)) {
+                if (!_.isNull(split_data['y'].span)) {
                     split_obj[__.axes.attr.y] = {};
-                    if (__.dataType.y === "n") {
+                    if (__.dataType.y === 'n') {
                         var y = {low: scales.y.invert(dims[1] + dims[3]), high: scales.y.invert(dims[1])};
                         split_obj[__.axes.attr.y] = _.clone(y);
                     } else {
@@ -997,36 +1014,62 @@ var Splitiscope = function (config) {
             });
 
         partitions
-            .attr("x", function (val) {
+            .attr('x', function (val) {
                 return val[0];
             })
-            .attr("y", function (val) {
+            .attr('y', function (val) {
                 return val[1];
             })
-            .attr("width", function (val) {
+            .attr('width', function (val) {
                 return val[2];
             })
-            .attr("height", function (val) {
+            .attr('height', function (val) {
                 return val[3];
             });
 
         partitions.exit()
             .transition()
             .duration(100)
-            .attr("fill-opacity", 0)
+            .attr('fill-opacity', 0)
             .remove();
 
     }
 
+    function clearPartitionSpans() {
+        var partitions = partition_surface.selectAll('.partition');
+
+        partitions.transition()
+            .duration(update_duration)
+            .style('fill-opacity', 0.0)
+            .style('stroke-opacity', 0.0)
+            .remove();
+    }
+
     function mousemove_fn(axis) {
         return function () {
-            var position = d3.mouse(this)[axis === "x" ? 0 : 1];
+            var position = d3.mouse(this)[axis === 'x' ? 0 : 1];
             if (selected[axis] === null) selectSplitValue(position, axis);
         };
     }
 
+    function mouseover_fn(el, index, axis) {
+        if (selected[axis] === index) {
+            selected[axis] = null;
+            clearSplitSelection(axis);
+            return;
+        }
+        selected[axis] = index;
+        makeSplitSelection(el, selected[axis], axis);
+        return;
+    }
+
+    function makeSplitSelection(el, index, axis) {
+        split_data[axis].span = split_data[axis].binScale(index);
+        drawPartitionSpans();
+    }
+
     function selectSplitValue(position, axis) {
-        var value = scales[axis].invert(position);
+        var value = scales[axis].invert(position)
         split_data[axis].span = position;
         drawPartitionSpans();
         updateSplitTextLabel(position, axis);
@@ -1042,7 +1085,7 @@ var Splitiscope = function (config) {
         scales[axis].domain(new_domain);
         scales[axis].invert.range(new_domain);
 
-        split_data[axis].span = scales[axis](value) - ( band / 2 * (axis === "x" ? -1 : 1) );
+        split_data[axis].span = scales[axis](value) - ( band / 2 * (axis === 'x' ? -1 : 1) );
         updateAxes();
         drawData();
         drawSplits();
@@ -1053,15 +1096,15 @@ var Splitiscope = function (config) {
         if (!_.contains(selected[axis], value)) return;
 
         selected[axis] = _.difference(selected[axis], [ value ]);
-        var len = selected[axis].length;
-        var remaining_values = len ? _.difference(scales[axis].domain(), selected[axis]) : scales[axis].domain(),
+        var len = selected[axis].length
+        remaining_values = len ? _.difference(scales[axis].domain(), selected[axis]) : scales[axis].domain(),
             domain = len ? _.union(selected[axis], remaining_values) : remaining_values,
             band = ((scales[axis].rangeExtent()[1] - scales[axis].rangeExtent()[0]) / domain.length);
 
         scales[axis].domain(domain);
         scales[axis].invert.range(domain);
 
-        split_data[axis].span = len ? scales[axis](selected[axis][len - 1]) - ( band / 2 * (axis === "x" ? -1 : 1)) : null;
+        split_data[axis].span = len ? scales[axis](selected[axis][len - 1]) - ( band / 2 * (axis === 'x' ? -1 : 1)) : null;
 
         updateAxes();
         drawData();
@@ -1070,8 +1113,8 @@ var Splitiscope = function (config) {
     }
 
     function clearAllSplitSelections() {
-        _.each(["x", "y"], function (axis) {
-            selected[axis] = __.dataType[axis] === "n" ? null : [];
+        _.each(['x', 'y'], function (axis) {
+            selected[axis] = __.dataType[axis] === 'n' ? null : [];
             clearSplitSelection(axis)
         });
     }
@@ -1100,10 +1143,14 @@ var Splitiscope = function (config) {
         });
     }
 
+    function isFinite(array) {  // check if there's a terrible number (Infinity, NaN) in there
+        return !( _.some(array, !_.isFinite));
+    }
+
     function parseData() {
         if (__.data.length < 1) {
-            console.log("Empty data array.  Nothing to plot.");
-            return null;
+            console.log('Empty data array.  Nothing to plot.');
+            return;
         }
 
         var element_properties = _.keys(__.data[0]);
@@ -1111,13 +1158,13 @@ var Splitiscope = function (config) {
             var xVals = _.uniq(_.pluck(__.data, __.axes.attr.x)),
                 yVals = _.uniq(_.pluck(__.data, __.axes.attr.y));
 
-            __.dataType.x = isCategorical(xVals) ? "c" : "n";
-            __.dataType.y = isCategorical(yVals) ? "c" : "n";
+            __.dataType.x = isCategorical(xVals) ? 'c' : 'n';
+            __.dataType.y = isCategorical(yVals) ? 'c' : 'n';
 
         }
         else {
-            console.error("x or y coordinates not packaged in data");
-            return null;
+            console.error('x or y coordinates not packaged in data');
+            return;
         }
 
         data_array = __.data;
@@ -1125,6 +1172,7 @@ var Splitiscope = function (config) {
         setDataScales(xVals, yVals);
 
         return splitiscope;
+
     }
 
     function scaleRangeValues(values, scale) {
@@ -1138,7 +1186,7 @@ var Splitiscope = function (config) {
 
     function setDataScales(xVals, yVals) {  //unique values for each dimension
 
-        var splits_on_x = _.pluck(data_array, "splits_on_x");
+        var splits_on_x = _.pluck(data_array, 'splits_on_x');
 
         caseSplitsOpacityscale = d3.scale.linear().domain(d3.extent(splits_on_x)).range([0.2, 0.9]);
         var range = {
@@ -1150,8 +1198,8 @@ var Splitiscope = function (config) {
                 "y": yVals.sort().reverse()
             };
 
-        _.each(["x", "y"], function (axis) {
-            if (__.dataType[axis] === "c") {
+        _.each(['x', 'y'], function (axis, index) {
+            if (__.dataType[axis] === 'c') {
                 scales[axis] = d3.scale.ordinal().domain(vals[axis]).rangePoints(range[axis], 1.0);
                 scales[axis].invert = d3.scale.ordinal().domain(scales[axis].range()).range(vals[axis]);
                 selected[axis] = [];
@@ -1162,9 +1210,9 @@ var Splitiscope = function (config) {
                 scales[axis] = d3.scale.linear().domain(scaledExtent).rangeRound(range[axis]);
             }
         });
-        __.dataType["mix"] = __.dataType["x"] + __.dataType["y"];
-        if (__.dataType["mix"] === "nc") createKDEdata("y", "x");
-        else if (__.dataType["mix"] === "cn") createKDEdata("x", "y");
+        __.dataType['mix'] = __.dataType['x'] + __.dataType['y'];
+        if (__.dataType['mix'] === 'nc') createKDEdata('y', 'x');
+        else if (__.dataType['mix'] === 'cn') createKDEdata('x', 'y');
 
         return updateAxes();
     }
@@ -1207,13 +1255,13 @@ var Splitiscope = function (config) {
             }
             else {
                 var kde_temp = science.stats.kde().sample(points).kernel(science.stats.kernel.gaussian);
-                var bw = kde_temp.bandwidth()(points);
+                var bw = kde_temp.bandwidth()(points)
                 if (bw < min_bandwidth) {
                     kde_temp.bandwidth(min_bandwidth);
                     bw = min_bandwidth;
                 }
 
-                if (colorCategories.length <= 1) return kde[category]["all"] = kde_temp;
+                if (colorCategories.length <= 1) return kde[category]['all'] = kde_temp;
 
                 _.each(colorCategories, function (colorCat) {
                     obj = {};
@@ -1229,7 +1277,7 @@ var Splitiscope = function (config) {
 
     function setClassScales() {
 
-        //if the class hasn"t changed, don"t modify it.
+        //if the class hasn't changed, don't modify it.
         colorCategories = __.class.list.length ? _.map(__.class.list, String) : [undefined];
 
         var numberOfCategories = colorCategories.length,
@@ -1243,14 +1291,15 @@ var Splitiscope = function (config) {
 
     function setAxes() {
 
-        axisFn["y"].scale(scales["y"]).tickSize(-1 * plotWidth() + 10).ticks(5);
-        axisFn["x"].scale(scales["x"]).tickSize(2).ticks(5);
+        axisFn["y"].scale(scales['y']).tickSize(-1 * plotWidth() + 10).ticks(5);
+        axisFn["x"].scale(scales['x']).tickSize(2).ticks(5);
 
         return splitiscope;
     }
 
 //returns an empty array if kde cannot be calculated
     function sampleEstimates(kde, range) {
+        var newPoints = [];
         var data = kde.sample();
         if (_.isUndefined(range)) range = d3.extent(data);
         if (data === undefined) {
@@ -1261,21 +1310,21 @@ var Splitiscope = function (config) {
         var stepSize = kde.bandwidth()(data);
         //Filters the data down to relevant points
         //20 points over two variances
-        var newPoints = d3.range(range[0], range[1], stepSize);
+        newPoints = d3.range(range[0], range[1], stepSize);
         return kde(newPoints);
     }
 
     function parseSplits() {
         var split_bin_start, split_bin_number, split_bin_end, s;
 
-        _.each(["x", "y"], function (axis) {
+        _.each(['x', 'y'], function (axis) {
 
             if (__.splits[axis] !== undefined) {
 
                 s = split_data[axis].data_array = __.splits[axis].bins;
 
                 if (s.length < 1 || s[0] === undefined || s[0].length < 1) {
-                    console.error("invalid split bins in axis: " + axis);
+                    console.error('invalid split bins in axis: ' + axis);
                     return;
                 }
 
@@ -1306,9 +1355,9 @@ var Splitiscope = function (config) {
                 split_data[axis].data_array = split_bin_number > 0 ? s : undefined;
 
                 split_data[axis].vis = {
-                    attr: axis === "x" ? "d" : "stroke",
-                    fn: axis === "x" ? symbolFunction : strokeFunction,
-                    default: axis === "x" ? symbolFunction(0)() : "transparent"
+                    attr: axis === 'x' ? 'd' : 'stroke',
+                    fn: axis === 'x' ? symbolFunction : strokeFunction,
+                    default: axis === 'x' ? symbolFunction(0)() : 'transparent',
                 };
 
                 if (!_.isUndefined(split_data[axis].data_array)) setSplitScales(axis, split_bin_number, split_bin_start, split_bin_end);
@@ -1320,7 +1369,7 @@ var Splitiscope = function (config) {
     function setSplitScales(axis, split_bin_number, split_bin_start, split_bin_end) {
         var data = split_data[axis].data_array;
         split_data[axis].opacityScale = d3.scale.linear().domain(d3.extent(data)).rangeRound([0.3, 0.9]);
-        split_data[axis].colorScale = d3.scale.linear().domain(d3.extent(data)).range(["#FFEDA0", "#F03B20"]);
+        split_data[axis].colorScale = d3.scale.linear().domain(d3.extent(data)).range(['#FFEDA0', '#F03B20']);
         split_data[axis].binScale = d3.scale.linear().domain([0, split_bin_number - 1]).rangeRound([scales[axis](split_bin_start), scales[axis](split_bin_end)]);
 
         return splitiscope;
