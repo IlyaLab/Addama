@@ -1,0 +1,28 @@
+<div class="row">
+    {{#each nodesByType}}
+    <div class="span3 offset{{offset}}" style="width: {{width}}px">
+        <h4>{{@key}}</h4>
+        {{#each this}}
+        <div id="{{uid}}" class="node-info well" style="position: absolute; top: {{_top}}px; width: {{../width}}px">
+            {{id}}
+            <ul class="nav nav-list">
+                {{#each measures}}
+                <li title="{{key}}: {{value}}" data-placement="left">
+                    <span class="node-measures" data-key="{{key}}" style="background:{{color}}; padding-right: {{barlength}}px;">&nbsp;</span>
+                </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/each}}
+    </div>
+    {{/each}}
+</div>
+<ul class="minigraph-legend pull-right well nav nav-list">
+    {{#each legends}}
+    <li>
+        <span style="background-color: {{color}}; height: 20px;">
+            <a href="#" onclick="return false;" class="color-picker" data-key="{{label}}">&nbsp;&nbsp;&nbsp;</a>
+        </span>&nbsp;{{label}}
+    </li>
+    {{/each}}
+</ul>

@@ -13,6 +13,7 @@ $(function () {
             "Mutations":require("models/mutations_interpro"),
             "PubcrawlNetwork":require("models/pubcrawlNetwork"),
             "PubcrawlLit": require("models/pubcrawlLit"),
+            "MiniGraph": require("models/minigraph"),
             "Default":Backbone.Model.extend({
                 url: function() {
                     return this.get("data_uri");
@@ -39,10 +40,13 @@ $(function () {
             ],
             "Mutations": [
                 { "id":"seqpeek", label:"Mutation Viewer" }
+            ],
+            "MiniGraph": [
+                { "id": "minigraph", label: "MiniGraph" }
             ]
         },
         Views:{
-            "grid":require("views/grid_view"),
+            "grid":require("views/items_grid_view"),
             "circ":require("views/circvis_view"),
             "stacksvis":require("views/stacksvis_container"),
             "stacksvis2":require("views/stacksvis_simpler"),
@@ -62,6 +66,7 @@ $(function () {
             "pubcrawl_network": require("views/pubcrawl_network"),
             "pubcrawl_lit": require("views/pubcrawl_lit"),
             "items_grid": require("views/items_grid_view"),
+            "minigraph": require("views/minigraph"),
             "Atlas": require("views/atlas"),
             "atlas_maptext": require("views/atlas_maptext_view"),
             "atlas_quick_tutorial": require("views/atlas_quick_tutorial")
@@ -145,5 +150,25 @@ $(function () {
             });
         }
         return qed.Annotations[dataset_id];
+    };
+    qed.FetchAnnotationsByUri = function (uri) {
+        if (_.isEmpty(qed.Annotations[uri])) {
+
+            var Model = Backbone.Model.extend({
+                url:function () {
+                    return "svc/" + uri + "/annotations.json";
+                }
+            });
+
+            var annotations = new Model();
+            annotations.fetch({
+                "async":false,
+                "dataType":"json",
+                "success":function () {
+                    qed.Annotations[uri] = annotations.attributes;
+                }
+            });
+        }
+        return qed.Annotations[uri];
     };
 });

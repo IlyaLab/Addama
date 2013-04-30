@@ -18,7 +18,7 @@ module.exports = Backbone.Router.extend({
     },
 
     views: {
-        "grid": require("../views/grid_view"),
+        "grid": require("../views/items_grid_view"),
         "circ": require("../views/circvis_view"),
         "stacksvis": require("../views/stacksvis_container"),
         "graph": require("../views/graphtree_view"),
@@ -28,7 +28,8 @@ module.exports = Backbone.Router.extend({
         "parcoords": require("../views/parcoords_view"),
         "mutsig_grid_view": require("../views/mutsig_grid_view"),
         "scatterplot": require("../views/scatterplot_view"),
-        "seqpeek": require("../views/seqpeek_view")
+        "seqpeek": require("../views/seqpeek_view"),
+        "minigraph": require("../views/minigraph")
     },
 
     initTopNavBar:function() {
@@ -36,18 +37,18 @@ module.exports = Backbone.Router.extend({
         var topnavbar = new TopNavBar();
         $("#navigation-container").append(topnavbar.render().el);
 
-//        var DataMenuView = require("../views/data_menu");
-//        var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
-//        _.each(section_ids, function(section_id) {
-//            var dataMenuView = new DataMenuView({ "section": qed.Datamodel.get(section_id) });
-//            $(".data-menu").append(dataMenuView.render().el);
-//            dataMenuView.on("select-data-item", function(selected) {
-//                var modalConfig = _.extend({ sectionId: section_id }, selected);
-//                var DataMenuModal = require("../views/data_menu_modal");
-//                var dataMenuModal = new DataMenuModal(modalConfig);
-//                $("body").append(dataMenuModal.render().el);
-//            });
-//        });
+        var DataMenuView = require("../views/data_menu");
+        var section_ids = _.without(_.keys(qed.Datamodel.attributes), "url");
+        _.each(section_ids, function(section_id) {
+            var dataMenuView = new DataMenuView({ "section": qed.Datamodel.get(section_id) });
+            $(".data-menu").append(dataMenuView.render().el);
+            dataMenuView.on("select-data-item", function(selected) {
+                var modalConfig = _.extend({ sectionId: section_id }, selected);
+                var DataMenuModal = require("../views/data_menu_modal");
+                var dataMenuModal = new DataMenuModal(modalConfig);
+                $("body").append(dataMenuModal.render().el);
+            });
+        });
     },
 
     atlasView: function() {
@@ -79,7 +80,7 @@ module.exports = Backbone.Router.extend({
             }
         }
     },
-    
+
     mutsig_grid_view:function () {
         var MutSigGrid = require("../views/mutsig_grid_view");
         var mutsigGridView = new MutSigGrid();
@@ -111,7 +112,7 @@ module.exports = Backbone.Router.extend({
     },
 
     home_view:function () {
-        this.navigate("#atlas", {trigger: true});
+//        this.navigate("#atlas", {trigger: true});
 //        var HomeView = require("../views/home_view");
 //        var homeView = new HomeView();
 //        this.$el.html(homeView.render().el);
@@ -129,14 +130,16 @@ module.exports = Backbone.Router.extend({
         var serviceUri = catalog_unit.service || model_unit.service || "data/" + uri;
         var Model = qed.Models[modelName || "Default"];
 
-        var model_optns = _.extend(options || {}, {
+        var annotations = _.extend({}, qed.FetchAnnotations(dataset_id), qed.FetchAnnotationsByUri(serviceUri));
+
+        var model_optns = _.extend(options || { }, {
             "data_uri": "svc/" + serviceUri,
             "analysis_id": analysis_id,
             "dataset_id": dataset_id,
             "model_unit": model_unit,
-            "catalog_unit": catalog_unit
+            "catalog_unit": catalog_unit,
+            "annotations": annotations
         });
-        qed.FetchAnnotations(dataset_id);
 
         var model = new Model(model_optns);
         _.defer(function() {
@@ -148,7 +151,7 @@ module.exports = Backbone.Router.extend({
             });
         });
 
-        var view_options = _.extend({"model":model}, (model_unit.view_options || {}), (options || {}));
+        var view_options = _.extend({ "model":model, "annotations": annotations }, model_unit.view_options, (options || {}));
 
         var ViewClass = qed.Views[view_name];
         var view = new ViewClass(view_options);
