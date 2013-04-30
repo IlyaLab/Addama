@@ -1,5 +1,6 @@
 var Template = require("../views/templates/scatterplot");
 var LineItemTemplate = require("./templates/line_item");
+var DataUriTemplate = require("./templates/data_uri");
 
 module.exports = Backbone.View.extend({
     current_cancer: null,
@@ -157,6 +158,46 @@ module.exports = Backbone.View.extend({
         });
         splitiscope.data(data_array);
         splitiscope.render();
+
+        var downloadEl = this.$el.find(".download-container").empty();
+        splitiscope.on("partition", function (partition) {
+            var sample_ids = [];
+            _.each(partition, function (part, key) {
+                var part_samples = _.compact(_.map(data_array, function (item) {
+                    var val = item[key];
+                    if (_.has(part, "values") && part.values.indexOf(val) >= 0) return item.id;
+                    if (_.has(part, "high") && _.has(part, "low") && val <= part.high && val >= part.low) return item.id;
+                    return null;
+                }));
+                if (_.isEmpty(sample_ids)) {
+                    sample_ids = part_samples;
+                } else {
+                    sample_ids = _.intersection(part_samples, sample_ids);
+                }
+            });
+
+            if (!_.isEmpty(sample_ids)) {
+                var keys = _.without(_.keys(_.first(data_array)), "id");
+
+                var filecontents = [];
+                filecontents.push("ID" + "%09" + keys.join("%09"));
+
+                _.each(data_array, function(item) {
+                    if (sample_ids.indexOf(item.id) >= 0) {
+                        var values = _.map(keys, function(key) {
+                            return item[key];
+                        });
+                        filecontents.push(item.id + "%09" + values.join("%09"));
+                    }
+                });
+
+                downloadEl.html(DataUriTemplate({
+                    "filename": "genespot_selected_samples.tsv",
+                    "content": filecontents.join("%0A"),
+                    "label": "Download " + sample_ids.length + " Samples"
+                }));
+            }
+        });
     },
 
     selectedFeatureData: function () {
