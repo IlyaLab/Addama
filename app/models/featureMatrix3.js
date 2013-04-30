@@ -37,8 +37,13 @@ module.exports = Backbone.Model.extend({
     },
 
     parse: function(data) {
-        var gene1 = this.get("genes")[0];
-        var gene2 = this.get("genes")[1];
+        var gene1 = "TP53";
+        var gene2 = "KRAS";
+
+        if (_.has(this.attributes, "genes")) {
+            gene1 = this.get("genes")[0];
+            gene2 = this.get("genes")[1];
+        }
 
         var nodesByCancer = _.groupBy(data.items, "cancer");
         var featuresByCancer = {};
