@@ -1,0 +1,34 @@
+{
+  "name": "qed",
+  "version": "0.0.0",
+  "description": "quod erat demonstrandum",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "brunch": "~1.4.2",
+    "express": "~3.0.0rc3",
+    "socket": "0.0.1",
+    "less-brunch": "~1.4.0",
+    "uglify-js-brunch": "~1.3.1",
+    "handlebars-brunch": ">= 1.0 < 1.4",
+    "javascript-brunch": "~1.3.0",
+    "css-brunch": "~1.3.0",
+    "auto-reload-brunch": "~1.3.2",
+    "clean-css-brunch": "~1.3.0",
+    "http-proxy": "~0.8.3"
+  },
+  "devDependencies": {
+    "jasmine-node": "~1.0.26",
+    "testacular": "~0.0.17"
+  },
+  "scripts": {
+    "test": "testacular test/testacular.config.js",
+        "start": "brunch watch -c config.coffee -s",
+      "watch": "brunch watch -c watch_config.coffee"
+  },
+  "repository": "",
+  "author": "",
+  "license": "MIT"
+}

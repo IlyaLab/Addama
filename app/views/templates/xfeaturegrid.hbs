@@ -1,0 +1,58 @@
+<ul class="nav nav-pills">
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Cancer <b class="caret"></b></a>
+        <ul class="dropdown-menu cancer-selector">
+            {{#each cancerList}}
+            <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
+            {{/each}}
+        </ul>
+    </li>
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene A <b class="caret"></b></a>
+        <ul class="dropdown-menu gene-a-selector">
+            {{#each geneList}}
+            <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
+            {{/each}}
+        </ul>
+    </li>
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Gene B <b class="caret"></b></a>
+        <ul class="dropdown-menu gene-b-selector">
+            {{#each geneList}}
+            <li><a href="#" onclick="return false;" data-id="{{id}}">{{id}}</a></li>
+            {{/each}}
+        </ul>
+    </li>
+
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Color By<b class="caret"></b></a>
+        <ul class="dropdown-menu color-by-selector">
+            <li><a href="#" onclick="return false;" data-id="log-p-value">log p-value</a></li>
+            <li><a href="#" onclick="return false;" data-id="correlation-coefficient">correlation coefficient</a></li>
+            <li><a href="#" onclick="return false;" data-id="number-of-samples">number of samples</a></li>
+        </ul>
+    </li>
+</ul>
+
+<table border="1" style="text-align: center;">
+    <thead>
+    <tr>
+        <td>&nbsp;</td>
+        {{#each targetFeatures}}
+            <td><a href="#" onclick="return false;" data-id="{{label}}">{{label}}</a></td>
+        {{/each}}
+    </tr>
+    </thead>
+    <tbody>
+    {{#each targetFeatures}}
+        <tr>
+            <td><a href="#" onclick="return false;" data-id="{{label}}">{{label}}</a></td>
+            {{#each featureValues}}
+                <td>{{value}}</td>
+            {{/each}}
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

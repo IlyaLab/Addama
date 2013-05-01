@@ -1,0 +1,14 @@
+{
+    "proxy":[
+        {
+            "url":"/svc",
+            "host":"localhost",
+            "port":8000
+        },
+        {
+            "url":"/graph_layout",
+            "host":"localhost",
+            "port":8010
+        }
+    ]
+}

@@ -1,0 +1,104 @@
+<div class="graph-container span9"></div>
+<div class="span3">
+    <div class="filter-container parcoords" style="height:300px"></div>
+    <div class="graph-controls well" style="margin-top: 30px;">
+        <h4>Controls</h4>
+        <div class="pull-right">
+            <button class="btn btn-small btn-apply">Apply</button>
+            <button class="btn btn-small graph-controls-reset">Reset</button>
+        </div>
+        <hr/>
+
+        <h6>Filter Edges</h6>
+        <div class="edgeslider"></div>
+
+        <h6>Node Layout</h6>
+        <button class="btn btn-small dig-cola">Dig-Cola</button>
+
+        <h6>Dynamic Edge Layout</h6>
+        <div class="btn-group dynamic-layout" data-toggle="buttons-radio">
+            <button id="dl-straight" data-toggle="button" class="btn btn-small active">Straight</button>
+            <button id="dl-diagonal" data-toggle="button" class="btn btn-small">Diagonal</button>
+            <button id="dl-diagonal-directed" data-toggle="button" class="btn btn-small">Diagonal Directed</button>
+        </div>
+
+        <h6>Labels</h6>
+        <div class="btn-group toggle-labels" data-toggle="buttons-radio">
+            <button class="btn btn-small toggle-on active">On</button>
+            <button class="btn btn-small toggle-off">Off</button>
+        </div>
+
+        <h6>Lines</h6>
+        <div class="btn-group toggle-lines" data-toggle="buttons-radio">
+            <button class="btn btn-small active toggle-on">On</button>
+            <button class="btn btn-small toggle-off">Off</button>
+        </div>
+
+        <div class="btn-toolbar">
+            <h6>Dimensions</h6>
+
+            <div id="dimensions-x" class="btn-group dropup">
+                <button class="btn" data-toggle="dropdown">Select X-Axis</button>
+                <button class="btn dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">f1</a></li>
+                    <li><a href="#">f2</a></li>
+                    <li><a href="#">d</a></li>
+                    <li><a href="#">r1</a></li>
+                    <li><a href="#">r2</a></li>
+                    <li><a href="#">hodge</a></li>
+                    <li><a href="#">hodgerank</a></li>
+                </ul>
+            </div>
+            <div id="dimensions-y" class="btn-group dropup">
+                <button class="btn" data-toggle="dropdown">Select Y-Axis</button>
+                <button class="btn dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">f1</a></li>
+                    <li><a href="#">f2</a></li>
+                    <li><a href="#">d</a></li>
+                    <li><a href="#">r1</a></li>
+                    <li><a href="#">r2</a></li>
+                    <li><a href="#">hodge</a></li>
+                    <li><a href="#">hodgerank</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="btn-toolbar">
+            <h6>Color By</h6>
+
+            <div id="colorby-nodes" class="btn-group dropup">
+                <button class="btn" data-toggle="dropdown">Nodes</button>
+                <button class="btn dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">f1</a></li>
+                    <li><a href="#">f2</a></li>
+                    <li><a href="#">d</a></li>
+                    <li><a href="#">r1</a></li>
+                    <li><a href="#">r2</a></li>
+                    <li><a href="#">hodge</a></li>
+                    <li><a href="#">hodgerank</a></li>
+                </ul>
+            </div>
+
+            <div id="colorby-edges" class="btn-group dropup">
+                <button class="btn" data-toggle="dropdown">Edges</button>
+                <button class="btn dropdown-toggle" data-toggle="dropdown">
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">another-column</a></li>
+                    <li><a href="#">another-column</a></li>
+                    <li><a href="#">another-column</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

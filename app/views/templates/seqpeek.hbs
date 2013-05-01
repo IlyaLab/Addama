@@ -1,0 +1,38 @@
+<ul class="nav nav-pills">
+    <li class="dropdown">
+        <a href="#" onclick="return false;" role="button" data-toggle="modal" data-target=".seqpeek-modal">Controls</a>
+    </li>
+</ul>
+
+<div class="gene-summary page-header">
+    <h1></h1>
+</div>
+
+<div class="subtypes-included subtypes-connected-sortable"></div>
+
+<div class="subtypes-excluded subtypes-connected-sortable"></div>
+
+<div class="controls">
+    <input id="inputTypeahead" class="genes-typeahead" type="text" placeholder="Type a gene name..."/>
+</div>
+
+<div class="seqpeek-container"></div>
+
+<div class="seqpeek-modal modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Controls</h3>
+    </div>
+    <div class="modal-body">
+        <h5>Scale Width</h5>
+        <div class="slider_scale_width"></div>
+
+        <h5>Subtype Width</h5>
+        <div class="slider_label_width"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn show-labels">Hide Row Labels</button>
+        <button class="btn reset-sliders">Reset</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>

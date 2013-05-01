@@ -1,0 +1,45 @@
+.signin-container {
+    width: 400px;
+}
+
+.signin-pic {
+    width: 20px;
+    margin-top: -5px;
+    padding-left: 1px;
+}
+
+.provider .logo {
+    width: 50px;
+    margin: 5px;
+}
+
+.provider {
+    margin-bottom: 20px;
+}
+
+.provider .user-pic {
+    width: 50px;
+    float: left;
+    margin: 5px;
+}
+
+.provider .email {
+    font-weight: bold;
+}
+
+.provider a {
+    font-size: smaller;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.hangout_link {
+    text-decoration:none;
+}
+
+.hangout_link img {
+    border: 0;
+    width: 86px;
+    height: 20px;
+    margin-top: -5px;
+}

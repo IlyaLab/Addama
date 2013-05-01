@@ -1,0 +1,211 @@
+.node circle {
+	fill:#29f;
+	fill-opacity:0.3;
+	stroke : #27d;
+	stroke-width:1.5;
+	pointer-events: all;
+}
+
+.node text {
+	font-size:12px;
+	color:#000;
+}
+
+.link {
+	fill:none;
+	stroke-width:1;
+	stroke:#666;
+	stroke-opacity:0.5;
+}
+
+.link.connected_lower {
+	stroke:#d33;
+	stroke-opacity:0.7;
+	stroke-width:2;
+}
+
+.link.connected_upper {
+	stroke:#33d;
+	stroke-opacity:0.7;
+	stroke-width:2;
+}
+
+.highlighted_link {
+	fill:none;
+	stroke-width:1;
+	stroke:#888;
+	opacity:0.6;
+}
+
+.svg {
+	font: 12px sans-serif;
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+.graph-border {
+	fill:none;
+	stroke:#222;
+	stroke-opacity:0.7;
+	stroke-width:1;
+}
+
+
+
+/* circvis css */
+
+
+.ticks .labels {
+    stroke: black;
+    text-anchor:middle;
+    visibility: hidden;
+    dy: .35em;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: normal;
+}
+circle.node {
+    /*fill:green;*/
+    stroke:none;
+    /*stroke-width: 1px;  *//* 1/2 * stroke-width ~ radius) */
+}
+
+path.link {
+
+}
+/*chromosome label*/
+.region_label {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 30px;
+    font-weight: normal;
+}
+
+.axes .labels {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+}
+svg .ideogram .radial_lines {
+    stroke:null;
+    /*stroke:#444;*/
+    stroke-width:1.5px;
+}
+svg .wedge .background {
+	fill:#ddd;
+	stroke:#444;
+	opacity:0.6;
+}
+svg .wedge[data-ring="1"] .background {
+	fill:rgba(255,255,255,0.7);
+	stroke:none;
+	stroke-width:0;
+}
+svg .wedge[data-ring="1"] .background {
+	fill:none;
+	stroke:none;
+	stroke-width:0px;
+}
+
+svg .wedge[data-ring="2"] .background {
+	fill:rgba(200,200,200,0.4);
+	stroke-width:0;
+}
+
+/*hovercard css */
+
+.hovercard {
+    position: absolute;
+    z-index: 100000;
+    font-family: Sans-serif !important;
+    font-size:16px !important;
+    color:#666 !important;
+    line-height:1.5em;
+    background:rgba(255,255,255,0.9);
+    border: 2px solid #ddd;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    border-radius:3px;
+    padding: 2px;
+}
+
+.hovercard.pinned .pin {
+    color:rgba(255,0,0,1.0);
+}
+
+.hovercard .tools {
+    background-color:transparent;
+    background:#ddd;
+    border:1px solid #333;
+    top:1px;
+    left:1px;
+    color:#000;
+}
+
+.hovercard .tools span{
+    padding: 2px;
+}
+
+.hovercard .data {
+    width:100%;
+    cursor:pointer;
+}
+.hovercard .data table{
+
+}
+
+.hovercard .links tr {
+    vertical-align: middle;
+}
+.hovercard .links a{
+    color:blue;
+    font-size:14px;
+    vertical-align: middle;
+    text-decoration: none;
+}
+.hovercard .links a:visited{
+    color:blue;
+    text-decoration: none;
+}
+.hovercard .links a:hover{
+    color:blue;
+    text-decoration: none;
+}
+
+.hovercard .pin {
+    text-align:center;
+    color : black;
+    cursor:pointer;
+}
+.hovercard .move {
+    cursor:move;
+}
+.hovercard .move:active{
+    cursor:move;
+}
+.hovercard .footer {
+    text-align:right;
+    margin-right:5px;
+    color:rgb(240,10,10);
+    cursor:pointer;
+}
+
+.oncovis-container {
+    /*width:1200px;*/
+    height:700px;
+    overflow: auto;
+}
+
+.match.PFAM {
+    fill: midnightblue;
+}
+
+.match.SMART {
+    fill: firebrick;
+}
+
+.match.PROFILE {
+    fill: darkorange;
+}

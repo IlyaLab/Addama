@@ -1,0 +1,105 @@
+<html>
+    <head>
+        <title>QED Web Services Test Page</title>
+
+        <link rel="stylesheet" type="text/css" href="https://informatics-apps.systemsbiology.net/bootstrap-2.0.4/css/bootstrap.min.css"/>
+        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/jquery-ui-1.8.23/js/jquery-1.8.0.min.js"></script>
+        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/bootstrap-2.1.1/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="https://informatics-apps.systemsbiology.net/underscore/underscore-min.js"></script>
+
+        <style type="text/css">
+            table {
+                font-size: smaller;
+            }
+            table td {
+                border: 1px solid #808080;
+            }
+        </style>
+
+        <script type="text/javascript">
+            $(window).load(function () {
+                $.ajax({
+                    url: "/endpoints/list_files",
+                    data: {
+                        "filepath": "/"
+                    },
+                    method: "GET",
+                    success: function(json) {
+                        var html = "";
+                        var lineItemFn = function(li) {
+                            html += "<li>" + li.label + "</li>"
+                        };
+
+
+                        if (json.directories) {
+                            html += "<ul class='nav nav-list'>";
+                            html += "<li class='nav-header'>Directories</li>";
+                            _.each(json.directories, lineItemFn);
+                            html += "</ul>";
+                        }
+                        if (json.files) {
+                            html += "<ul class='nav nav-list'>";
+                            html += "<li class='nav-header'>Files</li>";
+                            _.each(json.files, lineItemFn);
+                            html += "</ul>";
+                        }
+                        $("#test_list_files").html(html)
+                    },
+                    error: function(e,o) {
+                        $("#test_err_messages").html(e + ":" + o);
+                    }
+                });
+
+                var ids = ["Alcohol_Consumption", "Antenatan_Steroids_Indication"];
+                $.ajax({
+                    url: "/endpoints/filter_by_id",
+                    data: {
+                        "filepath": "/feature_matrices/2012_09_18_0835__cons",
+                        "IDs": ids.join(",")
+                    },
+                    method: "GET",
+                    success: function(txt) {
+                        var lines = txt.split("\n");
+
+                        var html = "";
+                        var tdFn = function(item) {
+                            html += "<td>" + item + "</td>";
+                        };
+
+                        html += "<table>";
+                        html += "<thead>";
+                        html += "<td>Samples</td>";
+                        _.each(_.rest(lines[0].split("\t")), tdFn);
+                        html += "</thead>";
+
+                        html += "<tbody>";
+                        _.each(_.rest(lines, 1), function(line) {
+                            if (line) {
+                                html += "<tr>";
+                                _.each(line.split("\t"), tdFn);
+                                html += "</tr>";
+                            }
+                        });
+                        html += "</tbody>";
+                        html += "</table>";
+                        $("#test_filter_ids").html(html)
+                    },
+                    error: function(e,o) {
+                        $("#test_err_messages").html(e + ":" + o);
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <h3>Test QED Data Web Services Page</h3>
+        <h4>List Files</h4>
+        <div id="test_list_files"></div>
+        <hr/>
+        <h4>Filter IDs</h4>
+        <div id="test_filter_ids"></div>
+        <hr/>
+        <h4>Error Messages</h4>
+        <div id="test_err_messages"></div>
+    </body>
+</html>

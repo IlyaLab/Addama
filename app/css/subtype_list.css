@@ -1,0 +1,15 @@
+.subtype-list-member {
+   height: 30px;
+   width: 75px;
+   padding: 0.5em;
+}
+
+.subtypes-connected-sortable {
+   height: 30px;
+   padding: 0.5em;
+   float: left;
+}
+
+.subtypes-connected-sortable > div {
+   float: left;
+}

@@ -1,0 +1,74 @@
+<div class="navbar-inner">
+    <div class="container-fluid">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="#homePage" onclick="return false;" id="home">
+            <img src="img/isblogo.png" class="imgbrand" alt="QED"> <b class="titled">QED</b>
+        </a>
+
+        <div class="nav-collapse">
+            <ul class="nav nav-pills pull-center">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Data <b class="caret"></b></a>
+                    <ul class="data-menu dropdown-menu"></ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Sessions <b class="caret"></b></a>
+                    <ul class="dropdown-menu sessions-container"></ul>
+                </li>
+            </ul>
+            <form action="" class="pull-left navbar-form">
+                <input type="text" id="querySearchTerm" placeholder="Search..." class="search-query span3">
+            </form>
+            <ul class="nav nav-pills pull-right">
+                <li>
+                    <a href="#" class="signin" onclick="return false;">
+                        <img class="signin-pic" src="https://www.google.com/images/icons/ui/gprofile_button-64.png" alt="&nbsp;"/>
+                        <!--<img class="signin-pic" src="img/facebook_logo.jpg" alt="&nbsp;"/>-->
+                        <!--<img class="signin-pic" src="https://twitter.com/images/resources/twitter-bird-white-on-blue.png" alt="&nbsp;"/>-->
+                    </a>
+                </li>
+                <li class="dropdown requires-google-oauth hide">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <img class="signin-pic" src="https://developers.google.com/drive/images/drive_icon.png" alt="&nbsp;"/>
+                        <b class="caret"></b>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="return false;" class="gdrive-import">Import Data</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-snapshot">Save Snapshot</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-export">Export Data</a></li>
+                        <li><a href="#" onclick="return false;" class="gdrive-session">Export Session</a></li>
+                        <li class="divider"></li>
+                        <li><a href="http://drive.google.com" target="_blank">Open Google Drive</a></li>
+                    </ul>
+                </li>
+                <li class="hangout-container requires-google-oauth hide"></li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle active" href="#" data-toggle="dropdown" onclick="return false;">
+                        <i class="icon-chevron-left"></i> <i class="icon-chevron-down"></i> <i class="icon-chevron-right"></i>
+                    </a>
+                    <ul class="about-links dropdown-menu">
+                        <li><a href="#" onclick="return false;">User Guide</a></li>
+                        <li><a href="http://github.com/rbkreisberg/QED" target="_blank">Open Source Project</a></li>
+                        <li><a href="http://www.cancerregulome.org/about.html#funding" target="_blank">Funding</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div id="searchResults" class="modal hide fade">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+        <h3>Search...</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    </div>
+</div>

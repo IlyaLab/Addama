@@ -1,0 +1,12 @@
+.genelist-members {
+    overflow-y: auto;
+    height: 100px;
+    width: 180px;
+}
+
+.selected-rows {
+    overflow-y: auto;
+    overflow-x: auto;
+    height: 100px;
+    width: 350px;
+}

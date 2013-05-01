@@ -1,0 +1,11 @@
+<li class="nav-header">{{label}}</li>
+{{#each items}}
+<li class="dropdown-submenu">
+    <a href="#" onclick="return false;">{{label}}</a>
+    <ul class="dropdown-menu">
+        {{#each items}}
+        <li><a href="#" onclick="return false;" class="selected-data-item" data-unitId="{{unitId}}" data-itemId="{{itemId}}">{{label}}</a></li>
+        {{/each}}
+    </ul>
+</li>
+{{/each}}
