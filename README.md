@@ -1,6 +1,8 @@
-QED
-===
-quod erat demonstrandum
+GeneSpot
+====
+This tool provides a way to view TCGA data from a gene-centric point-of-view. It includes a number of interactive visualizations, and allows the user to save their current exploration. This application also enables the user to select specific cancers and genes of interest, and load data that is generated from a variety of TCGA analysis.
+
+------
 
 Operating System Support:
   - The example commands in this file are directed at Linux and Mac OS X users.  However, it should be expected (unless otherwise noted) that these dependencies would be supported in any operating system supporting Python 2.6~2.7.
