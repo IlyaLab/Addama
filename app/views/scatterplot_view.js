@@ -36,14 +36,14 @@ module.exports = Backbone.View.extend({
         _.each(cancers, function (cancer, idx) {
             cancer = cancer.trim();
             if (_.isEqual(_this.current_cancer, cancer)) {
-                _this.$el.find(".cancer-selector").append(LineItemTemplate({"li_class": "active", "a_class": "toggle-active", "id": cancer, "label": cancer}));
+                _this.$el.find(".cancer-selector-scatterplot").append(LineItemTemplate({"li_class": "active", "a_class": "toggle-active", "id": cancer, "label": cancer}));
             } else {
-                _this.$el.find(".cancer-selector").append(LineItemTemplate({"a_class": "toggle-active", "id": cancer, "label": cancer}));
+                _this.$el.find(".cancer-selector-scatterplot").append(LineItemTemplate({"a_class": "toggle-active", "id": cancer, "label": cancer}));
             }
         });
 
-        this.$el.find(".cancer-selector").find(".toggle-active").click(function (e) {
-            _this.$el.find(".cancer-selector").find(".active").removeClass("active");
+        this.$el.find(".cancer-selector-scatterplot").find(".toggle-active").click(function (e) {
+            _this.$el.find(".cancer-selector-scatterplot").find(".active").removeClass("active");
             $(e.target).parent().addClass("active");
             _this.current_cancer = $(e.target).data("id");
             _.defer(_this.reloadModel);
