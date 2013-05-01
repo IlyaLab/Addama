@@ -1,21 +1,14 @@
-var View = require('./view');
-var template = require('./templates/xfeaturegrid');
+var Template = require('./templates/xfeaturegrid');
 
-module.exports = View.extend({
-    template:template,
-    className:"row-fluid",
-    geneA:"TP53",
-    geneB:"CTCF",
-
+module.exports = Backbone.View.extend({
     events:{
-        "click .cancer-selector a":function (e) {
-            console.log("cancer-selector=" + $(e.target).data("id"));
-        },
         "click .gene-a-selector a":function (e) {
-            console.log("gene-a-selector=" + $(e.target).data("id"));
+            this.geneA = $(e.target).data("id");
+            this.loadData();
         },
         "click .gene-b-selector a":function (e) {
-            console.log("gene-b-selector=" + $(e.target).data("id"));
+            this.geneB = $(e.target).data("id");
+            this.loadData();
         },
         "click .color-by-selector a":function (e) {
             console.log("color-by-selector=" + $(e.target).data("id"));
@@ -24,82 +17,68 @@ module.exports = View.extend({
 
     initialize:function (options) {
         _.extend(this, options);
-        _.bindAll(this, "afterRender", "loadData");
-        _.bindAll(this, "parseFeaturesOfInterest", "isFeatureOfInterest");
-        _.bindAll(this, "parseCancerList");
-
-        this.loadData = _.after(3, this.loadData);
+        _.bindAll(this, "loadData", "handleGridClicks");
 
         this.model.on("load", this.loadData);
-
-        $.ajax({ url:"svc/data/lookups/features_of_interest", type:"GET", dataType:"text", success:this.parseFeaturesOfInterest, error:this.loadData });
-        $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.parseCancerList, error:this.loadData });
     },
 
-    getRenderData:function () {
-        return {"targetFeatures":[]}
-    },
+    loadData: function() {
+        var geneA = this.geneA || this.genes[0];
+        var geneB = this.geneB || this.genes[1];
 
-    parseCancerList:function (txt) {
-        this.cancerList = txt.trim().split("\n");
-        this.loadData();
-    },
+        var negative_color_scale = d3.scale.linear().domain([-16.0, 0.0]).range(["blue", "white"]);
+        var positive_color_scale = d3.scale.linear().domain([0.0, 16.0]).range(["white", "red"]);
+        var associationsByCancer = this.model.get("associationsByCancer");
 
-    parseFeaturesOfInterest:function (txt) {
-        var items = txt.trim().split("\n");
-        this.features_of_interest = _.map(items, function (line) {
-            var split = line.split("\t");
-            return { "label":split[0], "regexp":split[1]};
-        });
-        this.loadData();
-    },
+        var featureLabel = function(feature) {
+            return feature.source + "::" + feature.modifier;
+        };
+        
+        var cancerData = _.map(this.model.get("nodesByCancer"), function(perCancerData, cancer) {
+            var featuresByGene = _.groupBy(perCancerData, "gene");
+            var aByC = associationsByCancer[cancer];
 
-    isFeatureOfInterest:function (feature_id) {
-        var str = "GEXP:TP43:y_n_somatic";
-        return _.any(this.features_of_interest, function (foi) {
-            var queryPattern = foi.regexp.replace(/\*/g, ".*?");
-            var queryRegex = new RegExp(queryPattern, 'gi');
-            return queryRegex.test(feature_id);
-        });
-    },
+            var get_css_color = function(id1, id2) {
+                var assoc = aByC.getAssociation(id1, id2);
+                if (!assoc) return "grey";
+                if (assoc.rho < 0) return negative_color_scale(-assoc.pvalue);
+                return positive_color_scale(assoc.pvalue);
+            };
 
-    loadData:function () {
-        var gene_a = this.geneA;
-        var gene_b = this.geneB;
-        var cancer = this.cancer;
+            var gene_a_features = _.map(featuresByGene[geneA] || featuresByGene[geneA.toLowerCase()], function(feature) {
+                return { "d": feature, "grid_label": featureLabel(feature) };
+            });
 
-        var _this = this;
-        var rows = this.model.get("ROWS");
-        var genea_rows = _.map(rows, function (row) {
-            return row.indexOf(gene_a) >= 0 && _this.isFeatureOfInterest(row);
-        });
-        var geneb_rows = _.compact(_.map(rows, function (row, rowIdx) {
-            if (row.indexOf(gene_b) >= 0) {
-                var featureOfInterest = _this.getFeatureOfInterest(row);
-                if (!_.isEmpty(featureOfInterest)) {
-                    return { "rowIdx": rowIdx, "row": row, "foi": featureOfInterest };
-                }
-            }
-            return null;
-        }));
+            var gene_b_features = _.map(featuresByGene[geneB] || featuresByGene[geneB.toLowerCase()], function(feature) {
+                return {
+                    "d": feature,
+                    "grid_label": featureLabel(feature),
+                    "row":_.map(gene_a_features, function(af) {
+                        return _.extend(af, { "color": get_css_color(feature.id, af.d.id) });
+                    })
+                };
+            });
 
-        // TODO : lookup values for gene associations in pairwise analysis
-        var targetFeatures = _.map(this.features_of_interest, function (foi) {
-            return { "label":foi.label, "featureValues":[
-                {"value":"BLUE"},
-                {"value":"GREEN"},
-                {"value":"YELLOW"}
-            ]};
+            return { "label": cancer, "geneA": geneA, "geneB": geneB, "headers": gene_a_features, "data": gene_b_features };
         });
 
         var fn = function (ci) {
             return {"id":ci};
         };
-        var genelist = _.isEmpty(this.geneList) ? [this.geneA, this.geneB] : this.geneList;
-        this.$el.html(this.template({
-            "targetFeatures":targetFeatures,
-            "geneList":_.map(genelist, fn),
-            "cancerList":_.map(this.cancerList, fn)
+
+        _.first(cancerData)["isFirst"] = true;
+        this.$el.html(Template({
+            "data": cancerData,
+            "geneList": _.map(this.genes, fn),
+            "cancerList": _.map(this.cancers, fn)
         }));
+
+        this.$el.find(".grid-label").click(this.handleGridClicks);
+    },
+
+    handleGridClicks: function(e) {
+        var featureId = $(e.target).data("id");
+        var grouping = $(e.target).data("grouping");
+        this.trigger("selected", this.model.get("nodesByCancer")[grouping][featureId]);
     }
 });

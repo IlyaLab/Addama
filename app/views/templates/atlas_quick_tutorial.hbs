@@ -1,0 +1,166 @@
+<div class="well">
+    This guide reviews the controls used on this application.  It is available from the <b>Maps</b> menu.
+</div>
+
+<div class="accordion" id="accordion_{{id}}">
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_{{id}}" href="#collapse_explore_{{id}}">
+                Exploring the Data
+            </a>
+        </div>
+        <div id="collapse_explore_{{id}}" class="accordion-body collapse in">
+            <div class="accordion-inner">
+                <div class="row">
+                    <div class="span2">
+                        <button class="cancers-btn btn btn-success" type="button">Tumor Types</button>
+                    </div>
+                    <div class="span5">
+                        <ul>
+                            <li>Show/hide tumor types to include in queries</li>
+                            <li>Selected tumor types are shown in blue. Click to select or deselect a tumor type.</li>
+                            <li>Tumor types can be also re-ordered through "drag-n-drop"</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span2">
+                        <button class="btn btn-success" type="button">Maps</button>
+                    </div>
+                    <div class="span5">
+                        <ul>
+                            <li>Explore the TCGA data using one of our available visualizations</li>
+                            <li>Additional maps will be added regularly</li>
+                            <li>Multiple instances of a map may be opened</li>
+                            <li>Minimized maps can be re-opened from here</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span2">
+                        <button class="btn btn-success" type="button">Genes</button>
+                    </div>
+                    <div class="span5">
+                        <ul>
+                            <li>Simple control to view, add, and remove Genes of interest for queries</li>
+                            <li>Users may enter one-to-many Genes to include in queries</li>
+                            <li>Genes can be re-ordered through "drag-n-drop"</li>
+                            <li>Genes can be removed using the <i class="icon-trash"></i> trash icon</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_{{id}}" href="#collapse_atlas_controls_{{id}}">
+                Atlas Controls
+            </a>
+        </div>
+        <div id="collapse_atlas_controls_{{id}}" class="accordion-body collapse">
+            <div class="accordion-inner">
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="zoom-home"> <i class="icon-home"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Reset Zoom Level</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="zoom-in"> <i class="icon-zoom-in"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Zoom In</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="zoom-out"> <i class="icon-zoom-out"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Zoom Out</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="resize-item"> <i class="icon-resize-full"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Resize Maps</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="refresh-loaded"> <i class="icon-refresh"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Refresh Map Data</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_{{id}}" href="#collapse_map_{{id}}">
+                Map Controls
+            </a>
+        </div>
+        <div id="collapse_map_{{id}}" class="accordion-body collapse">
+            <div class="accordion-inner">
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="info-me"> <i class="icon-info-sign" /></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">General information about the underlying data</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="notes-me disabled" rel="tooltip" title="Take Notes (todo:notes_view)"> <i class="icon-pencil"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Save Notes (under development)</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="minimize-me" rel="tooltip" title="Minimize Map"> <i class="icon-minus"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Minimize Map</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="refresh-me" rel="tooltip" title="Refresh Data"> <i class="icon-refresh"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Refresh Map Data</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false;" class="move-me" rel="tooltip" title="Move Map In Canvas"> <i class="icon-move"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Handle used to move Map in canvas</div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <ul class="nav nav-list">
+                            <li><a href="#" onclick="return false" rel="tooltip" title="Download Data"> <i class="icon-download"/></i> </a></li>
+                        </ul>
+                    </div>
+                    <div class="span4">Lists downloads available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

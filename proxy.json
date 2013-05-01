@@ -1,14 +1,79 @@
 {
     "proxy":[
         {
-            "url":"/svc",
-            "host":"localhost",
-            "port":8000
+            "url":"/svc/pw_lookups",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/lookups",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/rt_pairwise",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/graphs/pubcrawl",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/pubmed/solr",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/mutsig_rankings",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/features_by_location",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/data/provenance",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc/data/lookups",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
         },
         {
             "url":"/graph_layout",
+            "rewrite_url":"http://genespot.cancerregulome.org",
+            "host":"genespot.cancerregulome.org",
+            "port":80,
+            "keep_url":true
+        },
+        {
+            "url":"/svc",
             "host":"localhost",
-            "port":8010
+            "port":8000
         }
     ]
 }

@@ -1,0 +1,130 @@
+.atlas-body {
+    padding: 5px;
+    top: 100px;
+    position: absolute;
+    width: 97%;
+    height: 85%;
+    z-index: -3;
+}
+
+.atlas-canvas {
+    padding: 5px;
+    width: 97%;
+    height: 97%;
+    z-index: -2;
+    position: absolute;
+}
+
+.atlas-zoom {
+    padding: 5px;
+    width: 97%;
+    height: 97%;
+    z-index: -1;
+    position: absolute;
+}
+
+.atlas-navigator {
+    float: left;
+    left: 5px;
+    top: 200px;
+    position: fixed;
+    border: 1px solid #87cefa;
+    border-radius: 15px;
+    background: #ffffff;
+    height: 150px;
+    padding-top: 15px;
+}
+
+.atlas-map {
+    position: absolute;
+    z-index: 10;
+
+    border: 1px solid #87cefa;
+    padding: 10px;
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, .3);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+    color: rgb(102, 102, 102);
+    text-shadow: 0 2px 2px rgba(0, 0, 0, .1);
+
+    -webkit-transition: opacity 1s;
+    -webkit-transition: height 1s;
+    -webkit-transition: width 1s;
+
+    -moz-transition: opacity 1s;
+    -moz-transition: height 1s;
+    -moz-transition: width 1s;
+
+    -ms-transition: opacity 1s;
+    -ms-transition: height 1s;
+    -ms-transition: width 1s;
+
+    -o-transition: opacity 1s;
+    -o-transition: height 1s;
+    -o-transition: width 1s;
+
+    transition: opacity 1s;
+    transition: height 1s;
+    transition: width 1s;
+
+    height: auto;
+    width: auto;
+    min-height: 100px;
+    min-width: 300px;
+}
+
+.atlas-map h5 {
+    padding-left: 10px;
+}
+
+.showing-border {
+    border: 1px solid black;
+}
+
+.showing-border-dotted {
+    border: 1px dotted black;
+}
+
+.showing-border-dashed {
+    border: 1px dashed black;
+}
+
+.cancer-selector {
+    left: 100px;
+    position: absolute;
+}
+
+.table tr.centered-header td {
+    font-weight: bolder;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: #D9EDF7;
+}
+
+.table td.highlight-cell {
+    font-weight: bolder;
+    color: #4b0082;
+    border-bottom: 1px solid #4b0082;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.table td.plain-cell {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.ui-effects-transfer {
+    border: 1px dotted black;
+}
+
+.maps-n-genes {
+    position: fixed;
+    top:44px;
+    right:20px;
+}
+
+.maps-n-genes li {
+    padding-right: 10px;
+}

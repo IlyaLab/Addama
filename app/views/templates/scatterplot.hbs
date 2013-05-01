@@ -1,20 +1,79 @@
+<style>
+    .data_point {
+        stroke-width: 0px;
+        shape-rendering: crispEdges;
+    }
 
-<select class="subtype-select">
+    .axis path, .axis line {
+        fill: none;
+        stroke: #000;
+        stroke-width: 2.0px;
+        shape-rendering: crispEdges;
+    }
 
-</select>
+    .kde_line {
+        shape-rendering: none;
+        stroke-width: 1.5px;
+        visibility: hidden;
+    }
 
-<div class="feature1-options">
-    <select class="featuresource-select"></select>
+    .y.axis path, .y.axis line{
+        stroke:#aaa;
+    }
 
-    <input class="input-small genes-typeahead" type="text" placeholder="gene 1 ...">
-    <select style="width: 300px" class="feature-label-select"></select>
+    .x.axis path, .x.axis line {
+        stroke:none;
+    }
+
+    .axis_label, .ticks {
+        font-size:16px;
+    }
+
+    .data_totals {
+        shape-rendering: crispEdges;
+    }
+
+    .data_labels {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .scatterplot-vis {
+        height: 400px;
+    }
+
+    .splitiscope {
+        width: 500px;
+        height: 375px;
+    }
+</style>
+
+<div class="container scatterplot-vis">
+    <div class="row">
+        <div class="span3 offset3 dropdown">
+            <input class="input-small genes-typeahead-x" type="text" placeholder="Type a gene name (x-axis) ...">
+        </div>
+        <div class="span3 dropdown">
+            <input class="input-small genes-typeahead-y" type="text" placeholder="Type a gene name (y-axis) ...">
+        </div>
+        <div class="span3 download-container"></div>
+    </div>
+    <div class="row">
+        <div class="span3 offset3 dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">X-Axis Features <b class="caret"></b></a>
+            <ul class="dropdown-menu feature-selector-x"></ul>
+        </div>
+        <div class="span3 dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">Y-Axis Features <b class="caret"></b></a>
+            <ul class="dropdown-menu feature-selector-y"></ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="span1">
+            <ul class="nav nav-list cancer-selector"></ul>
+        </div>
+        <div class="span6 offset4">
+            <div class="scatterplot-container"></div>
+        </div>
+    </div>
 </div>
-
-<div class="feature2-options">
-    <select class="featuresource-select"></select>
-
-    <input class="input-small genes-typeahead" type="text" placeholder="gene 2 ...">
-    <select style="width: 300px" class="feature-label-select"></select>
-</div>
-
-<div class="scatterplot-container"></div>

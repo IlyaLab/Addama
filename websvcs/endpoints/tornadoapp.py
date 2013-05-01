@@ -29,7 +29,8 @@ import uuid
 
 from auth_decorator import authenticated
 from data import LocalFileHandler
-from storage import MongoDbLookupHandler, MongoDbStorageHandler, GetUserinfo
+from storage import MongoDbLookupHandler, MongoDbPairwiseLookupHandler, MongoDbMutSigHandler, MongoDbFeaturesByLocationHandler, MongoDbStorageHandler, GetUserinfo
+from analysis import RegulomeExplorerDbQueryHandler
 from oauth import GoogleOAuth2Handler, GoogleSignoutHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -42,6 +43,9 @@ define("authorized_users", default=[], help="List of authorized user emails")
 define("mongo_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_lookup_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_lookup_query_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
+define("mongo_pairwise_lookup_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
+define("case_sensitive_lookups", default=[], help="List of MongoDB lookup database names for which field names will not be lowercased in queries")
+
 
 settings = {
     "debug": True,
@@ -122,7 +126,11 @@ def main():
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
-        (r"/lookups?(.*)", MongoDbLookupHandler)
+        (r"/lookups?(.*)", MongoDbLookupHandler),
+        (r"/mutsig_rankings?(.*)", MongoDbMutSigHandler),
+        (r"/pw_lookups?(.*)", MongoDbMutSigHandler),
+        (r"/features_by_location?(.*)", MongoDbFeaturesByLocationHandler),
+        (r"/RE/query/?(.*)", RegulomeExplorerDbQueryHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()

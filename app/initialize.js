@@ -1,12 +1,24 @@
 $(function () {
     qed = {
+        Events: _.extend(Backbone.Events),
         Models:{
             "Catalogs":require("models/catalog"),
             "Annotations":require("models/annotations"),
             "Mappings":require("models/mappings"),
             "FeatureMatrix":require("models/featureMatrix2"),
+            "FeatureMatrixFromTsv":require("models/featureMatrixFromTsv"),
+            "FeatureMatrixAsTable":require("models/featureMatrix2asTable"),
+            "FeatureMatrix3":require("models/featureMatrix3"),
             "GraphLayouts":require("models/graph_layouts"),
-            "Mutations":require("models/mutations")
+            "Mutations":require("models/mutations_interpro"),
+            "PubcrawlNetwork":require("models/pubcrawlNetwork"),
+            "PubcrawlLit": require("models/pubcrawlLit"),
+            "MiniGraph": require("models/minigraph"),
+            "Default":Backbone.Model.extend({
+                url: function() {
+                    return this.get("data_uri");
+                }
+            })
         },
         ViewMappings:{
             "Annotations":[
@@ -14,8 +26,12 @@ $(function () {
             ],
             "FeatureMatrix":[
                 { "id":"grid", label:"Grid" },
-                { "id":"heat", label:"Heatmap" },
+                { "id":"stacksvis", label:"Stacks" },
                 { "id":"xfeaturegrid", label:"Cross-Feature Summary" }
+            ],
+            "FeatureMatrixAsTable":[
+                { "id":"grid", label:"Grid" },
+                { "id":"stacksvis", label:"Stacks" }
             ],
             "GraphLayouts":[
                 { "id":"circ", label:"CircVis" },
@@ -24,25 +40,47 @@ $(function () {
             ],
             "Mutations": [
                 { "id":"seqpeek", label:"Mutation Viewer" }
+            ],
+            "MiniGraph": [
+                { "id": "minigraph", label: "MiniGraph" }
             ]
         },
         Views:{
-            "grid":require("views/grid_view"),
+            "grid":require("views/items_grid_view"),
             "circ":require("views/circvis_view"),
-            "heat":require("views/oncovis_view"),
+            "stacksvis":require("views/stacksvis_container"),
+            "stacksvis2":require("views/stacksvis_simpler"),
             "graph":require("views/graphtree_view"),
             "pwpv":require("views/pwpv_view"),
             "twoD":require("views/2D_Distribution_view"),
             "kde":null,
             "parcoords":require("views/parcoords_view"),
             "seqpeek":require("views/seqpeek_view"),
-            "xfeaturegrid": require("views/xfeaturegrid")
+            "xfeaturegrid": require("views/xfeaturegrid"),
+            "xfeaturegrid_small": require("views/xfeaturegrid_small"),
+            "mutsig_grid": require("views/mutsig_grid_view"),
+            "mutsig_top_genes": require("views/mutsig_top_genes_view"),
+            "scatterplot": require("views/scatterplot_view"),
+            "linear_browser": require("views/linear_browser"),
+            "datatable": require("views/datatable_view"),
+            "pubcrawl_network": require("views/pubcrawl_network"),
+            "pubcrawl_lit": require("views/pubcrawl_lit"),
+            "items_grid": require("views/items_grid_view"),
+            "minigraph": require("views/minigraph"),
+            "Atlas": require("views/atlas"),
+            "atlas_maptext": require("views/atlas_maptext_view"),
+            "atlas_quick_tutorial": require("views/atlas_quick_tutorial")
         },
         Lookups:{
             Labels:{}
         },
         Display:new Backbone.Model(),
-        Datamodel:new Backbone.Model()
+        Datamodel:new Backbone.Model(),
+        Sessions: {
+            All: null,
+            Active: null,
+            Producers: {}
+        }
     };
 
     qed.Display.fetch({
@@ -53,10 +91,21 @@ $(function () {
     });
 
     var startupUI = function() {
-        var QEDRouter = require('lib/router');
-        qed.Router = new QEDRouter();
-        qed.Router.initTopNavBar();
-        Backbone.history.start();
+        $.ajax({
+            "url": "svc/storage/sessions",
+            "method": "GET",
+            "success": function(json) {
+                var SessionsCollection = require("models/sessions");
+                qed.Sessions.All = new SessionsCollection(json.items);
+
+                var QEDRouter = require('lib/router');
+                qed.Router = new QEDRouter();
+                qed.Router.initTopNavBar();
+
+                Backbone.history.start();
+                qed.Events.trigger("ready");
+            }
+        });
     };
 
     qed.Datamodel.fetch({
@@ -101,5 +150,25 @@ $(function () {
             });
         }
         return qed.Annotations[dataset_id];
+    };
+    qed.FetchAnnotationsByUri = function (uri) {
+        if (_.isEmpty(qed.Annotations[uri])) {
+
+            var Model = Backbone.Model.extend({
+                url:function () {
+                    return "svc/" + uri + "/annotations.json";
+                }
+            });
+
+            var annotations = new Model();
+            annotations.fetch({
+                "async":false,
+                "dataType":"json",
+                "success":function () {
+                    qed.Annotations[uri] = annotations.attributes;
+                }
+            });
+        }
+        return qed.Annotations[uri];
     };
 });

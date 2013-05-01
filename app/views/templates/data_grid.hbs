@@ -1,0 +1,20 @@
+<table class="table table-striped table-bordered table-hover table-condensed">
+    <thead>
+    <tr class="{{header_cls}}">
+        <td>&nbsp;</td>
+        {{#each headers}}
+        <td>{{id}}</td>
+        {{/each}}
+    </tr>
+    </thead>
+    <tbody>
+    {{#each rows}}
+    <tr>
+        <td class="{{label_cls}}">{{label}}</td>
+        {{#each values}}
+            <td class="{{cell_cls}}">{{cell_value}}</td>
+        {{/each}}
+    </tr>
+    {{/each}}
+    </tbody>
+</table>

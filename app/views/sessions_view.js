@@ -1,100 +1,71 @@
-var View = require('./view');
-var template = require("./templates/sessions_menu");
-var SessionsLineItem = require("./templates/sessions_list_item");
+var LineItemTemplate = require("../views/templates/line_item");
+var SessionLabelTemplate = require("../views/templates/sessions_label");
 
-module.exports = View.extend({
-    template: template,
-    events: {
-        "click .new-session": "newSession",
-        "click .open-session": "openSession",
-        "click .save-session": "saveSession"
-    },
+module.exports = Backbone.View.extend({
 
     initialize:function () {
-        _.bindAll(this, 'loadSessionById', 'loadSession', 'newSession', 'openSession', 'saveSession');
-    },
+        _.bindAll(this, "loadSession", "loadSessions", "saveNewSession", "saveSession", "getProducerAttributes");
 
-    afterRender:function () {
-        this.loadSessionById(localStorage.getItem("session_id"));
+        $(document.body).append(SessionLabelTemplate());
 
-        $.ajax({
-            url: "svc/storage/sessions",
-            type: "GET",
-            dataType: "json",
-            context: this,
-            success: function(json) {
-                if (json && json.items) {
-                    _.each(json.items, function(item) {
-                        if (!item.label) item.label = "Untitled";
-                        this.$el.append(SessionsLineItem( item ));
-                    }, this);
-                    
-                    this.$el.find(".load-session").click(this.loadSession);
-                }
-            }
+        $("a.new-session").live("click", function () {
+            $(".sessions-labeler").modal("show");
         });
+
+        $(".sessions-labeler button.save-new-session").click(this.saveNewSession);
+        $("a.load-session").live("click", this.loadSession);
+        $("a.save-session").live("click", this.saveSession);
+
+        qed.Sessions.All.on("add", this.loadSessions);
+        this.loadSessions();
     },
 
-    newSession: function(e) {
-        e.preventDefault();
-
-        console.log("TODO : Implement dialog to enter session label");
-        console.log("TODO : Clear local storage of session information, create new session");
+    loadSessions:function () {
+        this.$el.empty();
+        _.each(qed.Sessions.All.models, function (item) {
+            this.$el.append(LineItemTemplate({ "a_class":"load-session", "id":item.get("id"), "label": item.get("label") }));
+        }, this);
     },
 
-    openSession: function(e) {
-        e.preventDefault();
-
-        console.log("TODO : Implement modal to list all sessions");
-    },
-
-    loadSession: function(e) {
-        if (e.preventDefault) e.preventDefault();
-        this.loadSessionById($(e.target).data()["id"]);
-    },
-
-    loadSessionById: function(sessionId) {
+    loadSession:function (e) {
+        var sessionId = $(e.target).data("id");
         if (sessionId) {
-            $.ajax({
-                url: "svc/storage/sessions/" + sessionId,
-                type: "GET",
-                dataType: "json",
-                success: function(json) {
-                    localStorage.setItem("session_id", sessionId);
-                    if (json) {
-                        _.each(_.without(_.without(_.keys(json), "id"), "label"), function(key) {
-                            localStorage.setItem(key, json[key]);
-                        });
-                    }
-                }
-            });
+            $("a.save-session").parent().removeClass("disabled");
+            $("a.save-session").data("id", sessionId);
+            this.$el.find("i").removeClass("icon-ok");
+            $(e.target).find("i").addClass("icon-ok");
+            qed.Router.navigate("#s/" + sessionId, {trigger:true});
         }
     },
 
-    saveSession: function(e) {
-        e.preventDefault();
+    saveNewSession:function () {
+        var label = $(".sessions-labeler").find(".session-label").val();
+        $(".sessions-labeler").modal("hide");
+        
+        this.$el.find("i").removeClass("icon-ok");
 
-        var data = {};
-        var storage_keys = _.without(_.without(_.keys(localStorage), "session_id"), "session_label");
-        _.each(storage_keys, function(key) {
-            data[key] = localStorage.getItem(key);
-        });
+        var newSession = _.extend(this.getProducerAttributes(), { "label":label.trim(), "route":Backbone.history.fragment });
+        qed.Sessions.All.create(newSession, {wait: true});
+    },
 
-        var label = localStorage.getItem("session_label");
-        data["label"] = (label) ? label : "Untitled Session";
-        // TODO : Capture session label...
+    saveSession:function (e) {
+        var sessionId = $(e.target).data("id");
+        if (sessionId) {
+            var session = qed.Sessions.All.get(sessionId);
+            if (session) {
+                session.save(_.extend(this.getProducerAttributes(), { "route":Backbone.history.fragment }));
+            }
+        }
+    },
 
-        var sessionId = localStorage.getItem("session_id");
-        var url = (sessionId) ? "svc/storage/sessions/" + sessionId : "svc/storage/sessions";
-
-        $.ajax({
-            url: url,
-            type: "POST",
-            data: data,
-            dataType: "json",
-            success: function(json) {
-                localStorage.setItem("session_id", json.id);
+    getProducerAttributes:function () {
+        var producer_attributes = {};
+        _.each(qed.Sessions.Producers, function (producer, key) {
+            var currentState = producer.currentState();
+            if (currentState) {
+                producer_attributes[key] = currentState;
             }
         });
+        return producer_attributes;
     }
 });

@@ -1,0 +1,12 @@
+{{#each data}}
+    <table class="table table-bordered table-condensed">
+        <caption>{{label}}</caption>
+        {{#each data}}
+        <tr>
+            {{#each row}}
+            <td style="background-color: {{color}}; width: 2px; height: 2px;">&nbsp;</td>
+            {{/each}}
+        </tr>
+        {{/each}}
+    </table>
+{{/each}}
