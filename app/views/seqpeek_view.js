@@ -1,48 +1,46 @@
-var Template = require('./templates/seqpeek');
+var Template = require("./templates/seqpeek");
 var LineItemTemplate = require("./templates/line_item");
 
 module.exports = Backbone.View.extend({
+    genes: [],
     cancers: [],
     current_subtypes: [],
     hideSelector: false,
 
     initialize: function (options) {
         _.extend(this, options);
-        _.bindAll(this, 'initControls', 'initGraph', 'initCancerSelector', 'updateGraph', 'reloadModel', 'setContainerSize');
+        _.bindAll(this, "initGeneSelector", "initGraph", "initCancerSelector", "reloadModel", "setContainerSize");
 
         this.reloadModel = _.throttle(this.reloadModel, 1000);
-
-        var that = this,
-            firstVisUpdate = _.once(this.initGraph),
-            restVisUpdate = _.after(2, this.updateGraph);
-
-        // Create a function that updates the visualization.
-        // When called for the first time, it sets up the SVG element and renders the data.
-        // On subsequent calls, it only re-renders.
-        var updateFn = function() {
-            firstVisUpdate();
-            restVisUpdate();
-
-            that.setContainerSize();
-        };
 
         if (!this.hideSelector) {
             $.ajax({ url:"svc/data/lookups/cancers", type:"GET", dataType:"text", success:this.initCancerSelector });
         }
 
-        if (this.genes) {
+        if (!_.isEmpty(this.genes)) {
             this.current_gene = this.genes[0];
         }
 
-        this.model.on("load", updateFn);
+        this.initGeneSelector();
 
-        this.$el.html(Template({ "title": this.current_gene }));
-
-        this.initControls();
+        this.model.on("load", this.initGraph);
+        this.model.on("load", this.setContainerSize);
     },
 
-    initControls: function () {
+    initGeneSelector: function () {
+        this.$el.html(Template({ "selected_gene": this.current_gene }));
 
+        var UL = this.$el.find(".seqpeek-gene-selector").empty();
+        _.each(_.without(this.genes, this.current_gene), function(gene) {
+            UL.append(LineItemTemplate({ "label":gene, "id":gene }));
+        }, this);
+
+        var _this = this;
+        UL.find("li a").click(function(e) {
+            _this.current_gene = $(e.target).data("id");
+            _.defer(_this.reloadModel);
+            _.defer(_this.initGeneSelector);
+        });
     },
 
     initCancerSelector: function(txt) {
@@ -76,6 +74,10 @@ module.exports = Backbone.View.extend({
             }));
         }
 
+        if (_.isEmpty(this.current_subtypes)) {
+            this.current_subtypes = this.options.cancers;
+        }
+
         var mutModel = this.model;
         mutModel.fetch({
             "data": {
@@ -90,10 +92,8 @@ module.exports = Backbone.View.extend({
     },
 
     initGraph: function () {
-        if (!this.current_gene) {
-            return;
-        }
-        
+        if (!this.current_gene) return;
+
         var data = this.model.get("data");
 
         // Hide protein scale and domains in all but the last subtype
@@ -120,21 +120,21 @@ module.exports = Backbone.View.extend({
             protein_scale_width: 1000,
             protein_scale_y: 40,
             protein_vertical_padding: 10,
-            protein_domain_key: 'dbname',
+            protein_domain_key: "dbname",
             signature_height: 10,
             enable_transitions: false,
             enable_mutation_stems: true,
-            mutation_layout: 'all_subtypes',
+            mutation_layout: "all_subtypes",
             mutation_stem_height: 15,
             mutation_stem_stroke_width: 0.5,
             mutation_shape_width: 2,
             mutation_group_padding: 0,
             mutation_colors: {
-                Nonsense_Mutation: 'red',
-                Silent: 'green',
-                Frame_Shift_Del: 'gold',
-                Frame_Shift_Ins: 'gold',
-                Missense_Mutation: 'blue'
+                Nonsense_Mutation: "red",
+                Silent: "green",
+                Frame_Shift_Del: "gold",
+                Frame_Shift_Ins: "gold",
+                Missense_Mutation: "blue"
             },
             plot: {
                 horizontal_padding: 0,
@@ -146,51 +146,8 @@ module.exports = Backbone.View.extend({
         this.$el.find(".seqpeek-container").seqpeek(data, options);
     },
 
-    updateGraph: function() {
-        var data = this.model.get("data");
-
-        var postProcessFn = function(subtypes) {
-            _.chain(subtypes)
-                .initial()
-                .each(function(s) {
-                    s.layout = {
-                        protein_scale_line: {
-                            enabled: true,
-                            y: 0
-                        },
-                        protein_scale_ticks: {
-                            enabled: false,
-                            y: 0
-                        },
-                        protein_domains: {
-                            enabled: false
-                        }
-                    };
-                });
-
-            _.last(subtypes).layout = {
-                protein_scale_line: {
-                    enabled: true,
-                    y: 0
-                },
-                protein_scale_ticks: {
-                    enabled: true,
-                    y: 0
-                },
-                protein_domains: {
-                    enabled: true
-                }
-            }
-        };
-
-        this.$el.find(".seqpeek-container").seqpeek('change_subtypes', data.cancer_subtypes, {
-            "subtype_order": this.current_subtypes,
-            "post_process_fn": postProcessFn
-        });
-    },
-
     setContainerSize: function() {
         var size = this.$el.find(".seqpeek-container").seqpeek("get_size");
-        this.$el.find(".seqpeek-container").css("width", size.width).css("height", size.height + 2.0);
+        this.$el.find(".seqpeek-container").css("width", size.width).css("height", size.height + 20);
     }
 });
