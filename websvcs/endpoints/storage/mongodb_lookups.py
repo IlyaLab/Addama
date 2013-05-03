@@ -41,7 +41,7 @@ class MongoDbLookupHandler(tornado.web.RequestHandler):
                 break
 
             json_item = self.jsonable_item(item)
-            json_item["uri"] = self.request.uri + "/" + json_item["id"]
+            #json_item["uri"] = self.request.uri + "/" + json_item["id"]
             json_items.append(json_item)
 
         if self.get_argument("output", "json") == "tsv":
