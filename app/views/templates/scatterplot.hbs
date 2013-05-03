@@ -17,16 +17,16 @@
         visibility: hidden;
     }
 
-    .y.axis path, .y.axis line{
-        stroke:#aaa;
+    .y.axis path, .y.axis line {
+        stroke: #aaa;
     }
 
     .x.axis path, .x.axis line {
-        stroke:none;
+        stroke: none;
     }
 
     .axis_label, .ticks {
-        font-size:16px;
+        font-size: 16px;
     }
 
     .data_totals {
@@ -38,42 +38,38 @@
         font-weight: bold;
     }
 
-    .scatterplot-vis {
-        height: 400px;
-    }
-
     .splitiscope {
-        width: 500px;
-        height: 375px;
+        width: 540px;
+        height: 405px;
     }
 </style>
 
-<div class="container scatterplot-vis">
+<div class="container">
+    <ul class="nav nav-pills cancer-selector-scatterplot"></ul>
     <div class="row">
-        <div class="span3 offset3 dropdown">
-            <input class="input-small genes-typeahead-x" type="text" placeholder="Type a gene name (x-axis) ...">
+        <div class="span6 scatterplot-controls well">
+            <div class="row">
+                <div class="span3">
+                    <div class="input-prepend">
+                        <span class="add-on">x-axis</span>
+                        <input class="input-small genes-typeahead-x span2" type="text" placeholder="Type a gene name (x-axis) ...">
+                    </div>
+                    <ul class="unstyled feature-selector-x pre-scrollable">Loading features...</ul>
+                </div>
+                <div class="span3">
+                    <div class="input-prepend">
+                        <span class="add-on">y-axis</span>
+                        <input class="input-small genes-typeahead-y span2" type="text" placeholder="Type a gene name (y-axis) ...">
+                    </div>
+                    <ul class="unstyled feature-selector-y pre-scrollable">Loading features...</ul>
+                </div>
+            </div>
         </div>
-        <div class="span3 dropdown">
-            <input class="input-small genes-typeahead-y" type="text" placeholder="Type a gene name (y-axis) ...">
-        </div>
-        <div class="span3 download-container"></div>
-    </div>
-    <div class="row">
-        <div class="span3 offset3 dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">X-Axis Features <b class="caret"></b></a>
-            <ul class="dropdown-menu feature-selector-x"></ul>
-        </div>
-        <div class="span3 dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="return false;">Y-Axis Features <b class="caret"></b></a>
-            <ul class="dropdown-menu feature-selector-y"></ul>
-        </div>
-    </div>
-    <div class="row">
-        <div class="span1">
-            <ul class="nav nav-list cancer-selector-scatterplot"></ul>
-        </div>
-        <div class="span6 offset4">
-            <div class="scatterplot-container"></div>
+        <div class="span5">
+            <div class="scatterplot-container">Loading data...</div>
+            <div class="download-container"></div>
         </div>
     </div>
+    <a href="#" class="hide-controls hide" onclick="return false;">show axis control</a>
+    <a href="#" class="hide-controls" onclick="return false;">hide axis control</a>
 </div>

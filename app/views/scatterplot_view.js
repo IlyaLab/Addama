@@ -7,6 +7,13 @@ module.exports = Backbone.View.extend({
     selected_genes: { "x": "TP53", "y": "KRAS" },
     selected_features: { "x": null, "y": null },
 
+    events: {
+        "click .hide-controls": function() {
+            this.$el.find(".hide-controls").toggle("hide");
+            this.$el.find(".scatterplot-controls").toggle("puff", { "duration": 500 });
+        }
+    },
+
     initialize: function (options) {
         _.extend(this, options);
         _.bindAll(this, "initCancerSelector", "initGeneTypeaheads", "drawGraph", "selectedFeatureData");
@@ -115,11 +122,22 @@ module.exports = Backbone.View.extend({
             UL.empty();
 
             var selected_gene = this.selected_genes[axis];
+            var selected_cancer = this.current_cancer.toLowerCase();
             var selected_features = _.filter(this.model.get("items"), function (feature) {
-                return (feature.id.indexOf(selected_gene) >= 0);
+                return (feature.id.indexOf(selected_gene) >= 0) && _.isEqual(selected_cancer, feature.cancer);
             });
-            _.each(selected_features, function (feature) {
-                UL.append(LineItemTemplate({ "label": feature.id, "id": feature.id, "a_class": "selector" }));
+            _.each(_.groupBy(selected_features, "source"), function(features, source) {
+                if (features.length == 1) {
+                    var feature = _.first(features);
+                    var label = (feature.modifier) ? " (" + feature.modifier + ")": "";
+                    UL.append(LineItemTemplate({ "label": source.toUpperCase() + label, "id": feature.id, "a_class": "selector" }));
+                }
+                if (features.length > 1) {
+                    UL.append(source.toUpperCase());
+                    _.each(features, function(feature) {
+                        UL.append(LineItemTemplate({ "label": "- " + feature.modifier, "id": feature.id, "a_class": "selector" }));
+                    });
+                }
             });
 
             if (!_.isEmpty(selected_features)) {
