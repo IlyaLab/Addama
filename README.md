@@ -1,9 +1,19 @@
-GeneSpot
+http://GeneSpot.org
 ====
-This tool provides a way to view TCGA data from a gene-centric point-of-view. It includes a number of interactive visualizations, and allows the user to save their current exploration. This application also enables the user to select specific cancers and genes of interest, and load data that is generated from a variety of TCGA analysis.
+This software tool for systems biology provides a way to view TCGA data from a gene-centric point-of-view. It includes a number of interactive visualizations, and allows the user to save their current exploration. This application also enables the user to select specific cancers and genes of interest, and load data that is generated from a variety of TCGA analysis.
 
-------
+All software is presented AS IS to the general community.  Our priority is to continuously improve the software to serve research in systems biology and computational biology. 
 
+
+Acknowledgements
+=====
+This project hosts software developed to support the TCGA Genomic Data Analysis Center (GDAC) at the Institute for Systems Biology (ISB).  Visit our project website at http://cancerregulome.org.
+
+For more information, please contact codefor@systemsbiology.org or info@csacr.org.
+
+
+Developer Instructions
+=====
 Operating System Support:
   - The example commands in this file are directed at Linux and Mac OS X users.  However, it should be expected (unless otherwise noted) that these dependencies would be supported in any operating system supporting Python 2.6~2.7.
 
