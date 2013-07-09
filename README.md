@@ -1,7 +1,7 @@
 OAuth Enabled Web Services
 ================
 
-This Web Services module is meant to standardize the deployment of web services in the Cancer Regulome project.  It
+This module is meant to standardize the deployment of web services in the Cancer Regulome project.  It
 allows our team to reduce development and maintainance time, and supports rapid prototyping.
 
 > **Operating System Support**
@@ -52,26 +52,16 @@ sudo python setup.py install
 # Application Configuration #
 > Configuration files **SHOULD NOT** be checked-in to individual project repositories.
 
-This template specifies the following configuration files (see examples in **examples**):
+This template specifies a configuration file (see **examples**):
 
-## proxy.json ##
-  * Location: **app_root/examples**
-  * Provides information to npm dev server
-  * Configures remote and local proxies to web services
-
-## ningx.conf ##
-  * Location: **nginx_root**
-  * Provides information to NGINX web server
-  * Configures remote and local proxies to web services
-
-## tornado.config ##
+## svc.config ##
   * Location: specified at command-line
 
 ```bash
 cd $WEBAPP_ROOT
-python websvcs/tornadoapp.py --config_file=/local/path/to/tornado.config
+python svc.py --config_file=/local/path/to/svc.config
 ```
-  * Provides information to tornado services running within tornado
+  * Provides configuration information to services running within tornado
 
 | Property | Description | Example |
 | --- | --- | --- |
