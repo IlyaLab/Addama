@@ -40,6 +40,8 @@ sudo python setup.py install
 
 * Google OAUTH2 API - https://developers.google.com/api-client-library/python/start/installation
 
+> Obtain information and API access keys from https://code.google.com/apis/console/
+
 ```
 [sudo] easy_install --upgrade google-api-python-client
 ```
@@ -49,19 +51,17 @@ sudo python setup.py install
 ```
 [sudo] easy_install -U pymongo
 ```
-# Application Configuration #
+# Configuration #
+> Location specified at command-line
+
+> Provides configuration information to services running within tornado
+
 > Configuration files **SHOULD NOT** be checked-in to individual project repositories.
-
-This template specifies a configuration file (see **examples**):
-
-## svc.config ##
-  * Location: specified at command-line
 
 ```bash
 cd $WEBAPP_ROOT
 python svc.py --config_file=/local/path/to/svc.config
 ```
-  * Provides configuration information to services running within tornado
 
 | Property | Description | Example |
 | --- | --- | --- |
@@ -73,8 +73,6 @@ python svc.py --config_file=/local/path/to/svc.config
 | mongo_storage_uri | Connection string for mongo database used to store application data (e.g. sessions) | mongodb://localhost:3030 |
 | mongo_queries_uri | Connection string for mongo database used to store domain data (e.g. Feature Matrices) | mongodb://hostname:3030 |
 | mongo_rows_limit | Limits the number of rows to return per query | 1000 |
-
-> Google OAUTH2 APIs - obtain information and API access keys from https://code.google.com/apis/console/
 
 # Initial Dev Setup #
 1. Clone this repository (or use git modules)
