@@ -71,7 +71,7 @@ python svc.py --config_file=/local/path/to/svc.config
 | client_host | **OAUTH2** redirect address | http://example.org:3333 |
 | authorized_users | Simple mechanism to limit access to the application | ["user@example.com","example@gmail.com"]
 | mongo_storage_uri | Connection string for mongo database used to store application data (e.g. sessions) | mongodb://localhost:3030 |
-| mongo_queries_uri | Connection string for mongo database used to store domain data (e.g. Feature Matrices) | mongodb://hostname:3030 |
+| mongo_datastore_uri | Connection string for mongo database used to store domain data (e.g. Feature Matrices) | mongodb://hostname:3030 |
 | mongo_rows_limit | Limits the number of rows to return per query | 1000 |
 
 # Initial Dev Setup #

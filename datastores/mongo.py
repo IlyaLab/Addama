@@ -52,7 +52,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
     def open_collection(self, db_name, collection_name):
         if options.verbose: logging.info("open_collection(%s)" % collection_name)
 
-        connection = pymongo.Connection(options.mongo_queries_uri)
+        connection = pymongo.Connection(options.mongo_datastore_uri)
         database = connection[db_name]
         return database[collection_name]
 
