@@ -20,6 +20,11 @@ brew install mongodb
 # Python Dependencies #
 * Python 2.7 - http://www.python.org/download/releases/
 
+* Git Python
+```bash
+[sudo] easy_install gitpython
+```
+
 * Tornado Web
   * http://www.tornadoweb.org/
   * https://github.com/downloads/facebook/tornado/tornado-2.4.1.tar.gz

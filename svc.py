@@ -32,6 +32,7 @@ from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler, GetUserinfo
+from scc.github import GitWebHookHandler
 
 define("data_path", default="../..", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
@@ -44,6 +45,9 @@ define("mongo_storage_uri", default="mongodb://localhost:27017", help="MongoDB U
 define("mongo_datastore_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_rows_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
 define("case_sensitive_lookups", default=[], help="List of database names to apply case sensitive lookups")
+define("github_branches_api", help="Link to repository branches api url (see examples/svc.config)")
+define("github_project_root", help="Local path to main repository branch")
+define("github_branches_root", help="Local path to top-level branches directory")
 
 
 settings = {
@@ -116,7 +120,8 @@ def main():
         (r"/auth/providers", AuthProvidersHandler),
         (r"/data?(.*)", LocalFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
-        (r"/datastores?(.*)", MongoDbQueryHandler)
+        (r"/datastores?(.*)", MongoDbQueryHandler),
+        (r"/gitWebHook?(.*)", GitWebHookHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
