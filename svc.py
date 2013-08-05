@@ -45,9 +45,12 @@ define("mongo_storage_uri", default="mongodb://localhost:27017", help="MongoDB U
 define("mongo_datastore_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_rows_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
 define("case_sensitive_lookups", default=[], help="List of database names to apply case sensitive lookups")
+define("github_repo_url", help="Link to repository branches api url (see examples/svc.config)")
+define("github_repo_api_url", help="Link to repository api url (see examples/svc.config)")
 define("github_branches_api", help="Link to repository branches api url (see examples/svc.config)")
 define("github_project_root", help="Local path to main repository branch")
 define("github_branches_root", help="Local path to top-level branches directory")
+define("github_postproc_cmd", help="Command-line to execute after checkout")
 
 
 settings = {
@@ -110,6 +113,15 @@ def main():
 
     if not options.config_file is None:
         logging.info("--config_file=%s" % options.config_file)
+
+    if not options.github_branches_api is None:
+        logging.info("--github_repo_url=%s" % options.github_repo_url)
+        logging.info("--github_repo_api_url=%s" % options.github_repo_api_url)
+        logging.info("--github_branches_api=%s" % options.github_branches_api)
+        logging.info("--github_project_root=%s" % options.github_project_root)
+        logging.info("--github_branches_root=%s" % options.github_branches_root)
+        logging.info("--github_postproc_cmd=%s" % options.github_postproc_cmd)
+        logging.info("Starting GitHub Web Hook at http://localhost:%s/gitWebHook" % options.port)
 
     application = tornado.web.Application([
         (r"/", MainHandler),

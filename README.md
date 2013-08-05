@@ -84,3 +84,19 @@ python svc.py --config_file=/local/path/to/svc.config
 2. Install Required Dependencies (see above, link)
 3. Start tornado web services ```python svc.py --config_file=/local/path/to/svc.config'```
 4. Open browser at http://localhost:8000
+
+----
+
+# GitHub WebHook Setup #
+To configure this service to automatically provide a WebHook to GitHub for automated deployment, add these properties to `svc.config`:
+
+| Property | Description | Example |
+| --- | --- | --- |
+| github_repo_url | Repository clone url | https://github.com/cancerregulome/OAuthWebServices.git |
+| github_repo_api_url | Repository API url | https://api.github.com/repos/cancerregulome/OAuthWebServices |
+| github_branches_api | URL listing branches to auto-deploy | http://api.github.com/repos/cancerregulome/OAuthWebServices/branches |
+| github_project_root | Path to project location | /local/temp/github/MyApp/webapp |
+| github_branches_root | Path to branches location | /local/temp/github/MyApp/branches |
+| github_postproc_cmd | Post-processing command on repository | grunt build |
+
+WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively from GitHub.com servers.
