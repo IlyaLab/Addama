@@ -92,11 +92,9 @@ To configure this service to automatically provide a WebHook to GitHub for autom
 
 | Property | Description | Example |
 | --- | --- | --- |
-| github_repo_url | Repository clone url | https://github.com/cancerregulome/OAuthWebServices.git |
 | github_repo_api_url | Repository API url | https://api.github.com/repos/cancerregulome/OAuthWebServices |
-| github_branches_api | URL listing branches to auto-deploy | http://api.github.com/repos/cancerregulome/OAuthWebServices/branches |
-| github_project_root | Path to project location | /local/temp/github/MyApp/webapp |
+| github_project_root | Path to project location | /local/temp/github/MyApp/tip |
 | github_branches_root | Path to branches location | /local/temp/github/MyApp/branches |
 | github_postproc_cmd | Post-processing command on repository | grunt build |
 
-WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively from GitHub.com servers.
+WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively from GitHub.com Public IP addresses: 204.232.175.64/27, 192.30.252.0/22.
