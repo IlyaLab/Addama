@@ -13,7 +13,6 @@ class GitWebHookHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.post(args, kwargs)
         
-    # TODO: Create/update branches/index.html
     def post(self, *args, **kwargs):
         logging.info("WebHook: post() called by [%s]" % self.request.remote_ip)
         if self.request.remote_ip not in PERMITTED_IPS:
@@ -31,12 +30,19 @@ class GitWebHookHandler(tornado.web.RequestHandler):
         branches_url = repository["branches_url"].replace("{/branch}", "")
         response = http_client.fetch(branches_url)
         branches = json.loads(response.body)
+
+        write_branches = []
         for i, branch in enumerate(branches):
             branch_name = branch["name"]
             if not branch_name == "master":
                 deploy_path = os.path.join(options.github_branches_root, branch_name)
                 logging.info("WebHook: deploying branch [%s] to [%s]" % (branch_name, deploy_path))
                 self.pull(clone_url, deploy_path, branch_name)
+
+                write_branches.append({ "name": branch_name, "label": branch_name })
+
+        if not options.github_branches_json_path is None:
+            json.dump(write_branches, open(os.path.join(options.github_branches_json_path, "branches.json"), "w"))
 
     def pull(self, clone_url, repo_path, branch_name):
         logging.info("WebHook: pull(%s,%s)"%(repo_path, branch_name))

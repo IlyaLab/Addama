@@ -50,6 +50,7 @@ define("github_project_root", help="Local path to main repository branch")
 define("github_branches_root", help="Local path to top-level branches directory")
 define("github_postproc_cmd", help="Command-line to execute after checkout")
 define("github_git_cmd", help="Path to git executable", default="git")
+define("github_branches_json_path", help="Path to publish branches json", default=".")
 
 settings = {
     "debug": True,
@@ -118,6 +119,7 @@ def main():
         logging.info("--github_branches_root=%s" % options.github_branches_root)
         logging.info("--github_postproc_cmd=%s" % options.github_postproc_cmd)
         logging.info("--github_git_cmd=%s" % options.github_git_cmd)
+        logging.info("--github_branches_json_path=%s" % options.github_branches_json_path)
         logging.info("Starting GitHub Web Hook at http://localhost:%s/gitWebHook" % options.port)
 
     application = tornado.web.Application([
