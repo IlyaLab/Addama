@@ -5,14 +5,20 @@ import json
 import os
 from subprocess import call
 
+PERMITTED_IPS = [
+    "127.0.0.1", "204.232.175.64", "192.30.252.0", "204.232.175.64/27", "192.30.252.0/22"
+]
+
 class GitWebHookHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
         self.post(args, kwargs)
         
-    # TODO: Block requests not from these Public IP addresses: 204.232.175.64/27, 192.30.252.0/22
     # TODO: Create/update branches/index.html
     def post(self, *args, **kwargs):
         logging.info("WebHook: post() called by [%s]" % self.request.remote_ip)
+        if self.request.remote_ip not in PERMITTED_IPS:
+            self.set_status(401)
+            return
 
         http_client = tornado.httpclient.HTTPClient()
 
