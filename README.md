@@ -96,5 +96,6 @@ To configure this service to automatically provide a WebHook to GitHub for autom
 | github_project_root | Path to project location | /local/temp/github/MyApp/tip |
 | github_branches_root | Path to branches location | /local/temp/github/MyApp/branches |
 | github_postproc_cmd | Post-processing command on repository | grunt build |
+| github_git_cmd | Path to git command (optional, program assumes `git` is in PATH) | /usr/bin/git |
 
 WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively from GitHub.com Public IP addresses: 204.232.175.64/27, 192.30.252.0/22.

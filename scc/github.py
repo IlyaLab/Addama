@@ -36,16 +36,18 @@ class GitWebHookHandler(tornado.web.RequestHandler):
         logging.info("WebHook: pull(%s,%s)"%(repo_path, branch_name))
 
         start_path = os.path.abspath(os.path.curdir)
+        GIT = options.github_git_cmd
+
         try:
             if not os.path.exists(repo_path):
                 logging.info("WebHook: new repository=%s" % repo_path)
-                logging.info("WebHook: git clone %s %s" % (clone_url, repo_path))
-                call(["git", "clone", clone_url, repo_path])
+                logging.info("WebHook: %s clone %s %s" % (GIT, clone_url, repo_path))
+                call([GIT, "clone", clone_url, repo_path])
 
             os.chdir(repo_path)
-            logging.info("WebHook: git checkout %s to %s" % (branch_name, os.path.abspath(os.path.curdir)))
-            call(["git", "checkout", branch_name])
-            call(["git", "pull"])
+            logging.info("WebHook: %s checkout %s to %s" % (GIT, branch_name, os.path.abspath(os.path.curdir)))
+            call([GIT, "checkout", branch_name])
+            call([GIT, "pull"])
 
             if not options.github_postproc_cmd is None:
                 appendPath = "%s %s" % (options.github_postproc_cmd, repo_path)
