@@ -3,10 +3,11 @@ import tornado.web
 import tornado.httpclient
 import json
 import os
+import fnmatch
 from subprocess import call
 
 PERMITTED_IPS = [
-    "127.0.0.1", "204.232.175.64", "192.30.252.0", "204.232.175.64/27", "192.30.252.0/22"
+    "127.0.0.1", "204.232.175.*", "192.30.252.*"
 ]
 
 class GitWebHookHandler(tornado.web.RequestHandler):
@@ -14,8 +15,8 @@ class GitWebHookHandler(tornado.web.RequestHandler):
         self.post(args, kwargs)
         
     def post(self, *args, **kwargs):
-        logging.info("WebHook: post() called by [%s]" % self.request.remote_ip)
-        if self.request.remote_ip not in PERMITTED_IPS:
+        logging.info("WebHook: post()")
+        if not self.isPermittedIP():
             self.set_status(401)
             return
 
@@ -23,7 +24,7 @@ class GitWebHookHandler(tornado.web.RequestHandler):
 
         response = http_client.fetch(options.github_repo_api_url)
         repository = json.loads(response.body)
-        clone_url = repository["clone_url"]
+        clone_url = repository["clone_url"].replace("https", "http")
 
         self.pull(clone_url, options.github_project_root, "master")
 
@@ -43,6 +44,22 @@ class GitWebHookHandler(tornado.web.RequestHandler):
 
         if not options.github_branches_json_path is None:
             json.dump(write_branches, open(os.path.join(options.github_branches_json_path, "branches.json"), "w"))
+
+    def isPermittedIP(self):        
+        if self.isMatchingIP(self.request.remote_ip): return True
+
+        if "X-Forwarded-For" in self.request.headers:
+            if self.isMatchingIP(self.request.headers["X-Forwarded-For"]): return True
+
+        return False
+
+    def isMatchingIP(self, ip):
+        for permitted in PERMITTED_IPS:
+            match = fnmatch.filter([ip], permitted)
+            if match:
+                logging.info("WebHook: isMatchingIP() [%s, %s, %s]" % (ip, permitted, match))
+                return True
+        return False
 
     def pull(self, clone_url, repo_path, branch_name):
         logging.info("WebHook: pull(%s,%s)"%(repo_path, branch_name))
