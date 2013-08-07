@@ -6,7 +6,7 @@ import sys
 class ConfigurationsFileHandler(tornado.web.RequestHandler):
     def get(self,filepath):
         try:
-            fullpath = os.path.join(options.configurations_path, filepath)
+            fullpath = options.configurations_path + filepath
 
             if os.path.isdir(fullpath):
                 dirs=[]
