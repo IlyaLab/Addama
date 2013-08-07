@@ -70,6 +70,7 @@ python svc.py --config_file=/local/path/to/svc.config
 
 | Property | Description | Example |
 | --- | --- | --- |
+| configurations_path | Directory containing configuration files to be served (e.g. display.json, datamode.json) | /local/webapps/MyWebApp/configurations |
 | data_path | Directory containing data files to be served (e.g. feature matrices, lookups) | /local/webapps/MyWebApp/data |
 | client_id | **OAUTH2** application identifier | 1234567890.apps.googleusercontent.com |
 | client_secret | **OAUTH2** secret key | blwleldIKudk3B7eBldPPsSc15b8 |
@@ -99,4 +100,5 @@ To configure this service to automatically provide a WebHook to GitHub for autom
 | github_git_cmd | Path to git command (optional, program assumes `git` is in PATH) | /usr/bin/git |
 | github_branches_json_path | Path to publish the list of branches | /local/webroot/MyApp/branches |
 
-WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively from GitHub.com Public IP addresses: 204.232.175.64/27, 192.30.252.0/22.
+WebHook will be available at http://example.com/gitWebHook to receive POST requests exclusively GitHub.com Public IP addresses: 204.232.175.*, 192.30.252.*.
+The service also accepts POST requests from localhost (127.0.0.1) for testing purposes.
