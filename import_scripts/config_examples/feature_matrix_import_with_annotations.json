@@ -1,0 +1,14 @@
+{
+    "host": "hostname",
+    "port": 27017,
+    "database": "featurematrix_database",
+    "collection": "fmx_collection",
+    "files": [
+	{
+	    "path": "/path/to/feature_matrix.tsv",
+	    "annotations": {
+		"cancer": "BLCA"
+	    }
+	}
+    ]
+}
