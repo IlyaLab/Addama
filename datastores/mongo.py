@@ -5,13 +5,29 @@ import pymongo
 import csv
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self._datastore_map = {}
+        for datastore_id, uri in options.mongo_datastores:
+            self._datastore_map[datastore_id] = uri
+    
+    def get(self, datastore_name, db_name, collection_name):
+        logging.info("uri=%s [%s] [%s] [%s] [%s]" % (self.request.uri, datastore_name, db_name, collection_name, self.request.arguments))
 
-    def get(self, identity):
-        logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
+        datastore_uri = None
 
-        ids = identity.split("/")
-        db_name = ids[1]
-        collection = self.open_collection(db_name, ids[2])
+        try:
+            datastore_uri = self._datastore_map[datastore_name]
+        except KeyError:
+            logging.info("unknown datastore \'%s\'" % (datastore_name))
+            self.write({"items": {}})
+            self.set_status(200)
+            return
+        
+        collection = None
+        try:
+            collection = self.open_collection(datastore_uri, db_name, collection_name)
+        except pymongo.errors.ConnectionFailure as cfe:
+            raise tornado.web.HTTPError(500, str(cfe))
 
         # TODO : Improve this logic to correctly parse arguments and convert to a proper mongo DB query
         args = self.request.arguments
@@ -29,7 +45,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
                     query[key] = normalize_fn(args[key][0])
                 else:
                     query[key] = {"$in": map(normalize_fn, args[key])}
-
+        
         query_limit = options.mongo_rows_limit
         json_items = []
         for idx, item in enumerate(collection.find(query)):
@@ -49,10 +65,10 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         self.set_status(200)
         return
 
-    def open_collection(self, db_name, collection_name):
+    def open_collection(self, mongo_uri, db_name, collection_name):
         if options.verbose: logging.info("open_collection(%s)" % collection_name)
 
-        connection = pymongo.Connection(options.mongo_datastore_uri)
+        connection = pymongo.Connection(mongo_uri)
         database = connection[db_name]
         return database[collection_name]
 
