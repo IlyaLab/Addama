@@ -100,9 +100,10 @@ def iterate_features(descriptor):
 
             yield feature_object
 
+        print("Finished processing " + file_path)
         info = '{0:10} IDs'.format(len(ids))
         info += ' {0:10} features'.format(count)
-        info += ' {0:10} skipped'.format(skipped)
+        info += ' {0:10} features skipped'.format(skipped)
         print('   ' + info)
 
 
@@ -215,7 +216,7 @@ def main():
     cmd_line_parser.add_argument('--port', required=True, type=int, help='Port')
     cmd_line_parser.add_argument('--db', required=True, help='Database name')
     cmd_line_parser.add_argument('--collection', required=True, help='Collection name')
-    cmd_line_parser.add_argument('TSV', nargs=1, help='Path to configuration feature matrix TSV-file')
+    cmd_line_parser.add_argument('TSV', nargs=1, help='Path to feature matrix TSV-file')
 
     config_file_parser = subparsers.add_parser("from-json", help="Read data import configuration from a JSON-file")
     config_file_parser.add_argument('FILE', nargs=1, help='Path to configuration JSON-file')
