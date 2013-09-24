@@ -1,13 +1,23 @@
 import argparse
 import csv
 import json
-import os
 import pymongo
 import sys
 
+from importtools import ImportConfig
 
-def iterate_tsv_rows(descriptor):
-    file_path = descriptor['path']
+
+TOGGLE_QUIET = False
+DRY_RUN = False
+
+def info_print(msg):
+    global TOGGLE_QUIET
+    if TOGGLE_QUIET is False:
+        print(msg)
+
+
+def iterate_tsv_rows(data_file):
+    file_path = data_file.path
     with open(file_path, 'rb') as csvfile:
         print('Processing ' + file_path)
 
@@ -28,30 +38,15 @@ def iterate_tsv_rows(descriptor):
                 count += 1
             
             except Exception as e:
-                print("   Skipping row")
-                print("      Error: " + str(e))
-                print("      Content: " + str(row))
+                info_print("   Skipping row")
+                info_print("      Error: " + str(e))
+                info_print("      Content: " + str(row))
                 skipped += 1
         
         print("Finished processing " + file_path)
         info = '{0:10} rows inserted,'.format(count)
         info += ' {0:10} row skipped'.format(skipped)
         print('   ' + info)
-
-
-def validate_import_config(config):
-    required_fields = frozenset(['host', 'port', 'database', 'collection', 'files'])
-    
-    for field in required_fields:
-        if field not in config:
-            raise Exception("Required field '" + field + "' is missing")
-
-    for file_desc in config['files']:
-        # The file has to exist
-        file_path = file_desc['path']
-        if not os.path.isfile(file_path):
-            raise Exception("Data file does not exist: " + file_path)
-        file_desc['path'] = os.path.abspath(file_path)
 
 
 def load_config_json(file_path):
@@ -66,30 +61,11 @@ def connect_database(hostname, port):
     return connection
 
 
-def build_file_descriptor(filepath):
-    return {
-        "path": filepath
-    }
-
-
-def build_config(args):
-    return {
-        "host": args.host,
-        "port": args.port,
-        "database": args.db,
-        "collection": args.collection,
-        "files": [
-            build_file_descriptor(args.TSV[0])
-        ]
-    }
-
-
 def run_import(import_config):
-    print("running")
-    host = import_config['host']
-    port = import_config['port']
-    database = import_config['database']
-    collection = import_config['collection']
+    global DRY_RUN
+
+    host = import_config.host
+    port = import_config.port
     
     # Try open connection first, exit in case of failure
     conn = None
@@ -99,43 +75,43 @@ def run_import(import_config):
         print("Failed to connect to database at " + host + ":" + str(port))
         sys.exit(1)
 
-    collection = conn[database][import_config['collection']]
+    collection = conn[import_config.database][import_config.collection]
 
-    for file_info in import_config['files']:
+    for file_info in import_config.files:
         for row_obj in iterate_tsv_rows(file_info):
-            collection.insert(row_obj)
+            if not DRY_RUN:
+                collection.insert(row_obj)
 
     conn.close()
 
 
 def run_from_command_line_args(args):
-    import_config = None
+    run_config = None
 
     try:
-        import_config = build_config(args)
-        validate_import_config(import_config)
+        run_config = ImportConfig.fromargs(args)
     
     except Exception as e:
         print('Error while processing command line arguments: ' + str(e))
         print('Quitting...')
         sys.exit(1)
         
-    run_import(import_config)
+    run_import(run_config)
 
 
 def run_from_config_file(args):
-    import_config = None
+    run_config = None
 
     try:
         import_config = load_config_json(args.FILE[0])
-        validate_import_config(import_config)
+        run_config = ImportConfig.fromdict(import_config)
 
     except Exception as e:
         print('Error while reading import configuration JSON: ' + str(e))
         print('Quitting...')
         sys.exit(1)
         
-    run_import(import_config)
+    run_import(run_config)
 
 
 def main():
@@ -148,14 +124,26 @@ def main():
     cmd_line_parser.add_argument('--port', required=True, type=int, help='Port')
     cmd_line_parser.add_argument('--db', required=True, help='Database name')
     cmd_line_parser.add_argument('--collection', required=True, help='Collection name')
-    cmd_line_parser.add_argument('TSV', nargs=1, help='Path to TSV-file')
+    cmd_line_parser.add_argument('--quiet', required=False, action='store_true', help='If enabled, no printouts are done in case of parsing errors')
+    cmd_line_parser.add_argument('--dry-run', required=False, action='store_true', help='If enabled, no transactions are done to the database')
+    cmd_line_parser.add_argument('FILES', nargs=1, help='Path to TSV-file')
 
     config_file_parser = subparsers.add_parser("from-json", help="Read data import configuration from a JSON-file")
+    config_file_parser.add_argument('--quiet', required=False, action='store_true', help='If enabled, no printouts are done in case of parsing errors')
+    config_file_parser.add_argument('--dry-run', required=False, action='store_true', help='If enabled, no transactions are done to the database')
     config_file_parser.add_argument('FILE', nargs=1, help='Path to configuration JSON-file')
 
     args = mainparser.parse_args()
 
-    if 'TSV' in args:
+    if args.quiet is True:
+        global TOGGLE_QUIET
+        TOGGLE_QUIET = True
+
+    if args.dry_run is True:
+        global DRY_RUN
+        DRY_RUN = True
+    
+    if 'FILES' in args:
         run_from_command_line_args(args)
     else:
         run_from_config_file(args)
