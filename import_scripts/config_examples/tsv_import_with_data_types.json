@@ -1,0 +1,15 @@
+{
+    "host": "hostname",
+    "port": 27017,
+    "database": "database_name",
+    "collection": "collection_name",
+    "files": [
+	{
+	    "path": "/path/to/tab_separated_value_file.tsv",
+	    "field_types": {
+		"year": "int",
+		"distance": "float"
+	    }
+	}
+    ]
+}

@@ -2,7 +2,7 @@ import os
 
 class DataFile(object):
     def __init__(self, path):
-        self.set_path(path)    
+        self.set_path(path)
     
     @classmethod
     def fromdict(cls, filedict):
@@ -32,13 +32,13 @@ class ImportConfig(object):
         host = args.host
         port = args.port
         database = args.db
-        collection = args.collection        
+        collection = args.collection
         files = map(DataFile, args.__getattribute__(file_list_field))
         
         return cls(host, port, database, collection, files)
     
     @classmethod
-    def fromdict(cls, config_dict):
+    def fromdict(cls, config_dict, file_process_fn=DataFile.fromdict):
         required_fields = frozenset(['host', 'port', 'database', 'collection', 'files'])
         
         for field in required_fields:
@@ -49,7 +49,9 @@ class ImportConfig(object):
         port = config_dict['port']
         database = config_dict['database']
         collection = config_dict['collection']
-        files = map(DataFile.fromdict, config_dict['files'])
+        files = None
+
+        files = map(file_process_fn, config_dict['files'])
         
         return cls(host, port, database, collection, files)
 

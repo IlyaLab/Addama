@@ -4,11 +4,45 @@ import json
 import pymongo
 import sys
 
-from importtools import ImportConfig
+from importtools import DataFile, ImportConfig
 
 
 TOGGLE_QUIET = False
 DRY_RUN = False
+
+class TypedTSV(DataFile):
+    def __init__(self, path, field_types=None, defaulttype=str):
+        super(TypedTSV, self).__init__(path)
+
+        self.fields = {}
+        self.defaulttype = defaulttype
+        
+        if field_types is not None:
+            self.set_fields(field_types)
+
+    @classmethod
+    def fromdict(cls, file_dict):
+        return cls(file_dict['path'], file_dict.get("field_types"))
+
+    def get_value(self, field_name, value):
+        if field_name in self.fields:
+            return self.fields[field_name](value)
+        else:
+            return self.defaulttype(value)
+    
+    def set_fields(self, field_types_dict):
+        type_map = {
+            "int": int,
+            "str": str,
+            "float": float
+        }
+    
+        for name, datatype in field_types_dict.iteritems():
+            if datatype in type_map:
+                self.fields[name] = type_map[datatype]
+            else:
+                raise ValueError("Unknown datatype '" + datatype + "' for field '" + name + "'")
+
 
 def info_print(msg):
     global TOGGLE_QUIET
@@ -32,7 +66,7 @@ def iterate_tsv_rows(data_file):
                 for k,v in row.iteritems():
                     if k is None:
                         raise Exception("No key for value " + str(v))
-                    result[k] = v
+                    result[k] = data_file.get_value(k, v)
                 
                 yield result
                 count += 1
@@ -104,7 +138,7 @@ def run_from_config_file(args):
 
     try:
         import_config = load_config_json(args.FILE[0])
-        run_config = ImportConfig.fromdict(import_config)
+        run_config = ImportConfig.fromdict(import_config, file_process_fn=TypedTSV.fromdict)
 
     except Exception as e:
         print('Error while reading import configuration JSON: ' + str(e))
