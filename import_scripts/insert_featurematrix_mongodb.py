@@ -6,6 +6,9 @@ import pymongo
 import sys
 
 
+TOGGLE_QUIET = False
+DRY_RUN = False
+
 def feature_id_extract(feature):
     feature_parts = feature.split(":")
     source = feature_parts[1].lower()
@@ -38,6 +41,12 @@ def feature_id_extract(feature):
         "label": feature_parts[2],
         "modifier": feature_parts[7]
     }
+
+
+def info_print(msg):
+    global TOGGLE_QUIET
+    if TOGGLE_QUIET is False:
+        print(msg)
 
 
 def build_value_dict_categorical(ids, values):
@@ -82,7 +91,7 @@ def iterate_features(descriptor):
             values = row[1:]
 
             if len(values) != len(ids):
-                print('   Skipping feature (' + len(values) + '/' + len(ids) + ')' + feature_id)
+                info_print('   Skipping feature (' + len(values) + '/' + len(ids) + ')' + feature_id)
                 skipped += 1
                 continue
 
@@ -153,7 +162,8 @@ def build_config(args):
 
 
 def run_import(import_config):
-    print("running")
+    global DRY_RUN
+
     host = import_config['host']
     port = import_config['port']
     database = import_config['database']
@@ -171,7 +181,8 @@ def run_import(import_config):
 
     for file_info in import_config['files']:
         for feature_object in iterate_features(file_info):
-            collection.insert(feature_object)
+            if not DRY_RUN:
+                collection.insert(feature_object)
 
     conn.close()
 
@@ -216,12 +227,24 @@ def main():
     cmd_line_parser.add_argument('--port', required=True, type=int, help='Port')
     cmd_line_parser.add_argument('--db', required=True, help='Database name')
     cmd_line_parser.add_argument('--collection', required=True, help='Collection name')
+    cmd_line_parser.add_argument('--quiet', required=False, action='store_true', help='If enabled, no printouts are done in case of parsing errors')
+    cmd_line_parser.add_argument('--dry-run', required=False, action='store_true', help='If enabled, no transactions are done to the database')
     cmd_line_parser.add_argument('TSV', nargs=1, help='Path to feature matrix TSV-file')
 
     config_file_parser = subparsers.add_parser("from-json", help="Read data import configuration from a JSON-file")
+    config_file_parser.add_argument('--quiet', required=False, action='store_true', help='If enabled, no printouts are done in case of parsing errors')
+    config_file_parser.add_argument('--dry-run', required=False, action='store_true', help='If enabled, no transactions are done to the database')
     config_file_parser.add_argument('FILE', nargs=1, help='Path to configuration JSON-file')
 
     args = mainparser.parse_args()
+
+    if args.quiet is True:
+        global TOGGLE_QUIET
+        TOGGLE_QUIET = True
+
+    if args.dry_run is True:
+        global DRY_RUN
+        DRY_RUN = True
 
     if 'TSV' in args:
         run_from_command_line_args(args)
