@@ -1,28 +1,106 @@
-# Main
-/
+# Table Of Contents
+ - [APIs](#apis)
+    - [Main](#apis-main)
+    - [Authentication](#auth)
+        - [Who Am I?](#auth-whoami) 
+        - [Google+ OAUTH2](#google-oauth2)
+    - [Data Management](#data-mgmt)
+        - [Data Files](#data-files)
+        - [Data Stores (aka Databases)](#data-stores)
+        - [Object Storage (using NOSQL key={})](#data-nosql)
+        - [Configurations (app config)](#data-config)
+    - [Github Web Hook](#git-webhook)
+ - [Responses](#apis-responses)
 
-# Authentication Providers
-/auth/providers
+----
 
-/auth/whoami
+<a name="apis"/>
+# APIs
 
-## OAUTH2 Google+
-/auth/signin/google
+<a name="apis-main"/>
+## Main
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| / | GET | ... | ... | ... |
 
-/auth/signout/google
+<a name="auth"/>
+## Authentication
 
-/auth/signin/google/oauth2_callback
+<a name="auth-whoami"/>
+### Who Am I?
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /auth/whoami | GET | ... | ... | ... |
 
-# Datastores
-        (r"/datastores/(.*)/(.*)/(.*)/?", MongoDbQueryHandler),
+### Providers
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /auth/providers | GET | ... | ... | ... |
 
-# Data File Server
-        (r"/data?(.*)", LocalFileHandler),
+<a name="google-oauth2"/>
+### Google+ OAUTH2 
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /auth/signin/google | POST | ... | ... | ... |
+| /auth/signout/google | POST | ... | ... | ... |
+| /auth/signin/google/oauth2_callback | POST | ... | ... | ... |
 
-# App Configuration Files
-        (r"/configurations?(.*)", ConfigurationsFileHandler),
+<a name="data-mgmt"/>
+## Data Management
 
-# Storage
+<a name="data-files"/>
+### Data Files
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /data | GET | ... | ... | ... |
 
-# Automated Code Deployment Web Hook
-/gitWebHook
+<a name="data-stores"/>
+### Data Stores
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /datastores | GET | ... | ... | ... |
+| /datastores/${datastore-id} | GET | ... | ... | ... |
+| /datastores/${datastore-id}/${database-id} | GET | ... | ... | ... |
+| /datastores/${datastore-id}/${database-id}/${collection-id} | GET | ... | ... | ... |
+
+<a name="data-config"/>
+### App Configuration Files
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /configurations | GET | ... | ... | ... |
+| /configurations/{config-file}.json | GET | ... | ... | ... |
+
+<a name="data-nosql"/>
+### User Specific Object Storage (must have auth cookies)
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /storage | GET | ... | ... | ... |
+| /storage/${storage-type} | GET | ... | ... | ... |
+| /storage/${storage-type}/${arbitrary-uri} | GET | ... | ... | ... |
+| /storage/${storage-type}/${arbitrary-uri} | POST | ... | ... | ... |
+| /storage/${storage-type}/${arbitrary-uri}/${db-assigned-id} | GET | ... | ... | ... |
+| /storage/${storage-type}/${arbitrary-uri}/${db-assigned-id} | PUT | ... | ... | ... |
+
+<a name="git-webhook"/>
+## Github Web Hook
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /gitWebHook | POST | ... | ... | ... |
+
+<a name="apis-responses"/>
+## Responses
+
+| Response Codes | Reasons | Headers | Description |
+|:-------------:|-----|:-----:|-----|
+| 200 | ... | ... | ... |
+| 404 | ... | ... | ... |
+| 409 | ... | ... | ... |
+
+## Under construction
+| API | Methods | Usage | Parameters | Description |
+|-----|:-------------:|-----|-----|:-----:|-----|
+| /storage/storage-type/query | GET | ... | ... | ... |
+| /datastores/datastore-id/database-id/mapreduce?specification={} | POST | ... | ... | ... |
+| /datastores/datastore-id/database-id/mapreduce/job-id | GET | ... | ... | ... |
+| /websockets | GET | ... | ... | ... |
+| /websockets/${topic-type}/<topic-id> | GET | ... | ... | ... |
