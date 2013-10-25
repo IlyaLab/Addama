@@ -135,7 +135,7 @@ def main():
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
-        (r"/datastores/(.*)/(.*)/(.*)/?", MongoDbQueryHandler),
+        (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
         (r"/configurations?(.*)", ConfigurationsFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),

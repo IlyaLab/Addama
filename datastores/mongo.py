@@ -10,18 +10,26 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         for datastore_id, uri in options.mongo_datastores:
             self._datastore_map[datastore_id] = uri
     
-    def get(self, datastore_name, db_name, collection_name):
-        logging.info("uri=%s [%s] [%s] [%s] [%s]" % (self.request.uri, datastore_name, db_name, collection_name, self.request.arguments))
+    def get(self, url_parameters):
 
+        logging.info("uri=%s [%s] [%s]" % (self.request.uri, url_parameters, self.request.arguments))
+        
+        # Remove trailing slashes
+        url_parameters =  url_parameters.rstrip('/')
+        
+        split_url = url_parameters.strip().split('/')
+        if len(split_url) != 3:
+            logging.info("invalid URI \'%s\'" % (url_parameters))
+            raise tornado.web.HTTPError(404)
+        
+        datastore_name, db_name, collection_name = split_url
         datastore_uri = None
 
         try:
             datastore_uri = self._datastore_map[datastore_name]
         except KeyError:
             logging.info("unknown datastore \'%s\'" % (datastore_name))
-            self.write({"items": {}})
-            self.set_status(200)
-            return
+            raise tornado.web.HTTPError(404)
         
         collection = None
         try:
