@@ -25,7 +25,7 @@ When using a configuration file, all of the above parameters are passed in in th
 
 Example configuration files can be found in the [config_examples](https://github.com/cancerregulome/OAuthWebServices/tree/master/import_scripts/config_examples) directory.
 
-# Python Dependency
+## Python Dependency
 
 Install with pip:
 
