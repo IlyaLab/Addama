@@ -5,13 +5,37 @@ import pymongo
 import csv
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        self._datastore_map = {}
+        for datastore_id, uri in options.mongo_datastores:
+            self._datastore_map[datastore_id] = uri
+    
+    def get(self, url_parameters):
 
-    def get(self, identity):
-        logging.info("uri=%s [%s] [%s]" % (self.request.uri, identity, self.request.arguments))
+        logging.info("uri=%s [%s] [%s]" % (self.request.uri, url_parameters, self.request.arguments))
+        
+        # Remove trailing slashes
+        url_parameters =  url_parameters.rstrip('/')
+        
+        split_url = url_parameters.strip().split('/')
+        if len(split_url) != 3:
+            logging.info("invalid URI \'%s\'" % (url_parameters))
+            raise tornado.web.HTTPError(404)
+        
+        datastore_name, db_name, collection_name = split_url
+        datastore_uri = None
 
-        ids = identity.split("/")
-        db_name = ids[1]
-        collection = self.open_collection(db_name, ids[2])
+        try:
+            datastore_uri = self._datastore_map[datastore_name]
+        except KeyError:
+            logging.info("unknown datastore \'%s\'" % (datastore_name))
+            raise tornado.web.HTTPError(404)
+        
+        collection = None
+        try:
+            collection = self.open_collection(datastore_uri, db_name, collection_name)
+        except pymongo.errors.ConnectionFailure as cfe:
+            raise tornado.web.HTTPError(500, str(cfe))
 
         # TODO : Improve this logic to correctly parse arguments and convert to a proper mongo DB query
         args = self.request.arguments
@@ -29,7 +53,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
                     query[key] = normalize_fn(args[key][0])
                 else:
                     query[key] = {"$in": map(normalize_fn, args[key])}
-
+        
         query_limit = options.mongo_rows_limit
         json_items = []
         for idx, item in enumerate(collection.find(query)):
@@ -49,10 +73,10 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         self.set_status(200)
         return
 
-    def open_collection(self, db_name, collection_name):
+    def open_collection(self, mongo_uri, db_name, collection_name):
         if options.verbose: logging.info("open_collection(%s)" % collection_name)
 
-        connection = pymongo.Connection(options.mongo_datastore_uri)
+        connection = pymongo.Connection(mongo_uri)
         database = connection[db_name]
         return database[collection_name]
 

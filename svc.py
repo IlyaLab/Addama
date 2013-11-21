@@ -44,7 +44,8 @@ define("client_secret", help="Client Secrets for Google OAuth2")
 define("config_file", help="Path to config file")
 define("authorized_users", default=[], help="List of authorized user emails")
 define("mongo_storage_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
-define("mongo_datastore_uri", default="mongodb://localhost:27018", help="Lookup MongoDB URI in the form mongodb://username:password@hostname:port")
+
+define("mongo_datastores", default=[("ds", "mongodb://localhost:27017")], help="Lookup MongoDB configurations")
 define("mongo_rows_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
 define("case_sensitive_lookups", default=[], help="List of database names to apply case sensitive lookups")
 define("github_repo_api_url", help="Link to repository api url (see examples/svc.config)")
@@ -53,6 +54,8 @@ define("github_branches_root", help="Local path to top-level branches directory"
 define("github_postproc_cmd", help="Command-line to execute after checkout")
 define("github_git_cmd", help="Path to git executable", default="git")
 define("github_branches_json_path", help="Path to publish branches json", default=".")
+
+define("verbose", default=False, type=bool, help="Enable verbose printouts")
 
 settings = {
     "debug": True,
@@ -96,12 +99,13 @@ class AuthProvidersHandler(tornado.web.RequestHandler):
         self.write({"providers": [ google_provider ] })
         self.set_status(200)
 
+
 def main():
     options.parse_command_line()
     if not options.config_file is None:
         options.parse_config_file(options.config_file)
         options.parse_command_line()
-
+    
     settings["cookie_secret"] = options.client_secret
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
@@ -110,7 +114,6 @@ def main():
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
     logging.info("--mongo_storage_uri=%s" % options.mongo_storage_uri)
-    logging.info("--mongo_datastore_uri=%s" % options.mongo_datastore_uri)
     logging.info("--mongo_rows_limit=%s" % options.mongo_rows_limit)
 
     if not options.config_file is None:
@@ -132,10 +135,10 @@ def main():
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
+        (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
         (r"/configurations?(.*)", ConfigurationsFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
-        (r"/datastores?(.*)", MongoDbQueryHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
