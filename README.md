@@ -1,8 +1,7 @@
 OAuth Enabled Web Services
 ================
 
-This module is meant to standardize the deployment of web services in the Cancer Regulome project.  It
-allows our team to reduce development and maintainance time, and supports rapid prototyping.
+This module is meant to standardize the deployment of web services for web applications.  It allows our team to reduce development and maintainance time, and supports rapid prototyping.
 
 > **Operating System Support**
 > The example commands in this file are directed at Linux and Mac OS X users.  However, it should be expected (unless
