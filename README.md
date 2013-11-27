@@ -82,7 +82,7 @@ python svc.py --config_file=/local/path/to/svc.config
 # Initial Dev Setup #
 1. Clone this repository (or use git modules)
 2. Install Required Dependencies (see above, link)
-3. Start tornado web services ```python svc.py --config_file=/local/path/to/svc.config'```
+3. Start tornado web services ```python svc.py --config_file=/local/path/to/svc.config```
 4. Open browser at http://localhost:8000
 
 ----
