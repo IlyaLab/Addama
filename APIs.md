@@ -2,13 +2,12 @@
  - [APIs](#apis)
     - [Main](#apis-main)
     - [Authentication](#auth)
-        - [Who Am I?](#auth-whoami) 
+        - [Who Am I?](#auth-whoami)
         - [Google+ OAUTH2](#google-oauth2)
     - [Data Management](#data-mgmt)
         - [Data Files](#data-files)
         - [Data Stores (aka Databases)](#data-stores)
         - [Object Storage (using NOSQL key={})](#data-nosql)
-        - [Configurations (app config)](#data-config)
     - [Github Web Hook](#git-webhook)
  - [Responses](#apis-responses)
 
@@ -38,7 +37,7 @@
 | /auth/providers | GET | ... | ... | ... |
 
 <a name="google-oauth2"/>
-### Google+ OAUTH2 
+### Google+ OAUTH2
 | API | Methods | Usage | Parameters | Description |
 |-----|:-------------:|-----|-----|:-----:|-----|
 | /auth/signin/google | POST | ... | ... | ... |
@@ -62,13 +61,6 @@
 | /datastores/${datastore-id} | GET | ... | ... | ... |
 | /datastores/${datastore-id}/${database-id} | GET | ... | ... | ... |
 | /datastores/${datastore-id}/${database-id}/${collection-id} | GET | ... | ... | ... |
-
-<a name="data-config"/>
-### App Configuration Files
-| API | Methods | Usage | Parameters | Description |
-|-----|:-------------:|-----|-----|:-----:|-----|
-| /configurations | GET | ... | ... | ... |
-| /configurations/{config-file}.json | GET | ... | ... | ... |
 
 <a name="data-nosql"/>
 ### User Specific Object Storage (must have auth cookies)

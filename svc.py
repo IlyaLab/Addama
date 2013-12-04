@@ -67,7 +67,7 @@ server_settings = {
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.write({"items":[ { "id": "data", "uri": self.request.uri + "data" }, { "id": "configurations", "uri": self.request.uri + "configurations" } ]})
+        self.write({"items":[ { "id": "data", "uri": self.request.uri + "data" } ]})
         self.set_status(200)
 
 class WhoamiHandler(tornado.web.RequestHandler):
