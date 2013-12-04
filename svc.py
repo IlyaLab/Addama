@@ -31,11 +31,9 @@ from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler
 from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
-from datastores.configurations import ConfigurationsFileHandler
 from storage.mongo import MongoDbStorageHandler, GetUserinfo
 from scc.github import GitWebHookHandler
 
-define("configurations_path", default="../..", help="Path to configuration files")
 define("data_path", default="../..", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
@@ -105,11 +103,10 @@ def main():
     if not options.config_file is None:
         options.parse_config_file(options.config_file)
         options.parse_command_line()
-    
+
     settings["cookie_secret"] = options.client_secret
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
-    logging.info("--configurations_path=%s" % options.configurations_path)
     logging.info("--data_path=%s" % options.data_path)
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
@@ -137,7 +134,6 @@ def main():
         (r"/auth/providers", AuthProvidersHandler),
         (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
-        (r"/configurations?(.*)", ConfigurationsFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler)
     ], **settings)
