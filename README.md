@@ -69,7 +69,6 @@ python svc.py --config_file=/local/path/to/svc.config
 
 | Property | Description | Example |
 | --- | --- | --- |
-| configurations_path | Directory containing configuration files to be served (e.g. display.json, datamode.json) | /local/webapps/MyWebApp/configurations |
 | data_path | Directory containing data files to be served (e.g. feature matrices, lookups) | /local/webapps/MyWebApp/data |
 | client_id | **OAUTH2** application identifier | 1234567890.apps.googleusercontent.com |
 | client_secret | **OAUTH2** secret key | blwleldIKudk3B7eBldPPsSc15b8 |
@@ -80,7 +79,7 @@ python svc.py --config_file=/local/path/to/svc.config
 | mongo_rows_limit | Limits the number of rows to return per query | 1000 |
 
 # Initial Dev Setup #
-1. Clone this repository (or use git modules)
+1. Clone this repository (or use git modules within your project)
 2. Install Required Dependencies (see above, link)
 3. Start tornado web services ```python svc.py --config_file=/local/path/to/svc.config```
 4. Open browser at http://localhost:8000
