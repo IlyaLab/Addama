@@ -65,6 +65,23 @@ server_settings = {
     "address" : "0.0.0.0"
 }
 
+class DataStoreConfiguration(object):
+    def __init__(self, uri, case_insensitive_databases):
+        self.set_uri(uri)
+        self.case_insensitive_databases = frozenset(case_insensitive_databases)
+
+    def get_uri(self):
+        return self._uri
+    
+    def set_uri(self, uri):
+        self._uri = uri
+    
+    def is_case_insensitive_database(self, database_name):
+        return database_name in self.case_insensitive_databases
+
+    uri = property(get_uri, set_uri)
+
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         items = []
@@ -101,6 +118,20 @@ class AuthProvidersHandler(tornado.web.RequestHandler):
         self.set_status(200)
 
 
+def parse_datastore_configuration():
+    datastore_map = {}
+    for datastore_config in options.mongo_datastores:
+        if (len(datastore_config) == 2):
+            datastore_id, uri = datastore_config
+            datastore_map[datastore_id] = DataStoreConfiguration(uri, [])
+        elif (len(datastore_config) == 3):
+            datastore_id, uri, case_insensitive_databases = datastore_config
+            datastore_map[datastore_id] = DataStoreConfiguration(uri, case_insensitive_databases)
+        else:
+            logging.error("Invalid datastore config: " + repr(datastore_config))
+
+    return datastore_map
+
 def main():
     options.parse_command_line()
     if not options.config_file is None:
@@ -127,6 +158,8 @@ def main():
         logging.info("--github_git_cmd=%s" % options.github_git_cmd)
         logging.info("--github_branches_json_path=%s" % options.github_branches_json_path)
         logging.info("Starting GitHub Web Hook at http://localhost:%s/gitWebHook" % options.port)
+
+    MongoDbQueryHandler.datastores = parse_datastore_configuration()
 
     application = tornado.web.Application([
         (r"/", MainHandler),
