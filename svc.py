@@ -66,9 +66,9 @@ server_settings = {
 }
 
 class DataStoreConfiguration(object):
-    def __init__(self, uri, case_sensitive_databases):
+    def __init__(self, uri, case_insensitive_databases):
         self.set_uri(uri)
-        self.case_sensitive_databases = frozenset(case_sensitive_databases)
+        self.case_insensitive_databases = frozenset(case_insensitive_databases)
 
     def get_uri(self):
         return self._uri
@@ -76,8 +76,8 @@ class DataStoreConfiguration(object):
     def set_uri(self, uri):
         self._uri = uri
     
-    def is_case_sensitive_database(self, database_name):
-        return database_name in self.case_sensitive_databases
+    def is_case_insensitive_database(self, database_name):
+        return database_name in self.case_insensitive_databases
 
     uri = property(get_uri, set_uri)
 
@@ -120,8 +120,15 @@ class AuthProvidersHandler(tornado.web.RequestHandler):
 
 def parse_datastore_configuration():
     datastore_map = {}
-    for datastore_id, uri, case_sensitive_databases in options.mongo_datastores:
-        datastore_map[datastore_id] = DataStoreConfiguration(uri, case_sensitive_databases)
+    for datastore_config in options.mongo_datastores:
+        if (len(datastore_config) == 2):
+            datastore_id, uri = datastore_config
+            datastore_map[datastore_id] = DataStoreConfiguration(uri, [])
+        elif (len(datastore_config) == 3):
+            datastore_id, uri, case_insensitive_databases = datastore_config
+            datastore_map[datastore_id] = DataStoreConfiguration(uri, case_insensitive_databases)
+        else:
+            logging.error("Invalid datastore config: " + repr(datastore_config))
 
     return datastore_map
 
