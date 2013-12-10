@@ -75,7 +75,7 @@ python svc.py --config_file=/local/path/to/svc.config
 | client_host | **OAUTH2** redirect address | http://example.org:3333 |
 | authorized_users | Simple mechanism to limit access to the application | ["user@example.com","example@gmail.com"]
 | mongo_storage_uri | Connection string for mongo database used to store application data (e.g. sessions) | mongodb://localhost:3030 |
-| mongo_datastores | A list mapping datasource identifiers to connection strings for MongoDB servers used to store domain data (e.g. Feature Matrices). The datasource identifiers become parts of the URIs for accessing the data in said MongoDB servers. The third value in each tuple is an array of database names for which all queries will be case sensitive in that datasource. | [("fmx_ds", "mongodb://hostname:3030", ['fmx_database']),("assoc_ds", "mongodb://hostname:3040", [])] |
+| mongo_datastores | A list mapping datasource identifiers to connection strings for MongoDB servers used to store domain data (e.g. Feature Matrices). The datasource identifiers become parts of the URIs for accessing the data in said MongoDB servers. The optional third value in each tuple is an array of database names for which all queries will be case insensitive in that datasource. | [("fmx_ds", "mongodb://hostname:3030"),("assoc_ds", "mongodb://hostname:3040", ["case_insensitive_db"])] |
 | mongo_rows_limit | Limits the number of rows to return per query | 1000 |
 
 # Initial Dev Setup #
