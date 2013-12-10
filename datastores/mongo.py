@@ -72,7 +72,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         items = []
         for datastore_id in self._datastore_map.keys():
             items.append({ "id": datastore_id, "uri": self.request.uri + "/" + datastore_id })
-        self.write({"items": items})
+        self.write({"items": items, "data_type": "datastores" })
 
     def list_databases(self, datastore_id):
         if options.verbose: logging.info("list_databases [%s] [%s]" % (self.request.uri, datastore_id))
@@ -84,7 +84,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         items = []
         for database_name in mongoClient.database_names():
             items.append({ "id": database_name, "uri": self.request.uri + "/" + database_name })
-        self.write({"items": items})
+        self.write({"items": items, "data_type": "databases" })
 
     def list_collections(self, datastore_id, database_id):
         if options.verbose: logging.info("list_collections [%s] [%s] [%s]" % (self.request.uri, datastore_id, database_id))
@@ -98,7 +98,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         items = []
         for collection_name in database.collection_names(False):
             items.append({ "id": collection_name, "uri": self.request.uri + "/" + collection_name })
-        self.write({"items": items})
+        self.write({"items": items, "data_type": "collections" })
 
     def open_collection(self, datastore_id, db_name, collection_id):
         if options.verbose: logging.info("open_collection [%s] [%s] [%s]" % (datastore_id, db_name, collection_id))
@@ -110,7 +110,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
     def list_fields(self, collection):
         if options.verbose: logging.info("list_fields [%s]" % (collection.name))
-        self.write({"items": collection.find_one().keys()})
+        self.write({"items": collection.find_one().keys()}, "data_type": "fields" })
 
     def query_collection(self, collection, query):
         if options.verbose: logging.info("query_collection [%s] [%s]" % (collection.name, query))
