@@ -125,10 +125,11 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         return json_items
 
     def transpose_query_arguments(self, db_name, datasource):
-        normalize_fn = lambda x: x
+        # by default, queries are case-insensitive
+        normalize_fn = lambda x: re.compile("^" + x + "$", re.IGNORECASE)
 
-        if datasource.is_case_insensitive_database(db_name):
-            normalize_fn = lambda x: re.compile("^" + x + "$", re.IGNORECASE)
+        if datasource.is_case_sensitive_database(db_name):
+            normalize_fn = lambda x: x
 
         query = {}
         args = self.request.arguments
