@@ -5,6 +5,7 @@ from pymongo.errors import ConnectionFailure
 
 import tornado.web
 import csv
+import re
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
     def initialize(self):
@@ -126,9 +127,8 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
     def transpose_query_arguments(self, db_name, datasource):
         normalize_fn = lambda x: x
 
-        # TODO replace legacy implementation with proper case insensitive query
         if datasource.is_case_insensitive_database(db_name):
-            normalize_fn = lambda x: x.lower()
+            normalize_fn = lambda x: re.compile("^" + x + "$", re.IGNORECASE)
 
         query = {}
         args = self.request.arguments
