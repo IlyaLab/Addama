@@ -109,7 +109,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
     def list_fields(self, collection):
         if options.verbose: logging.info("list_fields [%s]" % (collection.name))
-        self.write({"items": collection.find_one().keys()}, "data_type": "fields" })
+        self.write({"items": collection.find_one().keys(), "data_type": "fields" })
 
     def query_collection(self, collection, query):
         if options.verbose: logging.info("query_collection [%s] [%s]" % (collection.name, query))
