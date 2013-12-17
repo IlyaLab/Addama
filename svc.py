@@ -66,9 +66,9 @@ server_settings = {
 }
 
 class DataStoreConfiguration(object):
-    def __init__(self, uri, case_insensitive_databases):
+    def __init__(self, uri, case_sensitive_databases):
         self.set_uri(uri)
-        self.case_insensitive_databases = frozenset(case_insensitive_databases)
+        self.case_sensitive_databases = frozenset(case_sensitive_databases)
 
     def get_uri(self):
         return self._uri
@@ -76,8 +76,8 @@ class DataStoreConfiguration(object):
     def set_uri(self, uri):
         self._uri = uri
     
-    def is_case_insensitive_database(self, database_name):
-        return database_name in self.case_insensitive_databases
+    def is_case_sensitive_database(self, database_name):
+        return database_name in self.case_sensitive_databases
 
     uri = property(get_uri, set_uri)
 
@@ -125,8 +125,8 @@ def parse_datastore_configuration():
             datastore_id, uri = datastore_config
             datastore_map[datastore_id] = DataStoreConfiguration(uri, [])
         elif (len(datastore_config) == 3):
-            datastore_id, uri, case_insensitive_databases = datastore_config
-            datastore_map[datastore_id] = DataStoreConfiguration(uri, case_insensitive_databases)
+            datastore_id, uri, case_sensitive_databases = datastore_config
+            datastore_map[datastore_id] = DataStoreConfiguration(uri, case_sensitive_databases)
         else:
             logging.error("Invalid datastore config: " + repr(datastore_config))
 
