@@ -43,7 +43,7 @@ class LocalFileHandler(tornado.web.RequestHandler):
 
                 for f in os.listdir(options.data_path + filepath):
                     if not f.startswith("."):
-                        item = { "label": os.path.basename(f), "uri": os.path.join(self.request.uri, f) }
+                        item = { "label": os.path.basename(f), "uri": os.path.join(self.request.path, f) }
                         if os.path.isdir(os.path.join(options.data_path + filepath, f)):
                             dirs.append(item)
                         else:

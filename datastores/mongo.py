@@ -71,7 +71,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
         items = []
         for datastore_id in self._datastore_map.keys():
-            items.append({ "id": datastore_id, "uri": self.request.uri + "/" + datastore_id })
+            items.append({ "id": datastore_id, "uri": self.request.path + "/" + datastore_id })
         self.write({"items": items, "data_type": "datastores" })
 
     def list_databases(self, datastore_id):
@@ -83,7 +83,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         mongoClient = MongoClient(mongo_uri)
         items = []
         for database_name in mongoClient.database_names():
-            items.append({ "id": database_name, "uri": self.request.uri + "/" + database_name })
+            items.append({ "id": database_name, "uri": self.request.path + "/" + database_name })
         self.write({"items": items, "data_type": "databases" })
 
     def list_collections(self, datastore_id, database_id):
@@ -97,7 +97,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
         items = []
         for collection_name in database.collection_names(False):
-            items.append({ "id": collection_name, "uri": self.request.uri + "/" + collection_name })
+            items.append({ "id": collection_name, "uri": self.request.path + "/" + collection_name })
         self.write({"items": items, "data_type": "collections" })
 
     def open_collection(self, datastore_id, db_name, collection_id):
