@@ -48,7 +48,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
                 json_items = self.query_collection(collection, query)
 
                 if self.get_argument("output", "json") == "tsv":
-                    self.write_tsv(self, json_items)
+                    self.write_tsv(json_items)
                     self.set_status(200)
                     return
 
