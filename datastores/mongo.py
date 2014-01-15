@@ -149,24 +149,35 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
             elif "[]" in k:
                 json_item[k.replace("[]", "")] = item[k]
             else:
-                json_item[k] = item[k]
+                json_item[str(k)] = item[k]
         return json_item
 
     def write_tsv(self, items):
         self.set_header("Content-Type", "text/tab-separated-values")
         self.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
 
-        tsvwriter = csv.writer(self, delimiter='\t')
-        excludedheaders = ["uri","id","p_ns_s"]
+        tsvwriter = csv.writer(self, delimiter="\t")
+        excludedheaders = ["id", "values"]
+
         if len(items) > 0:
             colheaders = [a for a in items[0].keys() if a not in excludedheaders]
-            tsvwriter.writerow(colheaders)
+            pivotkeys = []
+            if "values" in items[0]:
+                values_keys = items[0]["values"].keys()
+                for value_key in values_keys: pivotkeys.append(str(value_key))
+
+            combinedkeys = []
+            combinedkeys.extend(colheaders)
+            if pivotkeys: combinedkeys.extend(pivotkeys)
+            tsvwriter.writerow(combinedkeys)
+
             for item in items:
                 vals = []
-                for colheader in colheaders:
-                    val = item[colheader]
-                    if isinstance(val, (list, tuple)):
-                        vals.append(len(val))
-                    else:
-                        vals.append(val)
+                for colheader in colheaders: vals.append(item[colheader])
+
+                if "values" in item:
+                    item_values = item["values"]
+                    for pivotkey in pivotkeys:
+                        vals.append(item_values[pivotkey])
+
                 tsvwriter.writerow(vals)
