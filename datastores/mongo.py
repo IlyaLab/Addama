@@ -7,6 +7,8 @@ import tornado.web
 import csv
 import re
 
+RESERVED_KEYS = ["output", "output_filename"]
+
 class MongoDbQueryHandler(tornado.web.RequestHandler):
     def initialize(self):
         self._datastore_map = self.datastores
@@ -134,7 +136,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         query = {}
         args = self.request.arguments
         for key in args.keys():
-            if key != "output":
+            if not key in RESERVED_KEYS:
                 if len(args[key]) == 1:
                     query[key] = normalize_fn(args[key][0])
                 else:
@@ -153,8 +155,13 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         return json_item
 
     def write_tsv(self, items):
+        filename = self.get_argument("output_filename", "data_export.tsv")
+        attachment = "attachment; filename=\"%s\"" % filename
+
+        if options.verbose: logging.info("write_tsv [%s]" % attachment)
+
         self.set_header("Content-Type", "text/tab-separated-values")
-        self.set_header("Content-Disposition", "attachment; filename='data_export.tsv'")
+        self.set_header("Content-Disposition", attachment)
 
         tsvwriter = csv.writer(self, delimiter="\t")
         excludedheaders = ["id", "values"]
