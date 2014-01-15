@@ -8,16 +8,12 @@ from oauth.decorator import OAuthenticated
 class MongoDbStorageHandler(tornado.web.RequestHandler):
     @OAuthenticated
     def get(self, identity):
-        whoami = self.get_secure_cookie("whoami")
-
-        ids = identity.split("/")
+        ids = self.check_identity(identity)
         if len(ids) == 1:
-            if ids[0] == "private_userinfo": raise tornado.web.HTTPError(401, "you are not allowed to view this data")
-
             collection = open_collection(ids[0])
 
             json_items = []
-            for item in collection.find({ 'owner': whoami }):
+            for item in collection.find({ "owner": self.get_secure_cookie("whoami") }):
                 json_item = self.jsonable_item(item)
                 json_item["uri"] = self.request.uri + "/" + json_item["id"]
                 json_items.append(json_item)
@@ -27,10 +23,8 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
             return
 
         elif len(ids) == 2:
-            if ids[0] == "private_userinfo": raise tornado.web.HTTPError(401)
-
             collection = open_collection(ids[0])
-            item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": whoami })
+            item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": self.get_secure_cookie("whoami") })
             if not item is None:
                 json_item = self.jsonable_item(item)
                 json_item["uri"] = self.request.uri
@@ -45,14 +39,10 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
 
     @OAuthenticated
     def post(self, identity):
-        whoami = self.get_secure_cookie("whoami")
-
-        ids = identity.split("/")
-        if len(ids) <= 0: raise tornado.web.HTTPError(401)
-        if ids[0] == "private_userinfo": raise tornado.web.HTTPError(401, "you are not allowed to view this data")
+        ids = self.check_identity(identity)
 
         stored_item = json.loads(self.request.body)
-        stored_item["owner"] = whoami
+        stored_item["owner"] = self.get_secure_cookie("whoami")
 
         # Figure out issue where label is getting set as an array
         labels = stored_item["label"]
@@ -66,14 +56,10 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
 
     @OAuthenticated
     def put(self, identity):
-        whoami = self.get_secure_cookie("whoami")
-
-        ids = identity.split("/")
-        if len(ids) <= 0: raise tornado.web.HTTPError(401)
-        if ids[0] == "private_userinfo": raise tornado.web.HTTPError(401, "you are not allowed to view this data")
+        ids = self.check_identity(identity)
 
         stored_item = json.loads(self.request.body)
-        stored_item["owner"] = whoami
+        stored_item["owner"] = self.get_secure_cookie("whoami")
 
         # Figure out issue where label is getting set as an array
         labels = stored_item["label"]
@@ -85,6 +71,19 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
 
         self.write({ "id": update_id, "uri": self.request.uri + "/" + update_id })
         self.set_status(200)
+
+    def check_identity(self, identity):
+        ids = identity.split("/")
+        if len(ids) <= 0:
+            logging.error("unknown identity [%s]:" % identity)
+            raise tornado.web.HTTPError(401)
+
+        if ids[0] == "private_userinfo":
+            whoami = self.get_secure_cookie("whoami")
+            logging.error("accessing private_userinfo [%s,%s]:" % (whoami, identity))
+            raise tornado.web.HTTPError(401, "you are not allowed to view this data")
+
+        return ids
 
     def jsonable_item(self, item):
         json_item = {}
