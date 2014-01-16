@@ -7,7 +7,7 @@ import tornado.web
 import csv
 import re
 
-RESERVED_KEYS = ["output", "output_filename"]
+RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction"]
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
     def initialize(self):
@@ -47,7 +47,9 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
             collection = self.open_collection(datastore_id, db_name, collection_id)
             if len(uri_parts) == 4:
                 query = self.transpose_query_arguments(db_name, datastore)
-                json_items = self.query_collection(collection, query)
+                sort_fld = self.get_argument("sort_by", None)
+                sort_dir = int(self.get_argument("sort_direction", "1"))
+                json_items = self.query_collection(collection, query, sort_fld, sort_dir)
 
                 if self.get_argument("output", "json") == "tsv":
                     self.write_tsv(json_items)
@@ -114,15 +116,20 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         if options.verbose: logging.info("list_fields [%s]" % (collection.name))
         self.write({"items": collection.find_one().keys(), "data_type": "fields" })
 
-    def query_collection(self, collection, query):
-        if options.verbose: logging.info("query_collection [%s] [%s]" % (collection.name, query))
+    def query_collection(self, collection, query, sort_fld=None, sort_dir=1):
+        if options.verbose: logging.info("query_collection [%s] [%s] [%s] [%s]" % (collection.name, query, sort_fld, sort_dir))
         json_items = []
         query_limit = options.mongo_rows_limit
-        for idx, item in enumerate(collection.find(query)):
-            if idx > query_limit:
-                break
 
-            json_items.append(self.jsonable_item(item))
+        if sort_fld:
+            for idx, item in enumerate(collection.find(query).sort(sort_fld, sort_dir)):
+                if idx > query_limit: break
+                json_items.append(self.jsonable_item(item))
+
+        else:
+            for idx, item in enumerate(collection.find(query)):
+                if idx > query_limit: break
+                json_items.append(self.jsonable_item(item))
 
         return json_items
 
