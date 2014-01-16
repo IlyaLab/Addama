@@ -60,7 +60,16 @@
 | /datastores | GET | ... | ... | ... |
 | /datastores/${datastore-id} | GET | ... | ... | ... |
 | /datastores/${datastore-id}/${database-id} | GET | ... | ... | ... |
-| /datastores/${datastore-id}/${database-id}/${collection-id} | GET | ... | ... | ... |
+| /datastores/${datastore-id}/${database-id}/${collection-id} | GET | ... | "output", "output_filename", "sort_by", "sort_direction"  | ... |
+
+<a name="db-query-params"/>
+### Database Query Parameters
+| Parameter | Required | Usage | Description |
+|-----|:-------------:|---------|-----|-----|
+| output | false | ```?output=tsv``` | Provides tab-delimited file output for query result | 
+| output_filename | false | ```?output_filename=example.tsv``` | Changes the default download filename |
+| sort_by | false | ```?sort_by=field_name``` | Appends sort operation to standard query |
+| sort_direction | false | ```?sort_direction=1``` or ```?sort_direction=-1``` | Indicates direction of sort. Positive value equals ASCENDING, Negative value equals DESCENDING |
 
 <a name="data-nosql"/>
 ### User Specific Object Storage (must have auth cookies)
