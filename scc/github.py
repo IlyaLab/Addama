@@ -1,4 +1,7 @@
-from tornado.options import options, logging
+import logging
+
+from tornado.options import options
+
 import tornado.web
 import tornado.httpclient
 import json

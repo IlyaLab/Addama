@@ -1,4 +1,6 @@
-from tornado.options import options, logging
+import logging
+
+from tornado.options import options
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure

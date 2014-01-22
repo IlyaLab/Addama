@@ -21,9 +21,10 @@ Filter:
 All services return status_code 500 if there is any error.
 
 """
+import logging
 
 import tornado.ioloop
-from tornado.options import define, options, logging
+from tornado.options import define, options
 import tornado.web
 import uuid
 
