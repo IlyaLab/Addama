@@ -83,7 +83,14 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
         ids = self.check_identity(identity)
 
         logging.info("collections.delete:" + str(ids))
-        self.set_status(200)
+
+        item_id = objectid.ObjectId(ids[1])
+        if item_id is not None:
+            open_collection(ids[0]).remove({ "_id": item_id })
+            self.write({ "id": str(item_id) })
+            self.set_status(200)
+        else:
+            self.set_status(404)
 
     def check_identity(self, identity):
         ids = identity.split("/")
