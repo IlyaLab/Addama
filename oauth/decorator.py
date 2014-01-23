@@ -1,18 +1,22 @@
 import functools
 import tornado.web
+import uuid
 from tornado.options import options
 
 def OAuthenticated(method):
     """Decorate methods with this to require that the user be logged in."""
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
+        whoami = self.get_secure_cookie("whoami")
         if len(options.authorized_users) > 0:
-            whoami = self.get_secure_cookie("whoami")
             if not whoami:
                 raise tornado.web.HTTPError(403)
 
             if not whoami.lower() in options.authorized_users:
                 raise tornado.web.HTTPError(403)
+
+        elif not whoami:
+            self.set_secure_cookie("whoami", str(uuid.uuid4()), expires_days=None)
 
         return method(self, *args, **kwargs)
     return wrapper
