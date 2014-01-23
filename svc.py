@@ -33,6 +33,7 @@ from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler, GetUserinfo
+from storage.collections import MongoDbCollectionsHandler
 from scc.github import GitWebHookHandler
 
 define("data_path", default="../..", help="Path to data files")
@@ -43,6 +44,7 @@ define("client_secret", help="Client Secrets for Google OAuth2")
 define("config_file", help="Path to config file")
 define("authorized_users", default=[], help="List of authorized user emails")
 define("mongo_storage_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
+define("mongo_storage_db", default="storage_db", help="MongoDB database name")
 
 define("mongo_datastores", default=[("ds", "mongodb://localhost:27017")], help="Lookup MongoDB configurations")
 define("mongo_rows_limit", default=1000, type=int, help="Lookup MongoDB limit on rows returned from query")
@@ -146,6 +148,7 @@ def main():
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)
     logging.info("--mongo_storage_uri=%s" % options.mongo_storage_uri)
+    logging.info("--mongo_storage_db=%s" % options.mongo_storage_db)
     logging.info("--mongo_rows_limit=%s" % options.mongo_rows_limit)
 
     if not options.config_file is None:
@@ -173,6 +176,7 @@ def main():
         (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
+        (r"/collections/(.*)", MongoDbCollectionsHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
