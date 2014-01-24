@@ -1,6 +1,5 @@
 import functools
 import tornado.web
-import uuid
 from tornado.options import options
 
 def OAuthenticated(method):
@@ -15,8 +14,8 @@ def OAuthenticated(method):
             if not whoami.lower() in options.authorized_users:
                 raise tornado.web.HTTPError(403)
 
-        elif not whoami:
-            self.set_secure_cookie("whoami", str(uuid.uuid4()), expires_days=None)
+        if not whoami:
+            self.set_secure_cookie("whoami", "anonymous-addama-user", expires_days=None)
 
         return method(self, *args, **kwargs)
     return wrapper

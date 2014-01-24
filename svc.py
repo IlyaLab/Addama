@@ -26,7 +26,6 @@ import logging
 import tornado.ioloop
 from tornado.options import define, options
 import tornado.web
-import uuid
 
 from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler
 from oauth.decorator import OAuthenticated
@@ -60,7 +59,7 @@ define("verbose", default=False, type=bool, help="Enable verbose printouts")
 
 settings = {
     "debug": True,
-    "cookie_secret": uuid.uuid4()
+    "cookie_secret": "not_a_big_secret"
 }
 
 server_settings = {
@@ -75,10 +74,10 @@ class DataStoreConfiguration(object):
 
     def get_uri(self):
         return self._uri
-    
+
     def set_uri(self, uri):
         self._uri = uri
-    
+
     def is_case_sensitive_database(self, database_name):
         return database_name in self.case_sensitive_databases
 
@@ -141,7 +140,8 @@ def main():
         options.parse_config_file(options.config_file)
         options.parse_command_line()
 
-    settings["cookie_secret"] = options.client_secret
+    if options.client_secret:
+        settings["cookie_secret"] = options.client_secret
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
     logging.info("--data_path=%s" % options.data_path)
