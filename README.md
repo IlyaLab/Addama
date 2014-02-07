@@ -67,6 +67,12 @@ cd $WEBAPP_ROOT
 python svc.py --config_file=/local/path/to/svc.config
 ```
 
+> Specify field datatypes within optional JSON configuration file
+```bash
+cd $WEBAPP_ROOT
+python svc.py --config_file=/local/path/to/svc.config --config_file_json=/local/path/to/svc.config.json
+```
+
 | Property | Description | Example |
 | --- | --- | --- |
 | data_path | Directory containing data files to be served (e.g. feature matrices, lookups) | /local/webapps/MyWebApp/data |
