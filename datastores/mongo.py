@@ -46,10 +46,10 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
             collection_id = uri_parts[3]
             datastore = self._datastore_map[datastore_id]
-            datatypes = self.get_datatypes(datastore_id, db_name, collection_id)
             collection = self.open_collection(datastore_id, db_name, collection_id)
             if len(uri_parts) == 4:
-                query = self.transpose_query_arguments(db_name, datastore)
+                datatypes = self.get_datatypes(datastore_id, db_name, collection_id)
+                query = self.transpose_query_arguments(db_name, datastore, datatypes)
                 sort_fld = self.get_argument("sort_by", None)
                 sort_dir = int(self.get_argument("sort_direction", "1"))
                 json_items = self.query_collection(collection, query, sort_fld, sort_dir)
@@ -150,7 +150,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         logging.info("get_datatypes(%s, %s, %s): %s" % (datasource_id, db_name, collection_id, str(c_dtypes)))
         return c_dtypes
 
-    def transpose_query_arguments(self, db_name, datasource):
+    def transpose_query_arguments(self, db_name, datasource, datatypes={}):
         # by default, queries are case-insensitive
         normalize_fn = lambda x: re.compile("^" + x + "$", re.IGNORECASE)
 
@@ -162,9 +162,25 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         for key in args.keys():
             if not key in RESERVED_KEYS:
                 if len(args[key]) == 1:
-                    query[key] = normalize_fn(args[key][0])
+                    if key in datatypes:
+                        if datatypes[key] == "int":
+                            query[key] = int(args[key][0])
+                        elif datatypes[key] == "float":
+                            query[key] = float(args[key][0])
+                        else:
+                            query[key] = normalize_fn(args[key][0])
+                    else:
+                        query[key] = normalize_fn(args[key][0])
                 else:
-                    query[key] = {"$in": map(normalize_fn, args[key])}
+                    if key in datatypes:
+                        if datatypes[key] == "int":
+                            query[key] = {"$in": map(int, args[key])}
+                        elif datatypes[key] == "float":
+                            query[key] = {"$in": map(float, args[key])}
+                        else:
+                            query[key] = {"$in": map(normalize_fn, args[key])}
+                    else:
+                        query[key] = {"$in": map(normalize_fn, args[key])}
         return query
 
     def jsonable_item(self, item):
