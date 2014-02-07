@@ -1,0 +1,13 @@
+{
+    "datastores": {
+        "ds_instance_name": {
+            "db_name": {
+                "datatypes": {
+                    "collection_name": {
+                        "field_name": "int"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -26,6 +26,7 @@ import logging
 import tornado.ioloop
 from tornado.options import define, options
 import tornado.web
+import json
 
 from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler
 from oauth.decorator import OAuthenticated
@@ -41,6 +42,7 @@ define("client_host", default="http://localhost:8000", help="Client URL for Goog
 define("client_id", help="Client ID for Google OAuth2")
 define("client_secret", help="Client Secrets for Google OAuth2")
 define("config_file", help="Path to config file")
+define("config_file_json", help="Path to JSON config file")
 define("authorized_users", default=[], help="List of authorized user emails")
 define("mongo_storage_uri", default="mongodb://localhost:27017", help="MongoDB URI in the form mongodb://username:password@hostname:port")
 define("mongo_storage_db", default="storage_db", help="MongoDB database name")
@@ -154,6 +156,9 @@ def main():
     if not options.config_file is None:
         logging.info("--config_file=%s" % options.config_file)
 
+    if not options.config_file_json is None:
+        logging.info("--config_file_json=%s" % options.config_file_json)
+
     if not options.github_repo_api_url is None:
         logging.info("--github_repo_api_url=%s" % options.github_repo_api_url)
         logging.info("--github_project_root=%s" % options.github_project_root)
@@ -164,6 +169,9 @@ def main():
         logging.info("Starting GitHub Web Hook at http://localhost:%s/gitWebHook" % options.port)
 
     MongoDbQueryHandler.datastores = parse_datastore_configuration()
+
+    if not options.config_file_json is None:
+        MongoDbQueryHandler.datastores_config = json.load(open(options.config_file_json))
 
     application = tornado.web.Application([
         (r"/", MainHandler),
