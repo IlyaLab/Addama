@@ -139,7 +139,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
     def get_datatypes(self, datasource_id, db_name, collection_id):
         c_dtypes = {}
         if not self.datastores_config is None:
-            logging.info("get_datatypes:" + str(datasource_id) + "," + str(db_name))
+            if options.verbose: logging.info("get_datatypes:" + str(datasource_id) + "," + str(db_name))
             c_datastores = self.datastores_config["datastores"]
             if not c_datastores is None and datasource_id in c_datastores:
                 if db_name in c_datastores[datasource_id]:
@@ -147,7 +147,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
                     if not c_db is None and "datatypes" in c_db and collection_id in c_db["datatypes"]:
                         c_dtypes = c_db["datatypes"][collection_id]
 
-        logging.info("get_datatypes(%s, %s, %s): %s" % (datasource_id, db_name, collection_id, str(c_dtypes)))
+        if options.verbose: logging.info("get_datatypes(%s, %s, %s): %s" % (datasource_id, db_name, collection_id, str(c_dtypes)))
         return c_dtypes
 
     def transpose_query_arguments(self, db_name, datasource, datatypes={}):
