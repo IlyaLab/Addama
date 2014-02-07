@@ -12,6 +12,8 @@ import re
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction"]
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
+    datastores_config = {}
+
     def initialize(self):
         self._datastore_map = self.datastores
 
@@ -138,8 +140,9 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
     def get_datatypes(self, datasource_id, db_name, collection_id):
         c_dtypes = {}
-        if not self.datastores_config is None:
-            if options.verbose: logging.info("get_datatypes:" + str(datasource_id) + "," + str(db_name))
+        if options.verbose: logging.info("get_datatypes(%s, %s, %s)" % (datasource_id, db_name, collection_id))
+
+        if not self.datastores_config is None and "datastores" in self.datastores_config:
             c_datastores = self.datastores_config["datastores"]
             if not c_datastores is None and datasource_id in c_datastores:
                 if db_name in c_datastores[datasource_id]:
