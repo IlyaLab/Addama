@@ -118,4 +118,5 @@ def SaveUserinfo(whoami, userinfo):
     if existing_user is None:
         collection.insert(userinfo)
     else:
-        collection.update(existing_user, userinfo)
+        userinfo["_id"] = existing_user["_id"]
+        collection.save(userinfo)
