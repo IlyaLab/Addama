@@ -1,8 +1,12 @@
+import logging
+
 from tornado.options import options
 import tornado.web
 import tornado.httpclient
 import json
 import urlparse
+
+from oauth.decorator import OAuthenticated
 
 from oauth2client.client import OAuth2WebServerFlow
 
@@ -21,10 +25,11 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
 
             cred_json = json.loads(credentials.to_json())
             user_email = cred_json["id_token"]["email"]
-            access_token = cred_json["access_token"]
 
             http_client = tornado.httpclient.HTTPClient()
-            response = http_client.fetch("https://www.googleapis.com/oauth2/v1/userinfo?access_token=%s"%access_token)
+            http_request = tornado.httpclient.HTTPRequest(url="https://www.googleapis.com/oauth2/v1/userinfo",
+                headers={"Authorization": ("Bearer %s" % cred_json["access_token"])})
+            response = http_client.fetch(http_request)
 
             cred_json["profile"] = json.loads(response.body)
             SaveUserinfo(user_email, cred_json)
@@ -44,11 +49,30 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
         flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
 
         self.set_status(301)
-        self.set_header('Cache-Control', 'no-cache')
-        self.set_header('Location', flow.step1_get_authorize_url())
+        self.set_header("Cache-Control", "no-cache")
+        self.set_header("Location", flow.step1_get_authorize_url())
 
 class GoogleSignoutHandler(tornado.web.RequestHandler):
     def get(self):
         self.clear_all_cookies()
         self.set_status(200)
 
+class GoogleDriveProvidersHandler(tornado.web.RequestHandler):
+    @OAuthenticated
+    def get(self, *uri_path):
+        logging.info("get:%s" % self.request.path)
+        if self.request.path.endswith("/drive/about"):
+            try:
+                userkey = self.get_secure_cookie("whoami")
+                credentials = GetUserinfo(userkey)
+
+                http_request = tornado.httpclient.HTTPRequest(url="https://www.googleapis.com/drive/v2/about",
+                    headers={"Authorization": ("Bearer %s" % credentials["access_token"] )})
+                http_client = tornado.httpclient.HTTPClient()
+                response = http_client.fetch(http_request)
+                about = json.loads(response.body)
+
+                logging.info("get:%s:%s:%s" % (self.request.path, about["name"], about["rootFolderId"]))
+            except Exception, e:
+                logging.error("An error occurred: %s" % e)
+            self.set_status(200)
