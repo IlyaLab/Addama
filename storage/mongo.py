@@ -99,7 +99,7 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
 
 def open_collection(collection_name):
     connection = pymongo.Connection(options.mongo_storage_uri)
-    qed_db = connection["qed_store"]
+    qed_db = connection[options.mongo_storage_db]
     return qed_db[collection_name]
 
 def GetUserinfo(whoami):
