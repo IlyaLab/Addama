@@ -28,7 +28,7 @@ from tornado.options import define, options
 import tornado.web
 import json
 
-from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler, GoogleDriveProvidersHandler
+from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler, GoogleDriveApiHandler
 from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
@@ -180,7 +180,7 @@ def main():
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
-        (r"/auth/providers/google/drive/(.*)", GoogleDriveProvidersHandler),
+        (r"/auth/providers/google_drive/(.*)", GoogleDriveApiHandler),
         (r"/datastores", MongoDbQueryHandler),
         (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
