@@ -14,12 +14,27 @@ from oauth2client.client import OAuth2WebServerFlow
 from storage.mongo import GetUserinfo, SaveUserinfo
 from storage.collections import open_collection
 
+# "https://www.googleapis.com/auth/devstorage.read_write",
+# "https://www.google.com/m8/feeds",
+# "https://www.googleapis.com/auth/compute",
+# "https://www.googleapis.com/auth/urlshortener",
+# "https://www.googleapis.com/auth/drive",
+#    "https://www.googleapis.com/auth/userinfo.email",
+#    "https://www.googleapis.com/auth/userinfo.profile",
+
+SCOPES = [
+    "email", "profile",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.appdata",
+    "https://www.googleapis.com/auth/plus.me"
+]
+
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
     def get(self):
         if "oauth2_callback" in self.request.uri:
             redirect = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
-            scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
-            flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
+
+            flow = OAuth2WebServerFlow(options.client_id, options.client_secret, " ".join(SCOPES), redirect_uri=redirect)
 
             parsed = urlparse.urlparse(self.request.uri)
             code = urlparse.parse_qs(parsed.query)["code"][0]
@@ -47,8 +62,7 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
 
     def respond_redirect_to_auth_server(self):
         redirect = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
-        scope = "https://www.googleapis.com/auth/devstorage.read_write https://www.google.com/m8/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/compute https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/urlshortener https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
-        flow = OAuth2WebServerFlow(options.client_id, options.client_secret, scope, redirect_uri=redirect)
+        flow = OAuth2WebServerFlow(options.client_id, options.client_secret, " ".join(SCOPES), redirect_uri=redirect)
 
         self.set_status(301)
         self.set_header("Cache-Control", "no-cache")
@@ -61,7 +75,7 @@ class GoogleSignoutHandler(tornado.web.RequestHandler):
 
 class GoogleDriveApiHandler(tornado.web.RequestHandler):
     def get(self, *uri_path):
-        if options.verbose: logging.info("driveAPI.get:%s [%s]" % (self.request.path, str(uri_path)))
+        if options.verbose: logging.info("driveAPI.get:%s" % self.request.path)
 
         response = self.oauth_http("GET", "/".join(map(str,uri_path)))
         if not response:
