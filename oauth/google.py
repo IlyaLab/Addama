@@ -64,6 +64,10 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
         if options.verbose: logging.info("driveAPI.get:%s [%s]" % (self.request.path, str(uri_path)))
 
         response = self.oauth_http("GET", "/".join(map(str,uri_path)))
+        if not response:
+            self.set_status(400)
+            return
+
         self.write(response.body)
         self.set_status(response.code)
 
@@ -71,12 +75,19 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
         if options.verbose: logging.info("driveAPI.post:%s" % self.request.path)
 
         response = self.oauth_http("POST", "/".join(map(str,uri_path)))
+        if not response:
+            self.set_status(400)
+            return
 
         if self.request.path.endswith("/files"):
-            fileinfo = json.loads(response.body)
             owner = self.get_secure_cookie("whoami")
-            insert_id = open_collection("datasheets").insert({ "owner": owner, "fileInfo": json.loads(response.body) })
-            self.write({ "id": str(insert_id) })
+            fileinfo = json.loads(response.body)
+            if "mimeType" in fileinfo and fileinfo["mimeType"] == "application/vnd.google-apps.folder":
+                insert_id = open_collection("folders").insert({ "owner": owner, "folder": fileinfo })
+                self.write({ "id": str(insert_id), "folder": fileinfo })
+            else:
+                insert_id = open_collection("datasheets").insert({ "owner": owner, "fileInfo": json.loads(response.body) })
+                self.write({ "id": str(insert_id), "file": fileinfo })
         else:
             self.write(response.body)
 
@@ -84,23 +95,36 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
 
     @OAuthenticated
     def oauth_http(self, method, uri):
-        if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s" % (method, uri.strip("/")))
+        try:
+            if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s" % (method, uri.strip("/")))
 
-        userkey = self.get_secure_cookie("whoami")
-        credentials = GetUserinfo(userkey)
-        headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
+            userkey = self.get_secure_cookie("whoami")
+            if not userkey: raise tornado.httpclient.HTTPError(401, message="User is not logged-in")
 
-        if method == "GET":
-            query_parameters = urllib.urlencode(self.request.arguments)
-            url = "https://www.googleapis.com/%s?%s" % (uri.strip("/"), query_parameters)
-            http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers)
-        else:
-            url = "https://www.googleapis.com/%s" % uri.strip("/")
-            headers["Content-Type"] = self.request.headers["Content-Type"]
-            http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers, body=self.request.body)
+            credentials = GetUserinfo(userkey)
+            if not credentials: raise tornado.httpclient.HTTPError(401, message="User has not authorized OAUTH access")
 
-        http_client = tornado.httpclient.HTTPClient()
-        http_resp = http_client.fetch(http_request)
+            headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
 
-        if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, http_resp.code))
-        return http_resp
+            if method == "GET":
+                query_parameters = urllib.urlencode(self.request.arguments)
+                url = "https://www.googleapis.com/%s?%s" % (uri.strip("/"), query_parameters)
+                http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers)
+            else:
+                url = "https://www.googleapis.com/%s" % uri.strip("/")
+                headers["Content-Type"] = self.request.headers["Content-Type"]
+
+                logging.info("content-type=%s" % self.request.headers["Content-Type"])
+                logging.info("body=%s" % self.request.body)
+                if self.request.headers["Content-Type"] == "application/json":
+                    logging.info("body=%s" % json.loads(self.request.body))
+
+                http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers, body=self.request.body)
+
+            http_client = tornado.httpclient.HTTPClient()
+            http_resp = http_client.fetch(http_request)
+
+            if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, http_resp.code))
+            return http_resp
+        except Exception, e:
+            logging.error("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, e))
