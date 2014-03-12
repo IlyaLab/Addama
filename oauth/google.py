@@ -12,7 +12,6 @@ from oauth.decorator import OAuthenticated
 from oauth2client.client import OAuth2WebServerFlow
 
 from storage.mongo import GetUserinfo, SaveUserinfo
-from storage.collections import open_collection
 
 # "https://www.googleapis.com/auth/devstorage.read_write",
 # "https://www.google.com/m8/feeds",
@@ -26,7 +25,8 @@ SCOPES = [
     "email", "profile",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive.appdata",
-    "https://www.googleapis.com/auth/plus.me"
+    "https://www.googleapis.com/auth/plus.me",
+    "https://spreadsheets.google.com/feeds"
 ]
 
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
@@ -93,18 +93,7 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
             self.set_status(400)
             return
 
-        if self.request.path.endswith("/files"):
-            owner = self.get_secure_cookie("whoami")
-            fileinfo = json.loads(response.body)
-            if "mimeType" in fileinfo and fileinfo["mimeType"] == "application/vnd.google-apps.folder":
-                insert_id = open_collection("folders").insert({ "owner": owner, "folder": fileinfo })
-                self.write({ "id": str(insert_id), "folder": fileinfo })
-            else:
-                insert_id = open_collection("datasheets").insert({ "owner": owner, "fileInfo": json.loads(response.body) })
-                self.write({ "id": str(insert_id), "file": fileinfo })
-        else:
-            self.write(response.body)
-
+        self.write(response.body)
         self.set_status(response.code)
 
     @OAuthenticated
@@ -142,3 +131,4 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
             return http_resp
         except Exception, e:
             logging.error("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, e))
+            raise e
