@@ -29,6 +29,9 @@ SCOPES = [
     "https://spreadsheets.google.com/feeds"
 ]
 
+GOOGLE_APIS = "https://www.googleapis.com"
+GOOGLE_SPREADSHEET_APIS = "https://spreadsheets.google.com"
+
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
     def get(self):
         if "oauth2_callback" in self.request.uri:
@@ -73,7 +76,10 @@ class GoogleSignoutHandler(tornado.web.RequestHandler):
         self.clear_all_cookies()
         self.set_status(200)
 
-class GoogleDriveApiHandler(tornado.web.RequestHandler):
+class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
+    def initialize(self, url_base):
+        self.URL_BASE = url_base.strip("/")
+
     def get(self, *uri_path):
         if options.verbose: logging.info("driveAPI.get:%s" % self.request.path)
 
@@ -99,7 +105,7 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
     @OAuthenticated
     def oauth_http(self, method, uri):
         try:
-            if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s" % (method, uri.strip("/")))
+            if options.verbose: logging.info("driveAPI: %s %s/%s" % (method, self.URL_BASE, uri.strip("/")))
 
             userkey = self.get_secure_cookie("whoami")
             if not userkey: raise tornado.httpclient.HTTPError(401, message="User is not logged-in")
@@ -111,10 +117,10 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
 
             if method == "GET":
                 query_parameters = urllib.urlencode(self.request.arguments)
-                url = "https://www.googleapis.com/%s?%s" % (uri.strip("/"), query_parameters)
+                url = "%s/%s?%s" % (self.URL_BASE, uri.strip("/"), query_parameters)
                 http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers)
             else:
-                url = "https://www.googleapis.com/%s" % uri.strip("/")
+                url = "%s/%s" % (self.URL_BASE, uri.strip("/"))
                 headers["Content-Type"] = self.request.headers["Content-Type"]
 
                 logging.info("content-type=%s" % self.request.headers["Content-Type"])
@@ -127,8 +133,8 @@ class GoogleDriveApiHandler(tornado.web.RequestHandler):
             http_client = tornado.httpclient.HTTPClient()
             http_resp = http_client.fetch(http_request)
 
-            if options.verbose: logging.info("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, http_resp.code))
+            if options.verbose: logging.info("driveAPI: %s %s/%s [%s]" % (method, self.URL_BASE, uri, http_resp.code))
             return http_resp
         except Exception, e:
-            logging.error("driveAPI: %s https://www.googleapis.com/%s [%s]" % (method, uri, e))
+            logging.error("driveAPI: %s %s/%s [%s]" % (method, self.URL_BASE, uri, e))
             raise e
