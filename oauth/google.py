@@ -102,6 +102,17 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
         self.write(response.body)
         self.set_status(response.code)
 
+    def put(self, *uri_path):
+        if options.verbose: logging.info("driveAPI.put:%s" % self.request.path)
+
+        response = self.oauth_http("PUT", "/".join(map(str,uri_path)))
+        if not response:
+            self.set_status(400)
+            return
+
+        self.write(response.body)
+        self.set_status(response.code)
+
     @OAuthenticated
     def oauth_http(self, method, uri):
         try:
@@ -122,6 +133,7 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
             else:
                 url = "%s/%s" % (self.URL_BASE, uri.strip("/"))
                 headers["Content-Type"] = self.request.headers["Content-Type"]
+                if "If-Match" in self.request.headers: headers["If-Match"] = self.request.headers["If-Match"]
 
                 logging.info("content-type=%s" % self.request.headers["Content-Type"])
                 logging.info("body=%s" % self.request.body)
