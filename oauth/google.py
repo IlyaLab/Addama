@@ -4,13 +4,11 @@ from tornado.options import options
 from tornado.httpclient import HTTPClient, HTTPRequest, HTTPError
 import tornado.web
 import json
-import urlparse
 import urllib
+import base64
+import unicodedata
 
 from oauth.decorator import OAuthenticated
-
-from oauth2client.client import OAuth2WebServerFlow
-
 from storage.mongo import GetUserinfo, SaveUserinfo
 
 # "https://www.googleapis.com/auth/devstorage.read_write",
@@ -33,43 +31,87 @@ GOOGLE_APIS = "https://www.googleapis.com"
 GOOGLE_SPREADSHEET_APIS = "https://spreadsheets.google.com"
 
 class GoogleOAuth2Handler(tornado.web.RequestHandler):
+    def initialize(self):
+        self.redirect_uri = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
+        self.http_client = HTTPClient()
+
     def get(self):
-        if "oauth2_callback" in self.request.uri:
-            redirect = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
+        if "oauth2_callback" in self.request.path:
+            oauth_code = self.get_argument("code", None)
+            oauth_error = self.get_argument("error", None)
+            oauth_state = self.get_argument("state", None)
 
-            flow = OAuth2WebServerFlow(options.client_id, options.client_secret, " ".join(SCOPES), redirect_uri=redirect)
+            oauth_body = "code=%s&client_id=%s&client_secret=%s&redirect_uri=%s&grant_type=%s" % (oauth_code,
+                options.client_id, options.client_secret, self.redirect_uri, "authorization_code")
 
-            parsed = urlparse.urlparse(self.request.uri)
-            code = urlparse.parse_qs(parsed.query)["code"][0]
-            credentials = flow.step2_exchange(code)
+            http_request = HTTPRequest(url="https://accounts.google.com/o/oauth2/token", method="POST",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=oauth_body)
+            response = self.http_client.fetch(http_request)
 
-            cred_json = json.loads(credentials.to_json())
-            user_email = cred_json["id_token"]["email"]
+            authoriJson = json.loads(response.body)
+            if options.verbose: logging.info("GoogleOAuth2Handler.get:authoriJson=%s" % str(authoriJson))
 
-            http_client = HTTPClient()
+            access_token = authoriJson["access_token"]
+            refresh_token = authoriJson["refresh_token"]
+            expires_in = authoriJson["expires_in"]
+            token_type = authoriJson["token_type"]
+            id_token = authoriJson["id_token"]
+
+            segments = id_token.split('.')
+            if (len(segments) != 3):
+                logging.error('Wrong number of segments in token: %s' % id_token)
+                return
+
+            b64string = segments[1].encode('ascii')
+            padded = b64string + '=' * (4 - len(b64string) % 4)
+            padded = base64.urlsafe_b64decode(padded)
+
+            if options.verbose: logging.info("GoogleOAuth2Handler.get:id_token=%s" % (padded))
+            json_token = json.loads(padded)
+            user_email = json_token["email"]
+
             http_request = HTTPRequest(url="https://www.googleapis.com/oauth2/v1/userinfo",
-                headers={"Authorization": ("Bearer %s" % cred_json["access_token"])})
-            response = http_client.fetch(http_request)
+                headers={"Authorization": ("Bearer %s" % access_token)})
+            response = self.http_client.fetch(http_request)
 
-            cred_json["profile"] = json.loads(response.body)
-            SaveUserinfo(user_email, cred_json)
+            authoriJson["profile"] = json.loads(response.body)
+            SaveUserinfo(user_email, authoriJson)
 
             self.set_secure_cookie("whoami", user_email, expires_days=None)
             self.redirect(options.client_host)
+            # /code?state=/profile&code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7
+
+        elif "refresh" in self.request.path:
+            userkey = self.get_secure_cookie("whoami")
+            credentials = GetUserinfo(userkey)
+
+            oauth_body = "refresh_token=%s&client_id=%s&client_secret=%s&grant_type=%s" % (credentials["refresh_token"],
+                options.client_id, options.client_secret, "refresh_token")
+
+            http_request = HTTPRequest(url="https://accounts.google.com/o/oauth2/token", method="POST",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                body=oauth_body)
+            response = self.http_client.fetch(http_request)
+
         else:
             userkey = self.get_secure_cookie("whoami")
             credentials = GetUserinfo(userkey)
 
             if credentials is None or credentials.invalid:
-                self.respond_redirect_to_auth_server()
+                oauth = {
+                    "response_type": "code",
+                    "client_id": options.client_id,
+                    "scope": " ".join(SCOPES),
+                    "redirect_uri": self.redirect_uri,
+                    "state": self.request.host,
+                    "access_type": "offline",
+                    "approval_prompt": "force"
+                }
 
-    def respond_redirect_to_auth_server(self):
-        redirect = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
-        flow = OAuth2WebServerFlow(options.client_id, options.client_secret, " ".join(SCOPES), redirect_uri=redirect)
-
-        self.set_status(301)
-        self.set_header("Cache-Control", "no-cache")
-        self.set_header("Location", flow.step1_get_authorize_url())
+                self.set_status(301)
+                self.set_header("Cache-Control", "no-cache")
+                self.set_header("Location", "https://accounts.google.com/o/oauth2/auth?%s" % urllib.urlencode(oauth))
 
 class GoogleSignoutHandler(tornado.web.RequestHandler):
     def get(self):

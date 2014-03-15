@@ -105,13 +105,13 @@ class WhoamiHandler(tornado.web.RequestHandler):
             user = GetUserinfo(userkey)
             if not user is None:
                 google_provider["active"] = True
-                google_provider["user"] = {}
-                if "id_token" in user and "email" in user["id_token"]: google_provider["user"]["email"] = user["id_token"]["email"]
+                google_provider["user"] = { "email": userkey }
                 if "profile" in user:
                     user_profile = user["profile"]
                     if "name" in user_profile: google_provider["user"]["fullname"] = user_profile["name"]
                     if "picture" in user_profile: google_provider["user"]["pic"] = user_profile["picture"]
                     if "link" in user_profile: google_provider["user"]["profileLink"] = user_profile["link"]
+                    if "email" in user_profile: google_provider["user"]["email"] = user_profile["email"]
 
         self.write({"providers":[ google_provider ]})
         self.set_status(200)
@@ -178,6 +178,7 @@ def main():
         (r"/", MainHandler),
         (r"/auth/signin/google", GoogleOAuth2Handler),
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
+        (r"/auth/signin/google/refresh", GoogleOAuth2Handler),
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
