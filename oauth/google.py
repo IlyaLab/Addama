@@ -1,8 +1,8 @@
 import logging
 
 from tornado.options import options
+from tornado.httpclient import HTTPClient, HTTPRequest, HTTPError
 import tornado.web
-import tornado.httpclient
 import json
 import urlparse
 import urllib
@@ -46,8 +46,8 @@ class GoogleOAuth2Handler(tornado.web.RequestHandler):
             cred_json = json.loads(credentials.to_json())
             user_email = cred_json["id_token"]["email"]
 
-            http_client = tornado.httpclient.HTTPClient()
-            http_request = tornado.httpclient.HTTPRequest(url="https://www.googleapis.com/oauth2/v1/userinfo",
+            http_client = HTTPClient()
+            http_request = HTTPRequest(url="https://www.googleapis.com/oauth2/v1/userinfo",
                 headers={"Authorization": ("Bearer %s" % cred_json["access_token"])})
             response = http_client.fetch(http_request)
 
@@ -81,37 +81,13 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
         self.URL_BASE = url_base.strip("/")
 
     def get(self, *uri_path):
-        if options.verbose: logging.info("driveAPI.get:%s" % self.request.path)
-
-        response = self.oauth_http("GET", "/".join(map(str,uri_path)))
-        if not response:
-            self.set_status(400)
-            return
-
-        self.write(response.body)
-        self.set_status(response.code)
+        self.oauth_http("GET", "/".join(map(str,uri_path)))
 
     def post(self, *uri_path):
-        if options.verbose: logging.info("driveAPI.post:%s" % self.request.path)
-
-        response = self.oauth_http("POST", "/".join(map(str,uri_path)))
-        if not response:
-            self.set_status(400)
-            return
-
-        self.write(response.body)
-        self.set_status(response.code)
+        self.oauth_http("POST", "/".join(map(str,uri_path)))
 
     def put(self, *uri_path):
-        if options.verbose: logging.info("driveAPI.put:%s" % self.request.path)
-
-        response = self.oauth_http("PUT", "/".join(map(str,uri_path)))
-        if not response:
-            self.set_status(400)
-            return
-
-        self.write(response.body)
-        self.set_status(response.code)
+        self.oauth_http("PUT", "/".join(map(str,uri_path)))
 
     @OAuthenticated
     def oauth_http(self, method, uri):
@@ -119,17 +95,17 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
             if options.verbose: logging.info("driveAPI: %s %s/%s" % (method, self.URL_BASE, uri.strip("/")))
 
             userkey = self.get_secure_cookie("whoami")
-            if not userkey: raise tornado.httpclient.HTTPError(401, message="User is not logged-in")
+            if not userkey: raise HTTPError(401, message="User is not logged-in")
 
             credentials = GetUserinfo(userkey)
-            if not credentials: raise tornado.httpclient.HTTPError(401, message="User has not authorized OAUTH access")
+            if not credentials: raise HTTPError(401, message="User has not authorized OAUTH access")
 
             headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
 
             if method == "GET":
                 query_parameters = urllib.urlencode(self.request.arguments)
                 url = "%s/%s?%s" % (self.URL_BASE, uri.strip("/"), query_parameters)
-                http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers)
+                http_request = HTTPRequest(url=url, method=method, headers=headers)
             else:
                 url = "%s/%s" % (self.URL_BASE, uri.strip("/"))
                 headers["Content-Type"] = self.request.headers["Content-Type"]
@@ -140,13 +116,19 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
                 if self.request.headers["Content-Type"] == "application/json":
                     logging.info("body=%s" % json.loads(self.request.body))
 
-                http_request = tornado.httpclient.HTTPRequest(url=url, method=method, headers=headers, body=self.request.body)
+                http_request = HTTPRequest(url=url, method=method, headers=headers, body=self.request.body)
 
-            http_client = tornado.httpclient.HTTPClient()
+            http_client = HTTPClient()
             http_resp = http_client.fetch(http_request)
 
             if options.verbose: logging.info("driveAPI: %s %s/%s [%s]" % (method, self.URL_BASE, uri, http_resp.code))
-            return http_resp
+
+            self.write(http_resp.body)
+            self.set_status(http_resp.code)
+
+        except HTTPError, e:
+            logging.error("driveAPI: %s %s/%s [%s]" % (method, self.URL_BASE, uri, e.response.code))
+            self.set_status(e.response.code)
         except Exception, e:
             logging.error("driveAPI: %s %s/%s [%s]" % (method, self.URL_BASE, uri, e))
-            raise e
+            self.set_status(500, message=e)
