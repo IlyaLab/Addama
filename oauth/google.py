@@ -197,7 +197,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
             if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e.code))
             if e.code == 401 and RefreshToken:
                 self.refresh_token()
-                self.oauth_http(self, method, uri, RefreshToken=False) # avoid getting into a loop, next time token should be fresh
+                self.oauth_http(self, method, uri, False) # avoid getting into a loop, next time token should be fresh
                 return
 
             self.set_status(e.code)
