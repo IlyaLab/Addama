@@ -25,16 +25,12 @@
 <a name="auth"/>
 ## Authentication
 
-<a name="auth-whoami"/>
-### Who Am I?
-| API | Methods | Usage | Parameters | Description |
-|-----|:-------------:|-----|-----|:-----:|-----|
-| /auth/whoami | GET | ... | ... | ... |
-
 ### Providers
 | API | Methods | Usage | Parameters | Description |
 |-----|:-------------:|-----|-----|:-----:|-----|
 | /auth/providers | GET | ... | ... | ... |
+| /auth/providers/google_apis | GET, POST, PUT | ... | ... | Proxies to *https://www.googleapis.com*, signing headers with OAUTH access_token |
+| /auth/providers/google_spreadsheets | GET, POST, PUT | ... | ... | Proxies to *https://spreadsheets.google.com*, signing headers with OAUTH access_token |
 
 <a name="google-oauth2"/>
 ### Google+ OAUTH2
@@ -43,6 +39,7 @@
 | /auth/signin/google | POST | ... | ... | ... |
 | /auth/signout/google | POST | ... | ... | ... |
 | /auth/signin/google/oauth2_callback | POST | ... | ... | ... |
+| /auth/signin/google/refresh | POST | ... | ... | ... |
 
 <a name="data-mgmt"/>
 ## Data Management
