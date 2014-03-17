@@ -84,7 +84,7 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
         if ids[0] in RESERVED_COLLECTIONS:
             whoami = self.get_secure_cookie("whoami")
             logging.error("trying to accessing reserved information [%s,%s]:" % (whoami, identity))
-            raise tornado.web.HTTPError(401, "you are not allowed to view this data")
+            raise tornado.web.HTTPError(403, "you are not allowed to view this data")
 
         return ids
 

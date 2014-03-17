@@ -89,13 +89,17 @@
 | /gitWebHook | POST | ... | ... | ... |
 
 <a name="apis-responses"/>
-## Responses
+## HTTP Response Codes
 
-| Response Codes | Reasons | Headers | Description |
-|:-------------:|-----|:-----:|-----|
-| 200 | ... | ... | ... |
-| 404 | ... | ... | ... |
-| 409 | ... | ... | ... |
+| Code | Status | Description |
+|:-------------:|:-----:|-----|
+| 200 | OK | Everything completed as expected, even if queries return zero results |
+| 301 | REDIRECT | Go here instead |
+| 400 | BAD REQUEST | User or developer did something wrong, the server expresses its disappointment in _users_ |
+| 404 | NOT FOUND | Requested resource does not exist in databases or files, check address |
+| 401 | UNAUTHORIZED | User is not authenticated, must sign in to access requested resource |
+| 401 | FORBIDDEN | User is authenticated, but unauthorized to access requested resource (domain access may be limited) |
+| 500 | SERVER ERROR | Bad things happened, try again, email somebody, check logs |
 
 ## Under construction
 | API | Methods | Usage | Parameters | Description |

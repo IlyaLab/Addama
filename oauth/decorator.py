@@ -9,7 +9,7 @@ def OAuthenticated(method):
         whoami = self.get_secure_cookie("whoami")
         if len(options.authorized_users) > 0:
             if not whoami:
-                raise tornado.web.HTTPError(403)
+                raise tornado.web.HTTPError(401)
 
             if not whoami.lower() in options.authorized_users:
                 raise tornado.web.HTTPError(403)
