@@ -117,7 +117,7 @@ class GoogleOAuth2RefreshTokenHandler(tornado.web.RequestHandler):
 
     @OAuthenticated
     def get(self):
-        refresh_token()
+        self.refresh_token()
         self.set_status(200)
 
     def refresh_token(self):
@@ -154,6 +154,7 @@ GOOGLE_SPREADSHEET_APIS = "https://spreadsheets.google.com"
 # Wraps calls to Google APIs with access tokens
 class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
     def initialize(self, api_domain):
+        self.http_client = HTTPClient()
         self.API_DOMAIN = api_domain.strip("/")
 
     def get(self, *uri_path):
@@ -166,7 +167,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
         self.oauth_http("PUT", "/".join(map(str,uri_path)))
 
     @OAuthenticated
-    def oauth_http(self, method, uri, RefreshToken=true):
+    def oauth_http(self, method, uri, RefreshToken=True):
         if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
 
         credentials = open_collection("google_oauth_tokens").find_one({ "whoami": self.get_secure_cookie("whoami") })
@@ -196,11 +197,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
             if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e.code))
             if e.code == 401 and RefreshToken:
                 self.refresh_token()
-                self.oauth_http(self, method, uri, RefreshToken=false) # avoid getting into a loop, next time token should be fresh
+                self.oauth_http(self, method, uri, RefreshToken=False) # avoid getting into a loop, next time token should be fresh
                 return
 
             self.set_status(e.code)
-
-        except Exception, e:
-            if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e))
-            self.set_status(500, message=e)
