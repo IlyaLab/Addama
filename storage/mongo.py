@@ -6,6 +6,8 @@ import json
 from bson import objectid
 from oauth.decorator import OAuthenticated
 
+RESERVED_COLLECTIONS = ["google_oauth_tokens"]
+
 class MongoDbStorageHandler(tornado.web.RequestHandler):
     @OAuthenticated
     def get(self, identity):
@@ -79,9 +81,9 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
             logging.error("unknown identity [%s]:" % identity)
             raise tornado.web.HTTPError(401)
 
-        if ids[0] == "private_userinfo":
+        if ids[0] in RESERVED_COLLECTIONS:
             whoami = self.get_secure_cookie("whoami")
-            logging.error("accessing private_userinfo [%s,%s]:" % (whoami, identity))
+            logging.error("trying to accessing reserved information [%s,%s]:" % (whoami, identity))
             raise tornado.web.HTTPError(401, "you are not allowed to view this data")
 
         return ids
@@ -98,25 +100,6 @@ class MongoDbStorageHandler(tornado.web.RequestHandler):
         return json_item
 
 def open_collection(collection_name):
-    connection = pymongo.Connection(options.mongo_storage_uri)
-    qed_db = connection[options.mongo_storage_db]
-    return qed_db[collection_name]
-
-def GetUserinfo(whoami):
-    logging.info("GetUserinfo(%s)" % whoami)
-
-    collection = open_collection("private_userinfo")
-    return collection.find_one({ "whoami": whoami })
-
-def SaveUserinfo(whoami, userinfo):
-    logging.info("SaveUserinfo(%s)" % whoami)
-
-    existing_user = GetUserinfo(whoami)
-    userinfo["whoami"] = whoami
-
-    collection = open_collection("private_userinfo")
-    if existing_user is None:
-        collection.insert(userinfo)
-    else:
-        userinfo["_id"] = existing_user["_id"]
-        collection.save(userinfo)
+    conn = pymongo.Connection(options.mongo_storage_uri)
+    db = conn[options.mongo_storage_db]
+    return db[collection_name]

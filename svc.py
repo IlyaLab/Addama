@@ -28,12 +28,12 @@ from tornado.options import define, options
 import tornado.web
 import json
 
-from oauth.google import GoogleOAuth2Handler, GoogleSignoutHandler
+from oauth.google import GoogleOAuth2SignInHandler, GoogleOAuth2CallbackHandler, GoogleOAuth2RefreshTokenHandler, GoogleSignoutHandler
 from oauth.google import GoogleApisOAuthProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
 from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
-from storage.mongo import MongoDbStorageHandler, GetUserinfo
+from storage.mongo import MongoDbStorageHandler
 from storage.collections import MongoDbCollectionsHandler
 from scc.github import GitWebHookHandler
 
@@ -93,27 +93,6 @@ class MainHandler(tornado.web.RequestHandler):
         items.append({ "id": "data", "uri": self.request.path + "data" })
         items.append({ "id": "datastores", "uri": self.request.path + "datastores" })
         self.write({"items": items})
-        self.set_status(200)
-
-class WhoamiHandler(tornado.web.RequestHandler):
-    @OAuthenticated
-    def get(self):
-        userkey = self.get_secure_cookie("whoami")
-
-        google_provider = { "id": "google", "label": "Google+", "active": False, "logo": "https://www.google.com/images/icons/ui/gprofile_button-64.png" }
-        if not userkey is None:
-            user = GetUserinfo(userkey)
-            if not user is None:
-                google_provider["active"] = True
-                google_provider["user"] = { "email": userkey }
-                if "profile" in user:
-                    user_profile = user["profile"]
-                    if "name" in user_profile: google_provider["user"]["fullname"] = user_profile["name"]
-                    if "picture" in user_profile: google_provider["user"]["pic"] = user_profile["picture"]
-                    if "link" in user_profile: google_provider["user"]["profileLink"] = user_profile["link"]
-                    if "email" in user_profile: google_provider["user"]["email"] = user_profile["email"]
-
-        self.write({"providers":[ google_provider ]})
         self.set_status(200)
 
 class AuthProvidersHandler(tornado.web.RequestHandler):
@@ -176,14 +155,13 @@ def main():
 
     application = tornado.web.Application([
         (r"/", MainHandler),
-        (r"/auth/signin/google", GoogleOAuth2Handler),
-        (r"/auth/signin/google/oauth2_callback", GoogleOAuth2Handler),
-        (r"/auth/signin/google/refresh", GoogleOAuth2Handler),
+        (r"/auth/signin/google", GoogleOAuth2SignInHandler),
+        (r"/auth/signin/google/oauth2_callback", GoogleOAuth2CallbackHandler),
+        (r"/auth/signin/google/refresh", GoogleOAuth2RefreshTokenHandler),
         (r"/auth/signout/google", GoogleSignoutHandler),
-        (r"/auth/whoami", WhoamiHandler),
         (r"/auth/providers", AuthProvidersHandler),
-        (r"/auth/providers/google_drive/(.*)", GoogleApisOAuthProxyHandler, dict(url_base=GOOGLE_APIS)),
-        (r"/auth/providers/google_spreadsheets/(.*)", GoogleApisOAuthProxyHandler, dict(url_base=GOOGLE_SPREADSHEET_APIS)),
+        (r"/auth/providers/google_apis/(.*)", GoogleApisOAuthProxyHandler, dict(api_domain=GOOGLE_APIS)),
+        (r"/auth/providers/google_spreadsheets/(.*)", GoogleApisOAuthProxyHandler, dict(api_domain=GOOGLE_SPREADSHEET_APIS)),
         (r"/datastores", MongoDbQueryHandler),
         (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
