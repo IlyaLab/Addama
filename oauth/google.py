@@ -11,6 +11,7 @@ import base64
 from oauth.decorator import OAuthenticated
 from storage.mongo import open_collection
 
+# https://developers.google.com/drive/web/scopes
 SCOPES = [
     "email", "profile",
     "https://www.googleapis.com/auth/drive.file",
@@ -100,8 +101,7 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
     # see for details: https://developers.google.com/accounts/docs/OAuth2ServiceAccount#jwtcontents
     def decode_json_web_token(self, id_token):
         segments = id_token.split(".")
-        if (len(segments) != 3):
-            if not userkey: raise HTTPError(400, message="Wrong number of segments in id_token:%s" % id_token)
+        if (len(segments) != 3): raise HTTPError(400, message="Wrong number of segments in id_token:%s" % id_token)
 
         b64string = segments[1].encode("ascii")
         padded = b64string + "=" * (4 - len(b64string) % 4)
@@ -117,6 +117,10 @@ class GoogleOAuth2RefreshTokenHandler(tornado.web.RequestHandler):
 
     @OAuthenticated
     def get(self):
+        refresh_token()
+        self.set_status(200)
+
+    def refresh_token(self):
         # retrieve credentials
         collection = open_collection("google_oauth_tokens")
         credentials = collection.find_one({ "whoami": self.get_secure_cookie("whoami") })
@@ -136,7 +140,6 @@ class GoogleOAuth2RefreshTokenHandler(tornado.web.RequestHandler):
         # store fresh access_token
         credentials["access_token"] = respjson["access_token"]
         collection.save(credentials)
-        self.set_status(200)
 
 # Logs out users
 class GoogleSignoutHandler(tornado.web.RequestHandler):
@@ -149,9 +152,8 @@ GOOGLE_APIS = "https://www.googleapis.com"
 GOOGLE_SPREADSHEET_APIS = "https://spreadsheets.google.com"
 
 # Wraps calls to Google APIs with access tokens
-class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
+class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
     def initialize(self, api_domain):
-        self.http_client = HTTPClient()
         self.API_DOMAIN = api_domain.strip("/")
 
     def get(self, *uri_path):
@@ -164,17 +166,13 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
         self.oauth_http("PUT", "/".join(map(str,uri_path)))
 
     @OAuthenticated
-    def oauth_http(self, method, uri):
+    def oauth_http(self, method, uri, RefreshToken=true):
+        if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
+
+        credentials = open_collection("google_oauth_tokens").find_one({ "whoami": self.get_secure_cookie("whoami") })
+        if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
+
         try:
-            if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
-
-            # Determine if user is logged in
-            userkey = self.get_secure_cookie("whoami")
-            if not userkey: raise HTTPError(401, message="User is not logged-in")
-
-            credentials = open_collection("google_oauth_tokens").find_one({ "whoami": userkey })
-            if not credentials: raise HTTPError(401, message="User has not authorized OAUTH access")
-
             headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
 
             # Proxy requests to appropriate API
@@ -196,6 +194,11 @@ class GoogleApisOAuthProxyHandler(tornado.web.RequestHandler):
 
         except HTTPError, e:
             if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e.code))
+            if e.code == 401 and RefreshToken:
+                self.refresh_token()
+                self.oauth_http(self, method, uri, RefreshToken=false) # avoid getting into a loop, next time token should be fresh
+                return
+
             self.set_status(e.code)
 
         except Exception, e:
