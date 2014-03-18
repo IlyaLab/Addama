@@ -200,4 +200,9 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
                 self.oauth_http(self, method, uri, False) # avoid getting into a loop, next time token should be fresh
                 return
 
+            if e.code == 599:
+                if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [CODE=599]" % (method, self.API_DOMAIN, uri))
+                self.set_status(500) # network connectivity issue, for some reason tornado.web chokes on 599
+                return
+
             self.set_status(e.code)
