@@ -30,13 +30,13 @@ import json
 
 from oauth.google import GoogleOAuth2SignInHandler, GoogleOAuth2CallbackHandler, GoogleOAuth2RefreshTokenHandler, GoogleSignoutHandler
 from oauth.google import GoogleApisOAuthProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
-from oauth.decorator import OAuthenticated
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler
 from storage.collections import MongoDbCollectionsHandler
 from scc.github import GitWebHookHandler
 
+define("cookie_id", default="whoami_addama", help="Cookie ID for application instance; stores user id encrypted")
 define("data_path", default="../..", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
@@ -126,6 +126,7 @@ def main():
         settings["cookie_secret"] = options.client_secret
 
     logging.info("Starting Tornado web server on http://localhost:%s" % options.port)
+    logging.info("--cookie_id=%s" % options.cookie_id)
     logging.info("--data_path=%s" % options.data_path)
     logging.info("--client_host=%s" % options.client_host)
     logging.info("--authorized_users=%s" % options.authorized_users)

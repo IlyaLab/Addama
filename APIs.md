@@ -2,7 +2,6 @@
  - [APIs](#apis)
     - [Main](#apis-main)
     - [Authentication](#auth)
-        - [Who Am I?](#auth-whoami)
         - [Google+ OAUTH2](#google-oauth2)
     - [Data Management](#data-mgmt)
         - [Data Files](#data-files)

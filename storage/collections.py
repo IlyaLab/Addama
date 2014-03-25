@@ -4,19 +4,20 @@ import tornado.web
 import pymongo
 import json
 from bson import objectid
-from oauth.decorator import OAuthenticated
+from oauth.decorator import CheckAuthorized
+from oauth.basehandler import AuthenticatedRequestHandler
 
 RESERVED_COLLECTIONS = ["google_oauth_tokens"]
 
-class MongoDbCollectionsHandler(tornado.web.RequestHandler):
-    @OAuthenticated
+class MongoDbCollectionsHandler(AuthenticatedRequestHandler):
+    @CheckAuthorized
     def get(self, identity):
         ids = self.check_identity(identity)
         if len(ids) == 1:
             collection = open_collection(ids[0])
 
             json_items = []
-            for item in collection.find({ "owner": self.get_secure_cookie("whoami") }):
+            for item in collection.find({ "owner": self.opt_current_user() }):
                 json_items.append(jsonable_item(item))
 
             self.write(json.dumps(json_items))
@@ -25,7 +26,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
 
         elif len(ids) == 2:
             collection = open_collection(ids[0])
-            item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": self.get_secure_cookie("whoami") })
+            item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": self.opt_current_user() })
             if not item is None:
                 json_item = jsonable_item(item)
                 self.write(json_item)
@@ -37,7 +38,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
 
         self.set_status(404)
 
-    @OAuthenticated
+    @CheckAuthorized
     def post(self, identity):
         # create
         ids = self.check_identity(identity)
@@ -45,7 +46,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
         logging.info("collections.post:" + str(ids))
 
         stored_item = json.loads(self.request.body)
-        stored_item["owner"] = self.get_secure_cookie("whoami")
+        stored_item["owner"] = self.opt_current_user()
 
         # Figure out issue where label is getting set as an array
         labels = stored_item["label"]
@@ -56,7 +57,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
         self.write({ "id": str(insert_id) })
         self.set_status(200)
 
-    @OAuthenticated
+    @CheckAuthorized
     def put(self, identity):
         # update
         ids = self.check_identity(identity)
@@ -64,7 +65,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
         logging.info("collections.put:" + str(ids))
 
         stored_item = json.loads(self.request.body)
-        stored_item["owner"] = self.get_secure_cookie("whoami")
+        stored_item["owner"] = self.opt_current_user()
 
         # Figure out issue where label is getting set as an array
         labels = stored_item["label"]
@@ -79,7 +80,7 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
         self.write(stored_item)
         self.set_status(200)
 
-    @OAuthenticated
+    @CheckAuthorized
     def delete(self, identity):
         # delete
         ids = self.check_identity(identity)
@@ -101,8 +102,8 @@ class MongoDbCollectionsHandler(tornado.web.RequestHandler):
             raise tornado.web.HTTPError(401)
 
         if ids[0] in RESERVED_COLLECTIONS:
-            whoami = self.get_secure_cookie("whoami")
-            logging.error("trying to accessing reserved information [%s,%s]:" % (whoami, identity))
+            current_user = self.opt_current_user()
+            logging.error("trying to accessing reserved information [%s,%s]:" % (current_user, identity))
             raise tornado.web.HTTPError(403, "you are not allowed to view this data")
 
         return ids

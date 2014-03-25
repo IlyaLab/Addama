@@ -8,7 +8,7 @@ import json
 import urllib
 import base64
 
-from oauth.decorator import OAuthenticated
+from oauth.basehandler import AuthenticatedRequestHandler
 from storage.mongo import open_collection
 
 # https://developers.google.com/drive/web/scopes
@@ -86,8 +86,8 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
 
         # Lookup existing user record, or create one
         collection = open_collection("google_oauth_tokens")
-        credentials = collection.find_one({ "whoami": userinfo["email"] })
-        if credentials is None: credentials = { "whoami": userinfo["email"] }
+        credentials = collection.find_one({ "addama_user": userinfo["email"] })
+        if credentials is None: credentials = { "addama_user": userinfo["email"] }
 
         # Update database entry
         for k in respjson: credentials[k] = respjson[k]
@@ -95,7 +95,10 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
         collection.save(credentials)
 
         # Update cookies and send back to application
-        self.set_secure_cookie("whoami", userinfo["email"], expires_days=None)
+        cookie_id = options["cookie_id"]
+        self.set_secure_cookie(cookie_id, userinfo["email"], expires_days=None)
+        if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:%s[%s]" % (userinfo["email"], cookie_id))
+
         self.redirect(final_redirect)
 
     # see for details: https://developers.google.com/accounts/docs/OAuth2ServiceAccount#jwtcontents
@@ -111,19 +114,19 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
         return json.loads(padded)
 
 # Allows applications to refresh access token
-class GoogleOAuth2RefreshTokenHandler(tornado.web.RequestHandler):
+class GoogleOAuth2RefreshTokenHandler(AuthenticatedRequestHandler):
     def initialize(self):
         self.http_client = HTTPClient()
 
-    @OAuthenticated
     def get(self):
         self.refresh_token()
         self.set_status(200)
 
     def refresh_token(self):
         # retrieve credentials
+
         collection = open_collection("google_oauth_tokens")
-        credentials = collection.find_one({ "whoami": self.get_secure_cookie("whoami") })
+        credentials = collection.find_one({ "addama_user": self.get_current_user() })
         if credentials is None:
             self.set_status(404, "No credentials found, unable to refresh OAUTH2 token")
             return
@@ -166,11 +169,10 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
     def put(self, *uri_path):
         self.oauth_http("PUT", "/".join(map(str,uri_path)))
 
-    @OAuthenticated
     def oauth_http(self, method, uri, RefreshToken=True):
         if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
 
-        credentials = open_collection("google_oauth_tokens").find_one({ "whoami": self.get_secure_cookie("whoami") })
+        credentials = open_collection("google_oauth_tokens").find_one({ "addama_user": self.get_current_user() })
         if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
 
         try:
