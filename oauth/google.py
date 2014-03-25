@@ -82,12 +82,15 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
         # Extracting user information and tokens
         respjson = json.loads(http_response.body)
         if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:respjson=%s" % str(respjson))
+
         userinfo = self.decode_json_web_token(respjson["id_token"])
+        useremail = userinfo["email"]
+        if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:useremail=%s" % useremail)
 
         # Lookup existing user record, or create one
         collection = open_collection("google_oauth_tokens")
-        credentials = collection.find_one({ "addama_user": userinfo["email"] })
-        if credentials is None: credentials = { "addama_user": userinfo["email"] }
+        credentials = collection.find_one({ "addama_user": useremail })
+        if credentials is None: credentials = { "addama_user": useremail }
 
         # Update database entry
         for k in respjson: credentials[k] = respjson[k]
@@ -95,9 +98,9 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
         collection.save(credentials)
 
         # Update cookies and send back to application
-        cookie_id = options["cookie_id"]
-        self.set_secure_cookie(cookie_id, userinfo["email"], expires_days=None)
-        if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:%s[%s]" % (userinfo["email"], cookie_id))
+        cookie_id = options.cookie_id
+        if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:%s[%s]" % (useremail, cookie_id))
+        self.set_secure_cookie(cookie_id, useremail, expires_days=None)
 
         self.redirect(final_redirect)
 

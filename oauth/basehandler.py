@@ -10,7 +10,7 @@ class AuthenticatedRequestHandler(tornado.web.RequestHandler):
         return authenticated
 
     def opt_current_user(self):
-        cookie_id = options["cookie_id"]
+        cookie_id = options.cookie_id
         authenticated = self.get_secure_cookie(cookie_id)
         if options.verbose: logging.info("get_current_user():%s:[%s]" % (authenticated, cookie_id))
         return authenticated
