@@ -9,6 +9,8 @@ import tornado.web
 import csv
 import re
 
+from oauth.decorator import CheckAuthorized
+
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction"]
 
 class MongoDbQueryHandler(tornado.web.RequestHandler):
@@ -17,6 +19,7 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
     def initialize(self):
         self._datastore_map = self.datastores
 
+    @CheckAuthorized
     def get(self, *uri_path):
         try:
             if options.verbose: logging.info("GET [uri=%s] [arguments=%s]" % (self.request.uri, self.request.arguments))

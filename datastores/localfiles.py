@@ -4,10 +4,10 @@ import os
 import sys
 import json
 import csv
-from oauth.decorator import OAuthenticated
+from oauth.decorator import CheckAuthorized
 
 class LocalFileHandler(tornado.web.RequestHandler):
-    @OAuthenticated
+    @CheckAuthorized
     def get(self,filepath):
         try:
             rows=self.get_arguments("rows")

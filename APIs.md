@@ -2,7 +2,6 @@
  - [APIs](#apis)
     - [Main](#apis-main)
     - [Authentication](#auth)
-        - [Who Am I?](#auth-whoami)
         - [Google+ OAUTH2](#google-oauth2)
     - [Data Management](#data-mgmt)
         - [Data Files](#data-files)
@@ -25,16 +24,12 @@
 <a name="auth"/>
 ## Authentication
 
-<a name="auth-whoami"/>
-### Who Am I?
-| API | Methods | Usage | Parameters | Description |
-|-----|:-------------:|-----|-----|:-----:|-----|
-| /auth/whoami | GET | ... | ... | ... |
-
 ### Providers
 | API | Methods | Usage | Parameters | Description |
 |-----|:-------------:|-----|-----|:-----:|-----|
 | /auth/providers | GET | ... | ... | ... |
+| /auth/providers/google_apis | GET, POST, PUT | ... | ... | Proxies to *https://www.googleapis.com*, signing headers with OAUTH access_token |
+| /auth/providers/google_spreadsheets | GET, POST, PUT | ... | ... | Proxies to *https://spreadsheets.google.com*, signing headers with OAUTH access_token |
 
 <a name="google-oauth2"/>
 ### Google+ OAUTH2
@@ -43,6 +38,7 @@
 | /auth/signin/google | POST | ... | ... | ... |
 | /auth/signout/google | POST | ... | ... | ... |
 | /auth/signin/google/oauth2_callback | POST | ... | ... | ... |
+| /auth/signin/google/refresh | POST | ... | ... | ... |
 
 <a name="data-mgmt"/>
 ## Data Management
@@ -89,13 +85,17 @@
 | /gitWebHook | POST | ... | ... | ... |
 
 <a name="apis-responses"/>
-## Responses
+## HTTP Response Codes
 
-| Response Codes | Reasons | Headers | Description |
-|:-------------:|-----|:-----:|-----|
-| 200 | ... | ... | ... |
-| 404 | ... | ... | ... |
-| 409 | ... | ... | ... |
+| Code | Status | Description |
+|:-------------:|:-----:|-----|
+| 200 | OK | Everything completed as expected, even if queries return zero results |
+| 301 | REDIRECT | Go here instead |
+| 400 | BAD REQUEST | User or developer did something wrong, the server expresses its disappointment in _users_ |
+| 404 | NOT FOUND | Requested resource does not exist in databases or files, check address |
+| 401 | UNAUTHORIZED | User is not authenticated, must sign in to access requested resource |
+| 401 | FORBIDDEN | User is authenticated, but unauthorized to access requested resource (domain access may be limited) |
+| 500 | SERVER ERROR | Bad things happened, try again, email somebody, check logs |
 
 ## Under construction
 | API | Methods | Usage | Parameters | Description |
