@@ -6,7 +6,9 @@ import json
 import csv
 from oauth.decorator import CheckAuthorized
 
-class LocalFileHandler(tornado.web.RequestHandler):
+from static.pretty_json import PrettyJsonRequestHandler
+
+class LocalFileHandler(PrettyJsonRequestHandler):
     @CheckAuthorized
     def get(self,filepath):
         try:

@@ -7,7 +7,7 @@ from bson import objectid
 from oauth.decorator import CheckAuthorized
 from oauth.basehandler import AuthenticatedRequestHandler
 
-RESERVED_COLLECTIONS = ["google_oauth_tokens"]
+RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo"]
 
 class MongoDbStorageHandler(AuthenticatedRequestHandler):
     @CheckAuthorized
@@ -19,7 +19,7 @@ class MongoDbStorageHandler(AuthenticatedRequestHandler):
             json_items = []
             for item in collection.find({ "owner": self.opt_current_user() }):
                 json_item = self.jsonable_item(item)
-                json_item["uri"] = self.request.uri + "/" + json_item["id"]
+                json_item["uri"] = "/" + self.request.path.strip("/") + "/" + json_item["id"]
                 json_items.append(json_item)
 
             self.write({ "items": json_items })
@@ -31,7 +31,7 @@ class MongoDbStorageHandler(AuthenticatedRequestHandler):
             item = collection.find_one({"_id": objectid.ObjectId(ids[1]), "owner": self.opt_current_user() })
             if not item is None:
                 json_item = self.jsonable_item(item)
-                json_item["uri"] = self.request.uri
+                json_item["uri"] = "/" + self.request.path.strip("/")
                 self.write(json_item)
                 self.set_status(200)
                 return
@@ -101,6 +101,8 @@ class MongoDbStorageHandler(AuthenticatedRequestHandler):
         return json_item
 
 def open_collection(collection_name):
+    if collection_name in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
+
     conn = pymongo.Connection(options.mongo_storage_uri)
     db = conn[options.mongo_storage_db]
     return db[collection_name]

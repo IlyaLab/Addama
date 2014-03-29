@@ -1,9 +1,11 @@
 import logging
 
+from static.pretty_json import PrettyJsonRequestHandler
+
 import tornado.web
 from tornado.options import options
 
-class AuthenticatedRequestHandler(tornado.web.RequestHandler):
+class AuthenticatedRequestHandler(PrettyJsonRequestHandler):
     def get_current_user(self):
         authenticated = self.opt_current_user()
         if authenticated is None: raise tornado.web.HTTPError(401)
