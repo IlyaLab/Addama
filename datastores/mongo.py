@@ -10,10 +10,12 @@ import csv
 import re
 
 from oauth.decorator import CheckAuthorized
+from static.pretty_json import PrettyJsonRequestHandler
 
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction"]
+RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo"]
 
-class MongoDbQueryHandler(tornado.web.RequestHandler):
+class MongoDbQueryHandler(PrettyJsonRequestHandler):
     datastores_config = {}
 
     def initialize(self):
@@ -95,7 +97,8 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
         mongoClient = MongoClient(mongo_uri)
         items = []
         for database_name in mongoClient.database_names():
-            items.append({ "id": database_name, "uri": self.request.path + "/" + database_name })
+            if not database_name in RESERVED_COLLECTIONS:
+                items.append({ "id": database_name, "uri": self.request.path + "/" + database_name })
         self.write({"items": items, "data_type": "databases" })
 
     def list_collections(self, datastore_id, database_id):
@@ -109,11 +112,13 @@ class MongoDbQueryHandler(tornado.web.RequestHandler):
 
         items = []
         for collection_name in database.collection_names(False):
-            items.append({ "id": collection_name, "uri": self.request.path + "/" + collection_name })
+            if not collection_name in RESERVED_COLLECTIONS:
+                items.append({ "id": collection_name, "uri": self.request.path + "/" + collection_name })
         self.write({"items": items, "data_type": "collections" })
 
     def open_collection(self, datastore_id, db_name, collection_id):
         if options.verbose: logging.info("open_collection [%s] [%s] [%s]" % (datastore_id, db_name, collection_id))
+        if collection_id in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
 
         mongo_uri = self._datastore_map[datastore_id].uri
         mongoClient = MongoClient(mongo_uri)

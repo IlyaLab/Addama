@@ -27,13 +27,15 @@ import tornado.ioloop
 from tornado.options import define, options
 import tornado.web
 import json
+import os
 
+from static.pretty_json import PrettyJsonRequestHandler
 from oauth.google import GoogleOAuth2SignInHandler, GoogleOAuth2CallbackHandler, GoogleOAuth2RefreshTokenHandler, GoogleSignoutHandler
 from oauth.google import GoogleApisOAuthProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler
-from storage.collections import MongoDbCollectionsHandler
+from storage.collections import MongoDbCollectionsHandler, MongoDbListCollectionsHandler
 from scc.github import GitWebHookHandler
 
 define("cookie_id", default="whoami_addama", help="Cookie ID for application instance; stores user id encrypted")
@@ -87,11 +89,13 @@ class DataStoreConfiguration(object):
     uri = property(get_uri, set_uri)
 
 
-class MainHandler(tornado.web.RequestHandler):
+class MainHandler(PrettyJsonRequestHandler):
     def get(self):
         items = []
         items.append({ "id": "data", "uri": self.request.path + "data" })
         items.append({ "id": "datastores", "uri": self.request.path + "datastores" })
+        items.append({ "id": "collections", "uri": self.request.path + "collections" })
+
         self.write({"items": items})
         self.set_status(200)
 
@@ -154,8 +158,12 @@ def main():
     if not options.config_file_json is None:
         MongoDbQueryHandler.datastores_config = json.load(open(options.config_file_json))
 
+    static_file_path = "/%s/static" % os.path.abspath(__file__).strip("svc.py").strip("/")
+    if options.verbose: logging.info("static files served from: %s" % static_file_path)
+
     application = tornado.web.Application([
         (r"/", MainHandler),
+        (r"/static/(.*)", tornado.web.StaticFileHandler, { "path": static_file_path }),
         (r"/auth/signin/google", GoogleOAuth2SignInHandler),
         (r"/auth/signin/google/oauth2_callback", GoogleOAuth2CallbackHandler),
         (r"/auth/signin/google/refresh", GoogleOAuth2RefreshTokenHandler),
@@ -167,6 +175,8 @@ def main():
         (r"/datastores/(.*)", MongoDbQueryHandler),
         (r"/data?(.*)", LocalFileHandler),
         (r"/storage/(.*)", MongoDbStorageHandler),
+        (r"/collections", MongoDbListCollectionsHandler),
+        (r"/collections/", MongoDbListCollectionsHandler),
         (r"/collections/(.*)", MongoDbCollectionsHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler)
     ], **settings)
