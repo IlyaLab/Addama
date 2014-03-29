@@ -20,7 +20,9 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
     def redirects(self):
         h_accept = self.request.headers["Accept"]
         if "text/html" in h_accept.split(","):
-            self.redirect("/static/pretty.html?url=" + self.request.uri);
+            root_url = options.service_root.strip("/")
+            path_url = root_url + "/" + self.request.uri.strip("/")
+            self.redirect("/%s/static/pretty.html?root=/%s&url=/%s" % (root_url, root_url, path_url));
             return True
         return False
 

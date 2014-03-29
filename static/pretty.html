@@ -7,10 +7,11 @@
 <body>
 <pre id="output_region"></pre>
 <script type="text/javascript">
+    var rootUrl = $.url().param("root") || "/";
     var __uris2hrefs = function(item) {
         if (_.has(item, "uri")) {
             var uri = item["uri"];
-            item["uri"] = "<a href='" + uri + "'>" + uri + "</a>";
+            item["uri"] = "<a href='" + rootUrl + uri + "'>" + uri + "</a>";
         }
     };
 
