@@ -44,7 +44,6 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
         return False
 
     def annotate_service_root(self, arg):
-        if options.verbose: logging.info("annotate_service_root(%s)" % str(arg))
         if isinstance(arg, (list)):
             for item in arg:
                 self.annotate_service_root(item)
