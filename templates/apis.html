@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
@@ -10,6 +9,16 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-url-parser/2.3.1/purl.min.js"></script>
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css"/>
+    <style>
+        kbd {
+            padding: 10px 20px 10px 20px;
+            display: block;
+        }
+
+        #output_region {
+            word-wrap: normal;
+        }
+    </style>
 </head>
 <body>
 
@@ -25,18 +34,22 @@
 </div>
 
 <div class="container">
-    <div class="row">
-        <ol class="breadcrumb">
-        </ol>
+    <div class="row well">
+        <p>Command-line executable example</p>
+        <kbd id="curl_region"></kbd>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-10">
+            <h5>Path</h5>
+            <ol class="breadcrumb"></ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10">
+            <h5>JSON</h5>
             <div class="well">
                 <pre id="output_region"></pre>
             </div>
-        </div>
-        <div class="col-md-4">
-            <kbd id="curl_region"></kbd>
         </div>
     </div>
 </div>
@@ -45,10 +58,10 @@
     console.log("root={{root}}");
     console.log("url={{url}}");
 
-    $("#curl_region").html("curl " + document.location.href);
+    $("#curl_region").html("cmd-prompt> curl " + document.location.href);
 
     $(".breadcrumb").empty();
-    $(".breadcrumb").append("<li><a href='/' target='_self'>$root</a></li>");
+    $(".breadcrumb").append("<li><a href='/'>$root</a></li>");
 
     var breadcrumb_href = "{{root}}";
     var parts = _.compact("{{url}}".split("/"));
@@ -60,7 +73,7 @@
         if (_.isEqual(idx + 1, parts.length)) {
             $(".breadcrumb").append("<li class='active'>" + part + "</li>");
         } else {
-            $(".breadcrumb").append("<li><a href='" + breadcrumb_href + "' target='_self'>" + part + "</a></li>");
+            $(".breadcrumb").append("<li><a href='" + breadcrumb_href + "'>" + part + "</a></li>");
         }
 
     });
@@ -68,7 +81,7 @@
     var __uris2hrefs = function(item) {
         if (_.has(item, "uri")) {
             var uri = item["uri"];
-            item["uri"] = "<a href='" + uri + "' target='_self'>" + uri + "</a>";
+            item["uri"] = "<a href='" + uri + "'>" + uri + "</a>";
         }
     };
 
