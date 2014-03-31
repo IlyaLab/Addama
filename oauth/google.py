@@ -7,9 +7,9 @@ import tornado.web
 import json
 import urllib
 import base64
+import pymongo
 
 from oauth.basehandler import AuthenticatedRequestHandler
-from storage.mongo import open_collection
 
 # https://developers.google.com/drive/web/scopes
 SCOPES = [
@@ -25,10 +25,19 @@ SCOPES = [
 # 2. Google OAUTH page, user signs-in and approves scopes           : >-redirects-> GoogleOAuth2CallbackHandler
 # 3. GoogleOAuth2CallbackHandler stores user info and access tokens : >-redirects-> WebApp
 
+def oauth_tokens_collection():
+    conn = pymongo.Connection(options.mongo_storage_uri)
+    db = conn[options.mongo_storage_db]
+    return db["google_oauth_tokens"]
+
 # Redirects users to Google for authentication and authorization of 'scopes'
 class GoogleOAuth2SignInHandler(tornado.web.RequestHandler):
     def initialize(self):
-        self.redirect_uri = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
+        signin = "auth/signin/google/oauth2_callback"
+        if options.service_root != "/":
+            signin = options.service_root.strip("/") + "/" + signin
+
+        self.redirect_uri = "%s/%s" % (options.client_host, signin)
 
     def get(self):
         final_redirect = self.request.host  # TODO : specify based on requesting application
@@ -51,7 +60,11 @@ class GoogleOAuth2SignInHandler(tornado.web.RequestHandler):
 # This request is received when Google redirects user from Google OAUTH service
 class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
     def initialize(self):
-        self.redirect_uri = "%s/svc/auth/signin/google/oauth2_callback" % options.client_host
+        signin = "auth/signin/google/oauth2_callback"
+        if options.service_root != "/":
+            signin = options.service_root.strip("/") + "/" + signin
+
+        self.redirect_uri = "%s/%s" % (options.client_host, signin)
         self.http_client = HTTPClient()
 
     def get(self):
@@ -88,7 +101,7 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
         if options.verbose: logging.info("GoogleOAuth2CallbackHandler.get:useremail=%s" % useremail)
 
         # Lookup existing user record, or create one
-        collection = open_collection("google_oauth_tokens")
+        collection = oauth_tokens_collection()
         credentials = collection.find_one({ "addama_user": useremail })
         if credentials is None: credentials = { "addama_user": useremail }
 
@@ -128,7 +141,7 @@ class GoogleOAuth2RefreshTokenHandler(AuthenticatedRequestHandler):
     def refresh_token(self):
         # retrieve credentials
 
-        collection = open_collection("google_oauth_tokens")
+        collection = oauth_tokens_collection()
         credentials = collection.find_one({ "addama_user": self.get_current_user() })
         if credentials is None:
             self.set_status(404, "No credentials found, unable to refresh OAUTH2 token")
@@ -175,7 +188,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
     def oauth_http(self, method, uri, RefreshToken=True):
         if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
 
-        credentials = open_collection("google_oauth_tokens").find_one({ "addama_user": self.get_current_user() })
+        credentials = oauth_tokens_collection().find_one({ "addama_user": self.get_current_user() })
         if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
 
         try:

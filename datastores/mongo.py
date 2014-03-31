@@ -10,7 +10,7 @@ import csv
 import re
 
 from oauth.decorator import CheckAuthorized
-from static.pretty_json import PrettyJsonRequestHandler
+from pretty_json import PrettyJsonRequestHandler
 
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction"]
 RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo"]
