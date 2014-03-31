@@ -1,6 +1,6 @@
 import logging
 
-from static.pretty_json import PrettyJsonRequestHandler
+from pretty_json import PrettyJsonRequestHandler
 
 import tornado.web
 from tornado.options import options

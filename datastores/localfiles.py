@@ -6,7 +6,7 @@ import json
 import csv
 from oauth.decorator import CheckAuthorized
 
-from static.pretty_json import PrettyJsonRequestHandler
+from pretty_json import PrettyJsonRequestHandler
 
 class LocalFileHandler(PrettyJsonRequestHandler):
     @CheckAuthorized

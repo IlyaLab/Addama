@@ -29,7 +29,7 @@ import tornado.web
 import json
 import os
 
-from static.pretty_json import PrettyJsonRequestHandler
+from pretty_json import PrettyJsonRequestHandler
 from oauth.google import GoogleOAuth2SignInHandler, GoogleOAuth2CallbackHandler, GoogleOAuth2RefreshTokenHandler, GoogleSignoutHandler
 from oauth.google import GoogleApisOAuthProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
 from datastores.mongo import MongoDbQueryHandler
