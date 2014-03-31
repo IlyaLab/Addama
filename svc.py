@@ -40,6 +40,7 @@ from scc.github import GitWebHookHandler
 
 define("cookie_id", default="whoami_addama", help="Cookie ID for application instance; stores user id encrypted")
 define("service_root", default="/", help="Helps to control path if its being proxied")
+define("oauth_uri_root", default="/", help="Helps to control path for OAUTH callback if its being proxied")
 define("data_path", default="../..", help="Path to data files")
 define("port", default=8000, help="run on the given port", type=int)
 define("client_host", default="http://localhost:8000", help="Client URL for Google OAuth2")
