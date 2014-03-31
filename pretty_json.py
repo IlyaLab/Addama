@@ -33,7 +33,7 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
 
         if "text/html" in h_accept.split(","):
             path_url = self.request.uri
-            root_url = "/"
+            root_url = ""
             if options.service_root != "/":
                 root_url = "/" + options.service_root.strip("/")
                 path_url = root_url + self.request.uri
@@ -44,7 +44,6 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
         return False
 
     def annotate_service_root(self, arg):
-        if options.verbose: logging.info("annotate_service_root(%s)" % str(arg))
         if isinstance(arg, (list)):
             for item in arg:
                 self.annotate_service_root(item)
