@@ -15,6 +15,8 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
         self.template_loader = tornado.template.Loader(template_path)
 
     def write(self, arg):
+        self.annotate_service_root(arg)
+
         if isinstance(arg, (list)):
             if self.show_api(): return
             return super(PrettyJsonRequestHandler, self).write(json.dumps(arg))
@@ -30,11 +32,27 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
         if options.verbose: logging.info("h_accept=%s" % str(h_accept))
 
         if "text/html" in h_accept.split(","):
-            root_url = options.service_root
-            if root_url != "/": root_url = root_url + "/"
-            path_url = root_url + self.request.uri.strip("/")
-            html = self.template_loader.load("apis.html").generate(root=root_url, url=path_url)
+            path_url = self.request.uri
+            if options.service_root != "/":
+                path_url = "/" + options.service_root.strip("/") + self.request.uri
+
+            html = self.template_loader.load("apis.html").generate(url=path_url)
             super(PrettyJsonRequestHandler, self).write(html)
             return True
         return False
 
+    def annotate_service_root(self, arg):
+        logging.info("annotate_service_root(%s)" % str(arg))
+        if isinstance(arg, (list)):
+            for item in arg:
+                self.annotate_service_root(item)
+
+        elif type(arg) is dict:
+            if "uri" in arg:
+                if options.service_root != "/":
+                    arg["uri"] = "/" + options.service_root.strip("/") + arg["uri"]
+
+            for key in ["items", "files", "directories"]:
+                if key in arg:
+                    for item in arg[key]:
+                        self.annotate_service_root(item)

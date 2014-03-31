@@ -78,7 +78,6 @@
 </div>
 
 <script type="text/javascript">
-    console.log("root={{root}}");
     console.log("url={{url}}");
 
     $("#curl_region").html("cmd-prompt> curl " + document.location.href);
@@ -86,7 +85,7 @@
     $(".breadcrumb").empty();
     $(".breadcrumb").append("<li><a href='/'>$root</a></li>");
 
-    var breadcrumb_href = "{{root}}";
+    var breadcrumb_href = "";
     var parts = _.compact("{{url}}".split("/"));
     _.each(parts, function(part, idx) {
         if (!_.isEqual(breadcrumb_href, "/")) breadcrumb_href += "/";
@@ -98,7 +97,6 @@
         } else {
             $(".breadcrumb").append("<li><a href='" + breadcrumb_href + "'>" + part + "</a></li>");
         }
-
     });
 
     var __uris2hrefs = function(item) {
