@@ -99,9 +99,9 @@
     var ref_url = "{{url}}".replace("{{root_path}}", "");
 
     $(".breadcrumb").empty();
-    $(".breadcrumb").append("<li><a href='/'>$root</a></li>");
+    $(".breadcrumb").append("<li><a href='{{root_path}}/'>$root</a></li>");
 
-    var breadcrumb_href = "";
+    var breadcrumb_href = "{{root_path}}";
     var parts = _.compact(ref_url.split("/"));
     _.each(parts, function(part, idx) {
         if (!_.isEqual(breadcrumb_href, "/")) breadcrumb_href += "/";

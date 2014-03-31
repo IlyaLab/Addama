@@ -34,8 +34,8 @@ def oauth_tokens_collection():
 class GoogleOAuth2SignInHandler(tornado.web.RequestHandler):
     def initialize(self):
         signin = "auth/signin/google/oauth2_callback"
-        if options.service_root != "/":
-            signin = options.service_root.strip("/") + "/" + signin
+        if options.oauth_uri_root != "/":
+            signin = options.oauth_uri_root.strip("/") + "/" + signin
 
         self.redirect_uri = "%s/%s" % (options.client_host, signin)
 
@@ -61,8 +61,8 @@ class GoogleOAuth2SignInHandler(tornado.web.RequestHandler):
 class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
     def initialize(self):
         signin = "auth/signin/google/oauth2_callback"
-        if options.service_root != "/":
-            signin = options.service_root.strip("/") + "/" + signin
+        if options.oauth_uri_root != "/":
+            signin = options.oauth_uri_root.strip("/") + "/" + signin
 
         self.redirect_uri = "%s/%s" % (options.client_host, signin)
         self.http_client = HTTPClient()
