@@ -33,7 +33,7 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
 
         if "text/html" in h_accept.split(","):
             path_url = self.request.uri
-            root_url = "/"
+            root_url = ""
             if options.service_root != "/":
                 root_url = "/" + options.service_root.strip("/")
                 path_url = root_url + self.request.uri

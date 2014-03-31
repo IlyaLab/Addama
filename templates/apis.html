@@ -47,7 +47,7 @@
         </li>
         <li>
             <div class="">
-                <a href="{{root_path}}auth/signin/google" class="signin-link">
+                <a href="{{root_path}}/auth/signin/google" class="signin-link">
                     Sign In
                     <img src="https://www.google.com/images/icons/ui/gprofile_button-32.png">
                 </a>
@@ -95,11 +95,13 @@
 
     $("#curl_region").html("cmd-prompt> curl " + document.location.href);
 
+    var ref_url = "{{url}}".replace("{{root_path}}", "");
+
     $(".breadcrumb").empty();
     $(".breadcrumb").append("<li><a href='/'>$root</a></li>");
 
     var breadcrumb_href = "";
-    var parts = _.compact("{{url}}".split("/"));
+    var parts = _.compact(ref_url.split("/"));
     _.each(parts, function(part, idx) {
         if (!_.isEqual(breadcrumb_href, "/")) breadcrumb_href += "/";
         breadcrumb_href += part;
@@ -161,7 +163,7 @@
     var signOutFn = function() {
         $.ajax({
             "method": "get",
-            "url": "{{root_path}}auth/signout/google",
+            "url": "{{root_path}}/auth/signout/google",
             "success": function() {
                 document.location = document.location.href;
             },
@@ -173,7 +175,7 @@
 
     $.ajax({
         "method": "get",
-        "url": "{{root_path}}auth/providers/google_apis/oauth2/v1/userinfo",
+        "url": "{{root_path}}/auth/providers/google_apis/oauth2/v1/userinfo",
         "success": function(data) {
             var userinfo = JSON.parse(data);
             $(".profile_pic").attr("src", userinfo["picture"]);
