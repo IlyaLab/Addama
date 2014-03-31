@@ -18,13 +18,32 @@
         #output_region {
             word-wrap: normal;
         }
+
+        .jumbotron {
+            padding-top: 15px;
+            padding-bottom: 15px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="jumbotron">
-    <h3>Addama API Console</h3>
-    <p><a class="btn btn-primary btn-sm" role="button" href="https://github.com/IlyaLab/Addama/blob/master/APIs.md">Learn more</a></p>
+    <ul class="nav nav-pills">
+        <li>
+            <a href="http://www.systemsbiology.org" target="_blank">
+                <img src="https://csacr.systemsbiology.net/staging/genespot/img/isblogo.png"/>
+            </a>
+        </li>
+        <li>
+            <h4>Addama | API Console</h4>
+            <small><a href="http://www.systemsbiology.org/shmulevich-group" target="_blank">Shmulevich Group</a></small>
+            <br/>
+            <small><a href="http://www.systemsbiology.org" target="_blank">Institute for Systems Biology</a></small>
+            <br/>
+            <p><a class="btn btn-primary btn-sm" role="button" href="https://github.com/IlyaLab/Addama/blob/master/APIs.md">API documentation</a></p>
+        </li>
+    </ul>
     <a href="https://github.com/IlyaLab/Addama" target="_blank">
         <img style="position: absolute; top: 0; right: 0; border: 0;"
              src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
@@ -34,14 +53,18 @@
 </div>
 
 <div class="container">
-    <div class="row well">
-        <p>Command-line executable example</p>
-        <kbd id="curl_region"></kbd>
+    <div class="row">
+        <div class="col-md-10">
+            <h5>Command-line executable example</h5>
+            <div class="well">
+                <kbd id="curl_region"></kbd>
+            </div>
+        </div>
     </div>
     <div class="row">
         <div class="col-md-10">
             <h5>Path</h5>
-            <ol class="breadcrumb"></ol>
+            <ol class="breadcrumb well"></ol>
         </div>
     </div>
     <div class="row">
