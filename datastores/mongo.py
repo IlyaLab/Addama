@@ -13,7 +13,7 @@ from oauth.decorator import CheckAuthorized
 from pretty_json import PrettyJsonRequestHandler
 
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction", "_"]
-RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo"]
+RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local"]
 
 class MongoDbQueryHandler(PrettyJsonRequestHandler):
     datastores_config = {}
