@@ -185,6 +185,9 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
     def put(self, *uri_path):
         self.oauth_http("PUT", "/".join(map(str,uri_path)))
 
+    def delete(self, *uri_path):
+        self.oauth_http("DELETE", "/".join(map(str,uri_path)))
+
     def oauth_http(self, method, uri, RefreshToken=True):
         if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
 
@@ -199,6 +202,10 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
                 query_parameters = urllib.urlencode(self.request.arguments)
                 url = "%s/%s?%s" % (self.API_DOMAIN, uri.strip("/"), query_parameters)
                 http_request = HTTPRequest(url=url, method=method, headers=headers)
+            elif method == "DELETE":
+                url = "%s/%s" % (self.API_DOMAIN, uri.strip("/"))
+                http_request = HTTPRequest(url=url, method=method, headers=headers)
+
             else:
                 url = "%s/%s" % (self.API_DOMAIN, uri.strip("/"))
                 headers["Content-Type"] = self.request.headers["Content-Type"]
@@ -220,6 +227,36 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
 
             if e.code == 599:
                 if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [CODE=599]" % (method, self.API_DOMAIN, uri))
+                self.set_status(500) # network connectivity issue, for some reason tornado.web chokes on 599
+                return
+
+            self.set_status(e.code)
+
+class GoogleOAuthDownloadProxyHandler(GoogleOAuth2RefreshTokenHandler):
+    def initialize(self):
+        self.http_client = HTTPClient()
+
+    def get(self):
+        forwardUrl = urllib.unquote(self.get_argument("forwardUrl"))
+        if options.verbose: logging.info("GoogleOAuthDownloadProxyHandler.oauth_http: %s %s" % ("GET", forwardUrl))
+
+        credentials = oauth_tokens_collection().find_one({ "addama_user": self.get_current_user() })
+        if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
+
+        try:
+            headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
+
+            # Proxy requests to appropriate API
+            http_request = HTTPRequest(url=forwardUrl, method="GET", headers=headers)
+            http_resp = self.http_client.fetch(http_request)
+            if options.verbose: logging.info("GoogleOAuthDownloadProxyHandler.GET %s [%s]" % (forwardUrl, http_resp.code))
+            self.write(http_resp.body)
+            self.set_status(http_resp.code)
+
+        except HTTPError, e:
+            if options.verbose: logging.error("GoogleOAuthDownloadProxyHandler.GET %s [%s]" % (forwardUrl, e.code))
+            if e.code == 599:
+                if options.verbose: logging.error("GoogleOAuthDownloadProxyHandler.GET %s [CODE=599]" % (forwardUrl))
                 self.set_status(500) # network connectivity issue, for some reason tornado.web chokes on 599
                 return
 

@@ -31,7 +31,7 @@ import os
 
 from pretty_json import PrettyJsonRequestHandler
 from oauth.google import GoogleOAuth2SignInHandler, GoogleOAuth2CallbackHandler, GoogleOAuth2RefreshTokenHandler, GoogleSignoutHandler
-from oauth.google import GoogleApisOAuthProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
+from oauth.google import GoogleApisOAuthProxyHandler, GoogleOAuthDownloadProxyHandler, GOOGLE_APIS, GOOGLE_SPREADSHEET_APIS
 from datastores.mongo import MongoDbQueryHandler
 from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler
@@ -172,6 +172,7 @@ def main():
         (r"/auth/signin/google/refresh", GoogleOAuth2RefreshTokenHandler),
         (r"/auth/signout/google", GoogleSignoutHandler),
         (r"/auth/providers", AuthProvidersHandler),
+        (r"/auth/providers/google_download", GoogleOAuthDownloadProxyHandler),
         (r"/auth/providers/google_apis/(.*)", GoogleApisOAuthProxyHandler, dict(api_domain=GOOGLE_APIS)),
         (r"/auth/providers/google_spreadsheets/(.*)", GoogleApisOAuthProxyHandler, dict(api_domain=GOOGLE_SPREADSHEET_APIS)),
         (r"/datastores", MongoDbQueryHandler),
