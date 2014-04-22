@@ -7,7 +7,7 @@ from bson import objectid
 from oauth.decorator import CheckAuthorized
 from oauth.basehandler import AuthenticatedRequestHandler
 
-RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local"]
+RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local", "collection_fields"]
 
 class MongoDbListCollectionsHandler(AuthenticatedRequestHandler):
     @CheckAuthorized

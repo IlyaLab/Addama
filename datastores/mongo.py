@@ -13,7 +13,7 @@ from oauth.decorator import CheckAuthorized
 from pretty_json import PrettyJsonRequestHandler
 
 RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction", "_"]
-RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local"]
+RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local", "collection_fields"]
 
 class MongoDbQueryHandler(PrettyJsonRequestHandler):
     datastores_config = {}
@@ -62,7 +62,8 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 json_items = self.query_collection(collection, query, sort_fld, sort_dir)
 
                 if self.get_argument("output", "json") == "tsv":
-                    self.write_tsv(json_items)
+                    headers = self.collection_fields(datastore_id, db_name, collection)
+                    self.write_tsv(json_items, headers)
                     self.set_status(200)
                     return
 
@@ -72,7 +73,9 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
 
             last_part = uri_parts[4]
             if last_part == "fields":
-                self.list_fields(collection)
+                flds = self.collection_fields(datastore_id, db_name, collection)
+                self.write({"items": flds, "data_type": "fields" })
+
                 self.set_status(200)
                 return
 
@@ -116,18 +119,28 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 items.append({ "id": collection_name, "uri": self.request.path + "/" + collection_name })
         self.write({"items": items, "data_type": "collections" })
 
-    def open_collection(self, datastore_id, db_name, collection_id):
+    def open_collection(self, datastore_id, db_name, collection_id, InternalUse=False):
         if options.verbose: logging.info("open_collection [%s] [%s] [%s]" % (datastore_id, db_name, collection_id))
-        if collection_id in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
+        if not InternalUse and collection_id in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
 
         mongo_uri = self._datastore_map[datastore_id].uri
         mongoClient = MongoClient(mongo_uri)
         database = mongoClient[db_name]
         return database[collection_id]
 
-    def list_fields(self, collection):
-        if options.verbose: logging.info("list_fields [%s]" % (collection.name))
-        self.write({"items": collection.find_one().keys(), "data_type": "fields" })
+    def collection_fields(self, datastore_id, db_name, collection):
+        if options.verbose: logging.info("collection_fields [%s,%s,%s]" % (datastore_id, db_name, collection.name))
+
+        c_fields = self.open_collection(datastore_id, db_name, "collection_fields", InternalUse=True)
+        c_out = c_fields.find({ "value": collection.name })
+        if c_out is None:
+            logging.warn("need to run mapreduce_collection_fields.js")
+            return []
+
+        fields = []
+        for field in c_out:
+            fields.append(field["_id"])
+        return fields
 
     def query_collection(self, collection, query, sort_fld=None, sort_dir=1):
         if options.verbose: logging.info("query_collection [%s] [%s] [%s] [%s]" % (collection.name, query, sort_fld, sort_dir))
@@ -205,7 +218,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 json_item[str(k)] = item[k]
         return json_item
 
-    def write_tsv(self, items):
+    def write_tsv(self, items, headers):
         filename = self.get_argument("output_filename", "data_export.tsv")
         attachment = "attachment; filename=\"%s\"" % filename
 
@@ -218,7 +231,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         excludedheaders = ["id", "values"]
 
         if len(items) > 0:
-            colheaders = [a for a in items[0].keys() if a not in excludedheaders]
+            colheaders = [a for a in headers if a not in excludedheaders]
             pivotkeys = []
             if "values" in items[0]:
                 values_keys = items[0]["values"].keys()
@@ -231,7 +244,11 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
 
             for item in items:
                 vals = []
-                for colheader in colheaders: vals.append(item[colheader])
+                for colheader in colheaders:
+                    if colheader in item:
+                        vals.append(item[colheader])
+                    else:
+                        vals.append("")
 
                 if "values" in item:
                     item_values = item["values"]
