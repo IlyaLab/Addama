@@ -8,7 +8,7 @@ from tornado.options import options
 class AuthenticatedRequestHandler(PrettyJsonRequestHandler):
     def get_current_user(self):
         authenticated = self.opt_current_user()
-        if authenticated is None: raise tornado.web.HTTPError(401)
+        if authenticated is None: raise tornado.web.HTTPError(401, "Users must be logged in")
         return authenticated
 
     def opt_current_user(self):

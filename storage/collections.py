@@ -121,7 +121,7 @@ class MongoDbCollectionsHandler(AuthenticatedRequestHandler):
         if ids[0] in RESERVED_COLLECTIONS:
             current_user = self.opt_current_user()
             logging.error("trying to accessing reserved information [%s,%s]:" % (current_user, identity))
-            raise tornado.web.HTTPError(403, "you are not allowed to view this data")
+            raise tornado.web.HTTPError(403, "This data is reserved for internal use")
 
         return ids
 
@@ -137,7 +137,7 @@ def jsonable_item(item):
     return json_item
 
 def open_collection(collection_name):
-    if collection_name in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
+    if collection_name in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403, "This data is reserved for internal use")
 
     conn = pymongo.Connection(options.mongo_storage_uri)
     db = conn[options.mongo_storage_db]

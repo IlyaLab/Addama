@@ -38,7 +38,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
             datastore_id = uri_parts[1]
             if not datastore_id in self._datastore_map.keys():
                 if options.verbose: logging.info("unknown datastore [%s]" % datastore_id)
-                raise tornado.web.HTTPError(404)
+                raise tornado.web.HTTPError(404, ("datastore %s not found" % datastore_id))
 
             if len(uri_parts) == 2:
                 self.list_databases(datastore_id)
@@ -79,7 +79,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 self.set_status(200)
                 return
 
-            raise tornado.web.HTTPError(404)
+            raise tornado.web.HTTPError(404, ("%s was not found" % self.request.path))
         except ConnectionFailure as cfe:
             raise tornado.web.HTTPError(500, str(cfe))
 
@@ -121,7 +121,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
 
     def open_collection(self, datastore_id, db_name, collection_id, InternalUse=False):
         if options.verbose: logging.info("open_collection [%s] [%s] [%s]" % (datastore_id, db_name, collection_id))
-        if not InternalUse and collection_id in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403)
+        if not InternalUse and collection_id in RESERVED_COLLECTIONS: raise tornado.web.HTTPError(403, "This collection is reserved for internal use")
 
         mongo_uri = self._datastore_map[datastore_id].uri
         mongoClient = MongoClient(mongo_uri)

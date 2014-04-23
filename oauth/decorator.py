@@ -8,6 +8,6 @@ def CheckAuthorized(method):
     def wrapper(self, *args, **kwargs):
         if len(options.authorized_users) > 0:
             current_user = self.get_current_user()
-            if not current_user.lower() in options.authorized_users: raise tornado.web.HTTPError(403)
+            if not current_user.lower() in options.authorized_users: raise tornado.web.HTTPError(403, "User is not in authorized_users list")
         return method(self, *args, **kwargs)
     return wrapper

@@ -120,7 +120,7 @@ class GoogleOAuth2CallbackHandler(tornado.web.RequestHandler):
     # see for details: https://developers.google.com/accounts/docs/OAuth2ServiceAccount#jwtcontents
     def decode_json_web_token(self, id_token):
         segments = id_token.split(".")
-        if (len(segments) != 3): raise HTTPError(400, message="Wrong number of segments in id_token:%s" % id_token)
+        if (len(segments) != 3): raise HTTPError(400, ("Wrong number of segments in id_token:%s" % id_token))
 
         b64string = segments[1].encode("ascii")
         padded = b64string + "=" * (4 - len(b64string) % 4)
@@ -192,7 +192,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
         if options.verbose: logging.info("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s" % (method, self.API_DOMAIN, uri.strip("/")))
 
         credentials = oauth_tokens_collection().find_one({ "addama_user": self.get_current_user() })
-        if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
+        if not credentials: raise HTTPError(401, "No OAUTH access_tokens, user must approve to access")
 
         try:
             headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
@@ -241,7 +241,7 @@ class GoogleOAuthDownloadProxyHandler(GoogleOAuth2RefreshTokenHandler):
         if options.verbose: logging.info("GoogleOAuthDownloadProxyHandler.oauth_http: %s %s" % ("GET", forwardUrl))
 
         credentials = oauth_tokens_collection().find_one({ "addama_user": self.get_current_user() })
-        if not credentials: raise HTTPError(401, message="No OAUTH access_tokens, user must approve to access")
+        if not credentials: raise HTTPError(401, "No OAUTH access_tokens, user must approve to access")
 
         try:
             headers = { "Authorization": ( "Bearer %s" % credentials["access_token"] ) }
