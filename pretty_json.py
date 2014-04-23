@@ -27,6 +27,19 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
 
         return super(PrettyJsonRequestHandler, self).write(arg)
 
+    def write_error(self, status_code, **kwargs):
+        error_msg = kwargs["exc_info"][1]
+        if options.verbose: logging.info("write_error(%s):%s" % (status_code, error_msg))
+
+        h_accept = self.request.headers["Accept"]
+        if options.verbose: logging.info("h_accept=%s" % str(h_accept))
+
+        if "text/html" in h_accept.split(","):
+            html = self.template_loader.load("errors.html").generate(status_code=status_code, error_message=error_msg)
+            super(PrettyJsonRequestHandler, self).write(html)
+        else:
+            self.write({ "message": str(error_msg) })
+
     def show_api(self):
         h_accept = self.request.headers["Accept"]
         if options.verbose: logging.info("h_accept=%s" % str(h_accept))
