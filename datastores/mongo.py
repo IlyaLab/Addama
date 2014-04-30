@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
 import tornado.web
+import tornado.escape
 import csv
 import re
 
@@ -80,6 +81,59 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 return
 
             raise tornado.web.HTTPError(404, ("%s was not found" % self.request.path))
+        except ConnectionFailure as cfe:
+            raise tornado.web.HTTPError(500, str(cfe))
+
+    def post(self, *uri_path):
+        try:
+            if options.verbose: logging.info("POST [uri=%s] [body=%s]" % (self.request.uri, self.request.body))
+
+            sub_path = self.request.path.replace("/datastores", "")
+            uri_parts = sub_path.split("/")
+            if options.verbose: logging.info("POST [sub_path=%s] [len=%d]" % (sub_path, len(uri_parts)))
+
+            if len(uri_parts) == 1:
+                self.list_datastores()
+                self.set_status(200)
+                return
+
+            datastore_id = uri_parts[1]
+            if not datastore_id in self._datastore_map.keys():
+                if options.verbose: logging.info("unknown datastore [%s]" % datastore_id)
+                raise tornado.web.HTTPError(404)
+
+            if len(uri_parts) == 2:
+                self.list_databases(datastore_id)
+                self.set_status(200)
+                return
+
+            db_name = uri_parts[2]
+            if len(uri_parts) == 3:
+                self.list_collections(datastore_id, db_name)
+                self.set_status(200)
+                return
+                
+            collection_id = uri_parts[3]
+            # datastore = self._datastore_map[datastore_id]
+            collection = self.open_collection(datastore_id, db_name, collection_id)
+
+            if len(uri_parts) == 4:
+                datatypes = self.get_datatypes(datastore_id, db_name, collection_id)
+                query = tornado.escape.json_decode(self.request.body) 
+                sort_fld = query.pop("sort_by", None)
+                sort_dir = query.pop("sort_direction", 1)
+                json_items = self.query_collection(collection, query, sort_fld, sort_dir)
+
+                if query.pop("output", "json") == "tsv":
+                    self.write_tsv(json_items)
+                    self.set_status(200)
+                    return
+
+                self.write({"items": json_items})
+                self.set_status(200)
+                return
+
+                raise tornado.web.HTTPError(404)
         except ConnectionFailure as cfe:
             raise tornado.web.HTTPError(500, str(cfe))
 
@@ -173,6 +227,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
 
         if options.verbose: logging.info("get_datatypes(%s, %s, %s): %s" % (datasource_id, db_name, collection_id, str(c_dtypes)))
         return c_dtypes
+
 
     def transpose_query_arguments(self, db_name, datasource, datatypes={}):
         # by default, queries are case-insensitive
