@@ -199,8 +199,7 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
 
             # Proxy requests to appropriate API
             if method == "GET":
-                query_parameters = urllib.urlencode(self.request.arguments)
-                url = "%s/%s?%s" % (self.API_DOMAIN, uri.strip("/"), query_parameters)
+                url = "%s/%s?%s" % (self.API_DOMAIN, uri.strip("/"), self.request.query)
                 http_request = HTTPRequest(url=url, method=method, headers=headers)
             elif method == "DELETE":
                 url = "%s/%s" % (self.API_DOMAIN, uri.strip("/"))
@@ -219,7 +218,10 @@ class GoogleApisOAuthProxyHandler(GoogleOAuth2RefreshTokenHandler):
             self.set_status(http_resp.code)
 
         except HTTPError, e:
-            if options.verbose: logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e.code))
+            if options.verbose:
+                logging.error("GoogleApisOAuthProxyHandler.oauth_http: %s %s/%s [%s]" % (method, self.API_DOMAIN, uri, e.code))
+                logging.error("GoogleApisOAuthProxyHandler.oauth_http: body=\n%s" % e.response.body)
+
             if e.code == 401 and RefreshToken:
                 self.refresh_token()
                 self.oauth_http(method, uri, False) # avoid getting into a loop, next time token should be fresh
