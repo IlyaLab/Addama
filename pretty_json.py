@@ -31,7 +31,7 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
                 if self.show_api(): return
                 return super(PrettyJsonRequestHandler, self).write(json.dumps(j, indent=4))
             except:
-                log.info("unable to convert to json")
+                logging.info("unable to convert to json")
 
         return super(PrettyJsonRequestHandler, self).write(arg)
 
