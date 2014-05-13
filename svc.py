@@ -64,7 +64,7 @@ define("github_git_cmd", help="Path to git executable", default="git")
 define("github_branches_json_path", help="Path to publish branches json", default=".")
 
 define("tasks_host", help="Celery Task Queue host", default="localhost")
-define("tasks_port", help="Celery Task Queue port", default=21050
+define("tasks_port", help="Celery Task Queue port", default=21050)
 
 define("verbose", default=False, type=bool, help="Enable verbose printouts")
 
