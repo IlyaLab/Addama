@@ -37,6 +37,7 @@ from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler
 from storage.collections import MongoDbCollectionsHandler, MongoDbListCollectionsHandler
 from scc.github import GitWebHookHandler
+from tasks.celeryHandlers import TaskHandler
 
 define("cookie_id", default="whoami_addama", help="Cookie ID for application instance; stores user id encrypted")
 define("service_root", default="/", help="Helps to control path if its being proxied")
@@ -61,6 +62,9 @@ define("github_branches_root", help="Local path to top-level branches directory"
 define("github_postproc_cmd", help="Command-line to execute after checkout")
 define("github_git_cmd", help="Path to git executable", default="git")
 define("github_branches_json_path", help="Path to publish branches json", default=".")
+
+define("tasks_host", help="Celery Task Queue host", default="localhost")
+define("tasks_port", help="Celery Task Queue port", default=21050
 
 define("verbose", default=False, type=bool, help="Enable verbose printouts")
 
@@ -182,7 +186,8 @@ def main():
         (r"/collections", MongoDbListCollectionsHandler),
         (r"/collections/", MongoDbListCollectionsHandler),
         (r"/collections/(.*)", MongoDbCollectionsHandler),
-        (r"/gitWebHook?(.*)", GitWebHookHandler)
+        (r"/gitWebHook?(.*)", GitWebHookHandler),
+        (r"/tasks/(.*)", TaskHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
     tornado.ioloop.IOLoop.instance().start()
