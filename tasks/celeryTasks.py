@@ -4,7 +4,7 @@ import subprocess
 import datarect
 import json
 
-from tornado import options
+from tornado.options import options
 
 app = Celery('tasks', backend = 'amqp', broker=options.task_broker_host)
 

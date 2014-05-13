@@ -2,7 +2,7 @@ import logging
 
 import tornado.web
 from tornado.web import asynchronous, RequestHandler
-from tornado import options
+from tornado.options import options
 
 from oauth.decorator import CheckAuthorized
 
