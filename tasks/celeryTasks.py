@@ -4,14 +4,16 @@ import subprocess
 import datarect
 import json
 
-app = Celery('tasks', backend = 'amqp', broker='amqp://guest@localhost//')
+from tornado import options
+
+app = Celery('tasks', backend = 'amqp', broker=options.task_broker_host)
 
 @app.task()
 def jsonToObj(query_json):
 	return json.loads(query_json)
 
 @app.task()
-def queryFeatureMatrixImpalaTask(query_obj, config):
+def queryFeatureMatrixImpalaTask(query_obj):
 
     feature_labels = ", ".join([ '"' + feature +'"' for feature in query_obj['features'] ])
     sample_ids = ", ".join([ '"' + sample +'"' for sample in query_obj['samples'] ])
@@ -28,16 +30,16 @@ def queryFeatureMatrixImpalaTask(query_obj, config):
     """ % (feature_labels, sample_ids)
 
     from impala.dbapi import connect
-    conn = connect(host=config['host'], port=config['port'])
+    conn = connect(host=options.impala_host, port=options.impala_port)
     cursor = conn.cursor()
     cursor.execute(query)
     result = cursor.fetchall()
     return result
     
 @app.task()
-def queryVariantsImpalaTask(query_obj, config):
+def queryVariantsImpalaTask(query_obj):
     from impala.dbapi import connect
-    conn = connect(host=config['host'], port=config['port'])
+    conn = connect(host=options.impala_host, port=options.impala_port)
     cursor = conn.cursor()
     cursor.execute('SELECT chr, pos, sample_id, value FROM default.variants WHERE chr = ' + 
         query_obj['chr'] + ' AND pos = ' + 
@@ -63,5 +65,5 @@ def pairwise(matrix):
 
 @app.task()
 def justInTimePairwise(queryObj, config):
-    return queryFeatureMatrixImpalaTask.subtask(queryObj, config) | rectangularizeFeatureMatrixTask.subtask() | rectangleToJSON.subtask()
+    return queryFeatureMatrixImpalaTask.subtask(queryObj) | rectangularizeFeatureMatrixTask.subtask() | rectangleToJSON.subtask()
 

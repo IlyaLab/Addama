@@ -48,11 +48,9 @@ class TaskHandler(RequestHandler):
             if options.verbose: logging.info("unknown task [%s]" % task_id)
             raise tornado.web.HTTPError(404, ("task %s not found" % task_id))
 
-        config = { "host" : options['tasks_host'], "port" : options['tasks_port'] }
-
         try:
            query = tornado.escape.json_decode(self.request.body)
-           self._tasks_map[task_id].apply_async(args=[query, config], callback=self.on_result)
+           self._tasks_map[task_id].apply_async(args=query, callback=self.on_result)
         except:
             raise tornado.web.HTTPError(500, "Error executing pairwise computation.")
 
