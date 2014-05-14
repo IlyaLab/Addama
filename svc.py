@@ -102,6 +102,7 @@ class MainHandler(PrettyJsonRequestHandler):
         items.append({ "id": "data", "uri": self.request.path + "data" })
         items.append({ "id": "datastores", "uri": self.request.path + "datastores" })
         items.append({ "id": "collections", "uri": self.request.path + "collections" })
+        items.append({ "id": "tasks", "uri": self.request.path + "tasks" })
 
         self.write({"items": items})
         self.set_status(200)
@@ -169,7 +170,7 @@ def main():
     static_file_path = "/%s/static" % os.path.abspath(__file__).strip("svc.py").strip("/")
     if options.verbose: logging.info("static files served from: %s" % static_file_path)
 
-    from tasks.celeryHandlers import TaskHandler
+    from tasks.celeryHandlers import TaskHandler, MainTaskHandler
 
     application = tornado.web.Application([
         (r"/", MainHandler),
@@ -190,6 +191,7 @@ def main():
         (r"/collections/", MongoDbListCollectionsHandler),
         (r"/collections/(.*)", MongoDbCollectionsHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler),
+        (r"/tasks", MainTaskHandler),
         (r"/tasks/(.*)", TaskHandler)
     ], **settings)
     application.listen(options.port, **server_settings)
