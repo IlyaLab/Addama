@@ -37,7 +37,6 @@ from datastores.localfiles import LocalFileHandler
 from storage.mongo import MongoDbStorageHandler
 from storage.collections import MongoDbCollectionsHandler, MongoDbListCollectionsHandler
 from scc.github import GitWebHookHandler
-from tasks.celeryHandlers import TaskHandler
 
 define("cookie_id", default="whoami_addama", help="Cookie ID for application instance; stores user id encrypted")
 define("service_root", default="/", help="Helps to control path if its being proxied")
@@ -169,6 +168,8 @@ def main():
 
     static_file_path = "/%s/static" % os.path.abspath(__file__).strip("svc.py").strip("/")
     if options.verbose: logging.info("static files served from: %s" % static_file_path)
+
+    from tasks.celeryHandlers import TaskHandler
 
     application = tornado.web.Application([
         (r"/", MainHandler),

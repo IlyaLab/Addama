@@ -16,7 +16,7 @@ class TaskHandler(RequestHandler):
     tasks_map = {
     "pairwise" : CeleryTasks.justInTimePairwise
     }
-    
+  
     @asynchronous
     @CheckAuthorized
     def get(self, *uri_path):
@@ -44,13 +44,13 @@ class TaskHandler(RequestHandler):
             return
 
         task_id = uri_parts[1]
-        if not task_id in self._tasks_map.keys():
+        if not task_id in self.tasks_map.keys():
             if options.verbose: logging.info("unknown task [%s]" % task_id)
             raise tornado.web.HTTPError(404, ("task %s not found" % task_id))
 
         try:
            query = tornado.escape.json_decode(self.request.body)
-           self._tasks_map[task_id].apply_async(args=query, callback=self.on_result)
+           self.tasks_map[task_id].apply_async(args=query, callback=self.on_result)
         except:
             raise tornado.web.HTTPError(500, "Error executing pairwise computation.")
 
@@ -63,7 +63,7 @@ class TaskHandler(RequestHandler):
         if options.verbose: logging.info("list_tasks [%s]" % self.request.uri)
 
         items = []
-        for task_id in self._tasks_map.keys():
+        for task_id in self.tasks_map.keys():
             items.append({ "id": task_id, "uri": self.request.path + "/" + task_id })
         self.write({"items": items, "data_type": "tasks" })
 
