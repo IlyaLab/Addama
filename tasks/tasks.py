@@ -1,10 +1,13 @@
 
 from celery import Celery
-import subprocess
 import datarect
 import json
+import csv
 
+import StringIO
 from tornado.options import options
+
+from subprocess import Popen, PIPE
 
 app = Celery('tasks', backend = 'amqp', broker=options.task_broker_host)
 
@@ -29,10 +32,16 @@ def queryFeatureMatrixImpalaTask(query_obj):
       AND sfm.tissue_type = 'Tumor'
     """ % (feature_labels, sample_ids)
 
+    query1 = """
+
+	SELECT * FROM acc WHERE feature_id IN (%s)
+
+    """ % (feature_labels)
+
     from impala.dbapi import connect
     conn = connect(host=options.impala_host, port=options.impala_port)
     cursor = conn.cursor()
-    cursor.execute(query)
+    cursor.execute(query1)
     result = cursor.fetchall()
     return result
     
@@ -49,9 +58,10 @@ def queryVariantsImpalaTask(query_obj):
 
 @app.task()
 def rectangularizeFeatureMatrixTask(columnarData):
-    dataRect = datarect.DataRectangleBuilder.fromArray(columnarData, row_idx=[0], sample_idx=2, value_idx=3, missing_value="NA", output_header=True)
-    dataRect.setOutputColumnNames('feature_label')
-    return dataRect.getOutputArray()      
+    dataRect = datarect.DataRectangleBuilder.fromArray(input_array=columnarData, row_idx=[0], sample_idx=1, value_idx=2, missing_value="NA", input_delim="\t", output_header=True)
+    dataRect.setOutputColumnNames(['feature_label'])
+    output = dataRect.getOutputArray()
+    return output
 
 @app.task()
 def rectangleToJSON(dataRect):
@@ -61,9 +71,39 @@ def rectangleToJSON(dataRect):
 
 @app.task()
 def pairwise(matrix):
-    return subprocess.check_output(["./pairwise", matrix])
+    table = [ ['feature1','feature2','pvalue'] ]
+
+    p = Popen(['./pairwise', '-f', 'tcga'], stdout=PIPE, stdin=PIPE, stderr=PIPE)
+
+    matrixString = StringIO.StringIO()
+    writer = csv.writer(matrixString, delimiter='\t')
+    
+    for row in matrix:
+        writer.writerow(row)
+
+    output = p.communicate(input=matrixString.getvalue())[0]
+
+    print "Output: " +  output
+    #print "Error: " + error
+
+    matrixString.close()    
+
+    pairwiseString = StringIO.StringIO(output)
+
+    reader = csv.reader(pairwiseString, delimiter='\t')
+
+    for row in reader:
+        table.append(row)
+
+    pairwiseString.close()
+
+    return table
 
 @app.task()
-def justInTimePairwise(queryObj, config):
-    return queryFeatureMatrixImpalaTask.subtask(queryObj) | rectangularizeFeatureMatrixTask.subtask() | rectangleToJSON.subtask()
+def printString(result):
+   print "Result: " + result
+
+@app.task(name="tasks.justInTimePairwise")
+def justInTimePairwise(queryObj):
+    return ( queryFeatureMatrixImpalaTask.subtask(queryObj) | rectangularizeFeatureMatrixTask.subtask() | pairwise.subtask() | rectangleToJSON.subtask() | printString.subtask() )()
 
