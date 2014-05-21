@@ -202,24 +202,31 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         query_limit = options.mongo_rows_limit
 
         fields = {}
+
         if "_exclude" in self.request.arguments:
             proj_exclude = self.get_arguments("_exclude", [])
             for proj in proj_exclude: fields[proj] = False
         elif "_include" in self.request.arguments:
             proj_include = self.get_arguments("_include", [])
             for proj in proj_include: fields[proj] = True
+
         logging.info("fields=%s" % fields)
 
+        keyword_args = {}
+
+        if (len(fields.keys()) > 0):
+            keyword_args["fields"] = fields
+
         if sort_fld:
-            for idx, item in enumerate(collection.find(query, fields=fields).sort(sort_fld, sort_dir)):
+            for idx, item in enumerate(collection.find(query, **keyword_args).sort(sort_fld, sort_dir)):
                 if idx > query_limit: break
                 json_items.append(self.jsonable_item(item))
 
         else:
-            for idx, item in enumerate(collection.find(query, fields=fields)):
+            for idx, item in enumerate(collection.find(query, **keyword_args)):
                 if idx > query_limit: break
                 json_items.append(self.jsonable_item(item))
-
+        
         return json_items
 
     def get_datatypes(self, datasource_id, db_name, collection_id):
