@@ -62,10 +62,7 @@ define("github_postproc_cmd", help="Command-line to execute after checkout")
 define("github_git_cmd", help="Path to git executable", default="git")
 define("github_branches_json_path", help="Path to publish branches json", default=".")
 
-define("task_broker_host", help="Celery Task Queue host", default="amqp://guest@localhost//")
-
-define("impala_host", help="Celery Task Queue port", default="localhost")
-define("impala_port", help="Celery Task Queue port", default=21050)
+define("taskrunner_host", help="Tornado-Celery Task Queue host", default="http://localhost:8888/")
 
 define("verbose", default=False, type=bool, help="Enable verbose printouts")
 
@@ -170,7 +167,7 @@ def main():
     static_file_path = "/%s/static" % os.path.abspath(__file__).strip("svc.py").strip("/")
     if options.verbose: logging.info("static files served from: %s" % static_file_path)
 
-    from tasks.celeryHandlers import TaskHandler, MainTaskHandler
+    from tasks.celeryHandlers import TaskHandler
 
     application = tornado.web.Application([
         (r"/", MainHandler),
@@ -191,7 +188,6 @@ def main():
         (r"/collections/", MongoDbListCollectionsHandler),
         (r"/collections/(.*)", MongoDbCollectionsHandler),
         (r"/gitWebHook?(.*)", GitWebHookHandler),
-        (r"/tasks", MainTaskHandler),
         (r"/tasks/(.*)", TaskHandler)
     ], **settings)
     application.listen(options.port, **server_settings)

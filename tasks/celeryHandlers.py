@@ -6,7 +6,7 @@ from tornado.options import options
 
 from oauth.decorator import CheckAuthorized
 
-import celeryTasks
+import tasks
 
 import tcelery
 tcelery.setup_nonblocking_producer()
@@ -14,7 +14,7 @@ tcelery.setup_nonblocking_producer()
 class TaskHandler(RequestHandler):
 
     tasks_map = {
-    "pairwise" : celeryTasks.justInTimePairwise
+    "pairwise" : tasks.justInTimePairwise
     }
   
     @asynchronous
