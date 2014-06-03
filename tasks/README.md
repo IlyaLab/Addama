@@ -17,7 +17,6 @@ sudo apt-get install rabbitmq-server
 sudo pip install celery tornado-celery
 cp /path/to/pairwise.so tasks/
 cp /path/to/tasks.py tasks/
-
 ```
 
 We will assign the tornado-celery server the port 8888 and have logging turned way up.
@@ -29,13 +28,16 @@ celery worker -A tasks --loglevel=DEBUG --concurrency=10 -n worker1.%h &
 python -m tcelery --port=8888 --app=tasks &
 ```
 
-Example request for pairwise task.  Addama is running on port 8001.  Note that the POST body contains a JSON that includes one array labeled "args".  
+Here is an example request for pairwise task.  In this request, Addama is running on port 8001.  Note that the POST body contains a JSON that includes one array labeled "args".  The "args" array consists of 
+three elements, each of which iss an array.  The first element/array is a list of feature ids.  The second element/array is a list of sample ids.  The third element/array is a list of tumor types (TCGA ids).
+The second and third arguments are optional.  They may also be empty, which corresponds to no filter on those fields.
+
 ```bash
 curl -H "Content-Type: application/json" -X POST -d '{ "args" : [ ["N:SAMP:percent_lymphocyte_infiltration:::::", "B:SAMP:I(Tumor|TNtype):::::", "C:CNVR:17q23.1:chr17:57925176:57930720::BRCA-TP_Gistic_ROI_d_amp"], [], ["BRCA","BLCA"] ] }' http://localhost:8001/tasks/pairwise/
 
 ```
 Response
-'''json
+```json
 {
     "task-id": "6098f501-d9bb-428a-bc72-48c7b915c84c", 
     "state": "PENDING"
