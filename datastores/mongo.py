@@ -13,7 +13,7 @@ import re
 from oauth.decorator import CheckAuthorized
 from pretty_json import PrettyJsonRequestHandler
 
-RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction", "_"]
+RESERVED_KEYS = ["output", "output_filename", "sort_by", "sort_direction", "_", "_exclude", "_include"]
 RESERVED_COLLECTIONS = ["google_oauth_tokens", "private_userinfo", "admin", "local", "collection_fields"]
 
 class MongoDbQueryHandler(PrettyJsonRequestHandler):
@@ -112,14 +112,14 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 self.list_collections(datastore_id, db_name)
                 self.set_status(200)
                 return
-                
+
             collection_id = uri_parts[3]
             # datastore = self._datastore_map[datastore_id]
             collection = self.open_collection(datastore_id, db_name, collection_id)
 
             if len(uri_parts) == 4:
                 datatypes = self.get_datatypes(datastore_id, db_name, collection_id)
-                query = tornado.escape.json_decode(self.request.body) 
+                query = tornado.escape.json_decode(self.request.body)
                 sort_fld = query.pop("sort_by", None)
                 sort_dir = query.pop("sort_direction", 1)
                 json_items = self.query_collection(collection, query, sort_fld, sort_dir)
@@ -201,16 +201,32 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         json_items = []
         query_limit = options.mongo_rows_limit
 
+        fields = {}
+
+        if "_exclude" in self.request.arguments:
+            proj_exclude = self.get_arguments("_exclude", [])
+            for proj in proj_exclude: fields[proj] = False
+        elif "_include" in self.request.arguments:
+            proj_include = self.get_arguments("_include", [])
+            for proj in proj_include: fields[proj] = True
+
+        logging.info("fields=%s" % fields)
+
+        keyword_args = {}
+
+        if (len(fields.keys()) > 0):
+            keyword_args["fields"] = fields
+
         if sort_fld:
-            for idx, item in enumerate(collection.find(query).sort(sort_fld, sort_dir)):
+            for idx, item in enumerate(collection.find(query, **keyword_args).sort(sort_fld, sort_dir)):
                 if idx > query_limit: break
                 json_items.append(self.jsonable_item(item))
 
         else:
-            for idx, item in enumerate(collection.find(query)):
+            for idx, item in enumerate(collection.find(query, **keyword_args)):
                 if idx > query_limit: break
                 json_items.append(self.jsonable_item(item))
-
+        
         return json_items
 
     def get_datatypes(self, datasource_id, db_name, collection_id):

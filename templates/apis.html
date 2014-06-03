@@ -8,15 +8,17 @@
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-url-parser/2.3.1/purl.min.js"></script>
+    <script type="text/javascript" src="//rawgithub.com/hrovira/jsoneditor/v2.3.6-hrov/jsoneditor-min.js"></script>
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.1.1/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jsoneditor/2.3.6/jsoneditor-min.css"/>
     <style>
         kbd {
             padding: 10px 20px 10px 20px;
             display: block;
         }
 
-        #output_region {
+        .output_region {
             word-wrap: normal;
         }
 
@@ -83,9 +85,18 @@
     </div>
     <div class="row">
         <div class="col-md-10">
-            <h5>JSON</h5>
-            <div class="well">
-                <pre id="output_region"></pre>
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#prettyjson" data-toggle="tab">JSON Navigator</a></li>
+                <li><a href="#rawjson" data-toggle="tab">Raw JSON</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="prettyjson">
+                    <pre class="output_region"></pre>
+                    <p><a href="https://github.com/josdejong/jsoneditor" target="_blank">JSON Editor by Jos de Jong</a></p>
+                </div>
+                <div class="tab-pane" id="rawjson">
+                    <pre class="output_region"></pre>
+                </div>
             </div>
         </div>
     </div>
@@ -115,15 +126,39 @@
         }
     });
 
-    var __uris2hrefs = function(item) {
-        if (_.has(item, "uri")) {
-            var uri = item["uri"];
-            item["uri"] = "<a href='" + uri + "'>" + uri + "</a>";
+    var __urisXformer = function(data, makeHref) {
+        if (_.isArray(data)) {
+            _.each(data, function(item) {
+                __urisXformer(item, makeHref);
+            });
+
+        } else if (_.isObject(data)) {
+            _.each(data, function(item) {
+                if (_.isArray(item)) _.each(item, function(subitem) {
+                    __urisXformer(subitem, makeHref);
+                });
+                __urisXformer(item, makeHref);
+            });
+            if (_.has(data, "uri")) {
+                var uri = data["uri"];
+                if (makeHref) {
+                    data["__link"] = "<a href='" + uri + "'>" + uri + "</a>";
+                } else {
+                    var loca = document.location;
+                    data["__link"] = loca["protocol"] + "//" + (loca["host"] || loca["hostname"]) + uri;
+                }
+            }
         }
+
+        return data;
     };
 
     var __display_json = function(data) {
-        $("#output_region").html(JSON.stringify(data, undefined, 2));
+        var $pretty = $("#prettyjson").find(".output_region").empty();
+        new jsoneditor.JSONEditor(_.first($pretty), { mode: "view", "openLinksInSameWindow": true }, __urisXformer(data));
+
+        var $raw = $("#rawjson").find(".output_region").empty();
+        $raw.html(JSON.stringify(__urisXformer(data, true), undefined, 2));
     };
 
     $.ajax({
@@ -134,24 +169,11 @@
         },
         "cache": false,
         "success": function(data) {
-            if (_.isArray(data)) {
-                _.each(data, __uris2hrefs);
-                __display_json(data);
-
-            } else if (_.isObject(data)) {
-                __uris2hrefs(data);
+            if (_.isArray(data) || _.isObject(data)) {
                 __display_json(data);
 
             } else if (_.isString(data)) {
-                data = JSON.parse(data);
-                _.each(data, function(item) {
-                    if (_.isArray(item)) {
-                        _.each(item, __uris2hrefs);
-                    }
-                    __uris2hrefs(item);
-                });
-                __uris2hrefs(data);
-                __display_json(data);
+                __display_json(JSON.parse(data));
             }
 
             $(".data_link").click(function(e) {
