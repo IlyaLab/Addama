@@ -78,3 +78,14 @@ class PrettyJsonRequestHandler(tornado.web.RequestHandler):
                 if key in arg:
                     for item in arg[key]:
                         self.annotate_service_root(item)
+
+    def jsonable(self, item):
+        json_item = {}
+        for k in item.iterkeys():
+            if k == "_id":
+                json_item["_id"] = str(item["_id"])
+            elif "[]" in k:
+                json_item[k.replace("[]", "")] = item[k]
+            elif k != "owner":
+                json_item[k] = item[k]
+        return json_item

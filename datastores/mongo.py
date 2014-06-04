@@ -220,13 +220,13 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         if sort_fld:
             for idx, item in enumerate(collection.find(query, **keyword_args).sort(sort_fld, sort_dir)):
                 if idx > query_limit: break
-                json_items.append(self.jsonable_item(item))
+                json_items.append(self.jsonable(item))
 
         else:
             for idx, item in enumerate(collection.find(query, **keyword_args)):
                 if idx > query_limit: break
-                json_items.append(self.jsonable_item(item))
-        
+                json_items.append(self.jsonable(item))
+
         return json_items
 
     def get_datatypes(self, datasource_id, db_name, collection_id):
@@ -277,17 +277,6 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                     else:
                         query[key] = {"$in": map(normalize_fn, args[key])}
         return query
-
-    def jsonable_item(self, item):
-        json_item = {}
-        for k in item.iterkeys():
-            if k == "_id":
-                json_item["id"] = str(item["_id"])
-            elif "[]" in k:
-                json_item[k.replace("[]", "")] = item[k]
-            else:
-                json_item[str(k)] = item[k]
-        return json_item
 
     def write_tsv(self, items, headers):
         filename = self.get_argument("output_filename", "data_export.tsv")
