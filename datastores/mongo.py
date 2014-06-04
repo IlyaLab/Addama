@@ -75,7 +75,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
             last_part = uri_parts[4]
             if last_part == "fields":
                 flds = self.collection_fields(datastore_id, db_name, collection)
-                self.write({"items": flds, "data_type": "fields" })
+                self.write({"items": flds, "kind": "addama#fields" })
 
                 self.set_status(200)
                 return
@@ -143,7 +143,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         items = []
         for datastore_id in self._datastore_map.keys():
             items.append({ "id": datastore_id, "uri": self.request.path + "/" + datastore_id })
-        self.write({"items": items, "data_type": "datastores" })
+        self.write({"items": items, "kind": "addama#datastores" })
 
     def list_databases(self, datastore_id):
         if options.verbose: logging.info("list_databases [%s] [%s]" % (self.request.uri, datastore_id))
@@ -156,7 +156,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         for database_name in mongoClient.database_names():
             if not database_name in RESERVED_COLLECTIONS:
                 items.append({ "id": database_name, "uri": self.request.path + "/" + database_name })
-        self.write({"items": items, "data_type": "databases" })
+        self.write({"items": items, "kind": "addama#databases" })
 
     def list_collections(self, datastore_id, database_id):
         if options.verbose: logging.info("list_collections [%s] [%s] [%s]" % (self.request.uri, datastore_id, database_id))
@@ -171,7 +171,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         for collection_name in database.collection_names(False):
             if not collection_name in RESERVED_COLLECTIONS:
                 items.append({ "id": collection_name, "uri": self.request.path + "/" + collection_name })
-        self.write({"items": items, "data_type": "collections" })
+        self.write({"items": items, "kind": "addama#collections" })
 
     def open_collection(self, datastore_id, db_name, collection_id, InternalUse=False):
         if options.verbose: logging.info("open_collection [%s] [%s] [%s]" % (datastore_id, db_name, collection_id))
