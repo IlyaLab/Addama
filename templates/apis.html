@@ -90,6 +90,7 @@
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#prettyjson" data-toggle="tab">JSON Navigator</a></li>
                 <li><a href="#rawjson" data-toggle="tab">Raw JSON</a></li>
+                <li><a href="#fields" data-toggle="tab">Fields</a></li>
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="prettyjson">
@@ -98,6 +99,11 @@
                 </div>
                 <div class="tab-pane" id="rawjson">
                     <pre class="output_region"></pre>
+                </div>
+                <div class="tab-pane" id="fields">
+                    <ul class="lst-fields nav nav-stacked">
+                        <li><a href="#" onclick="return false;">Fields not available for this data type</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -163,6 +169,7 @@
         $raw.html(JSON.stringify(__urisXformer(data, true), undefined, 2));
 
         if (_.has(data, "kind") && _.isEqual(data["kind"], "addama#collection")) {
+            _.defer(__display_fields);
             $(".download-btn").show();
             $(".download-btn").on("click", function() {
                 if (document.location.search) {
@@ -172,6 +179,25 @@
                 }
             });
         }
+    };
+
+    var __display_fields = function() {
+        $.ajax({
+            "method": "get",
+            "url": document.location.pathname + "/fields",
+            "headers": {
+                "Accept": "application/json"
+            },
+            "cache": false,
+            "dataType": "json",
+            "success": function(data) {
+                $(".lst-fields").empty();
+                _.each(data["items"], function(fld) {
+                    $(".lst-fields").append("<li><a href='#' onclick='return false;'>" + fld + "</a></li>");
+                });
+            }
+        })
+
     };
 
     $.ajax({
