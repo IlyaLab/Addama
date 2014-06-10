@@ -74,6 +74,8 @@
             <h5>Command-line executable example</h5>
             <div class="well">
                 <kbd id="curl_region"></kbd>
+                <br/>
+                <button class="download-btn pull-right" style="display: none;">Download TSV</button>
             </div>
         </div>
     </div>
@@ -159,6 +161,17 @@
 
         var $raw = $("#rawjson").find(".output_region").empty();
         $raw.html(JSON.stringify(__urisXformer(data, true), undefined, 2));
+
+        if (_.has(data, "kind") && _.isEqual(data["kind"], "addama#collection")) {
+            $(".download-btn").show();
+            $(".download-btn").on("click", function() {
+                if (document.location.search) {
+                    document.location = document.location.href + "&output=tsv";
+                } else {
+                    document.location = document.location.href + "?output=tsv";
+                }
+            });
+        }
     };
 
     $.ajax({
