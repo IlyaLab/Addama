@@ -68,7 +68,7 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                     self.set_status(200)
                     return
 
-                self.write({"items": json_items})
+                self.write({"items": json_items, "kind": "addama#collection" })
                 self.set_status(200)
                 return
 
