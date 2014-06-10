@@ -201,21 +201,9 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         json_items = []
         query_limit = options.mongo_rows_limit
 
-        fields = {}
-
-        if "_exclude" in self.request.arguments:
-            proj_exclude = self.get_arguments("_exclude", [])
-            for proj in proj_exclude: fields[proj] = False
-        elif "_include" in self.request.arguments:
-            proj_include = self.get_arguments("_include", [])
-            for proj in proj_include: fields[proj] = True
-
-        logging.info("fields=%s" % fields)
-
         keyword_args = {}
-
-        if (len(fields.keys()) > 0):
-            keyword_args["fields"] = fields
+        projection = self.get_projection()
+        if (len(projection.keys()) > 0): keyword_args["fields"] = projection
 
         if sort_fld:
             for idx, item in enumerate(collection.find(query, **keyword_args).sort(sort_fld, sort_dir)):
@@ -228,6 +216,19 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 json_items.append(self.jsonable(item))
 
         return json_items
+
+    def get_projection(self):
+        projection = {}
+
+        if "_exclude" in self.request.arguments:
+            proj_exclude = self.get_arguments("_exclude", [])
+            for proj in proj_exclude: projection[proj] = False
+        elif "_include" in self.request.arguments:
+            proj_include = self.get_arguments("_include", [])
+            for proj in proj_include: projection[proj] = True
+
+        if options.verbose: logging.info("projection=%s" % projection)
+        return projection
 
     def get_datatypes(self, datasource_id, db_name, collection_id):
         c_dtypes = {}
@@ -288,10 +289,21 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
         self.set_header("Content-Disposition", attachment)
 
         tsvwriter = csv.writer(self, delimiter="\t")
-        excludedheaders = ["id", "values"]
+        projection = self.get_projection()
 
         if len(items) > 0:
-            colheaders = [a for a in headers if a not in excludedheaders]
+            colheaders = headers
+            if "values" in colheaders: colheaders.remove("values")
+            newheaders = []
+            if len(projection.keys()) > 0:
+                for key in projection.keys():
+                    val = projection[key]
+                    logging.info("key,val=%s,%s" % (key, val))
+                    if key in colheaders:
+                        if val: newheaders.append(key)
+                        if not val: colheaders.remove(str(key))
+                if len(newheaders) > 0: colheaders = newheaders
+
             pivotkeys = []
             if "values" in items[0]:
                 values_keys = items[0]["values"].keys()
