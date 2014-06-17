@@ -80,6 +80,19 @@ class MongoDbQueryHandler(PrettyJsonRequestHandler):
                 self.set_status(200)
                 return
 
+            if last_part == "search":
+                search_field = uri_parts[5]
+                search_value = self.get_argument("term")
+
+                query = {}
+                query[search_field] = { "$regex": re.compile(search_value, re.IGNORECASE) }
+
+                json_items = self.query_collection(collection, query)
+
+                self.write({"items": json_items, "kind": "addama#searchResults" })
+                self.set_status(200)
+                return
+
             raise tornado.web.HTTPError(404, ("%s was not found" % self.request.path))
         except ConnectionFailure as cfe:
             raise tornado.web.HTTPError(500, str(cfe))
